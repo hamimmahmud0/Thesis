@@ -1,0 +1,54 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.eggs/
+*.so
+
+# --- Virtualenvs / environments ---
+.venv/
+venv/
+env/
+
+# --- Environment / secrets ---
+.env
+.env.*
+*.token
+.hf_token
+.huggingface/token
+
+# --- Media (large files) ---
+*.mp4
+*.mov
+*.mkv
+*.avi
+*.webm
+*.m4v
+*.ts
+
+# --- ML artifacts / checkpoints ---
+*.pth
+*.pt
+*.onnx
+*.ckpt
+*.safetensors
+
+# --- Stabilize pipeline outputs ---
+tools/stabilize/runs/
+tools/stabilize/*.egg-info/
+**/tracks.npz
+**/motion.npz
+**/motion_smooth.npz
+runs/
+
+# --- Notebooks ---
+.ipynb_checkpoints/
+
+# --- OS / editors ---
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
