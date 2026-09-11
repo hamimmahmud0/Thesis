@@ -508,7 +508,8 @@ def build_parser() -> argparse.ArgumentParser:
         "--step", type=int, default=8, metavar="N",
         help=(
             "Online sliding-window stride in frames (window_len = 2*step).  "
-            "Default: 8 (window 16).  Larger steps are faster on CPU."
+            "Total compute is roughly constant (always 50%% overlap); smaller "
+            "steps give more frequent, smaller passes.  Default: 8 (window 16)."
         ),
     )
     p_run.add_argument(
@@ -690,8 +691,9 @@ def build_parser() -> argparse.ArgumentParser:
         help=(
             "Online sliding-window stride in frames.  CoTracker3's online "
             "model processes window_len = 2*step frames per call and advances "
-            "by step.  Default: 8 (window 16).  Larger steps mean fewer, "
-            "cheaper forward passes (faster on CPU)."
+            "by step, so total compute is roughly constant (always 50%% "
+            "overlap).  Smaller steps give more frequent, smaller passes "
+            "(lower peak memory).  Default: 8 (window 16)."
         ),
     )
     p_track.add_argument(

@@ -72,7 +72,9 @@ def track_video(
     max_video_dim : resize longest side to this before tracking (GPU memory).
     step : online sliding-window stride in frames (default 8).  The CoTracker3
         online model processes ``window_len = 2 * step`` frames per call and
-        advances by ``step``; larger steps mean fewer, cheaper forward passes.
+        advances by ``step``, so total compute is roughly constant (always 50%
+        overlap).  Smaller steps give more frequent, smaller passes (lower
+        peak memory); larger steps use larger windows.
     device : torch device string, e.g. ``"cuda:0"``.  Auto-detected if None.
 
     Returns
