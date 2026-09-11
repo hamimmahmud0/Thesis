@@ -108,25 +108,20 @@ def track_video(
             .permute(0, 3, 1, 2)[None]
             .to(torch_device)
         )
+        kwargs = dict(
+            is_first_step=first,
+            grid_size=grid_size,
+            grid_query_frame=grid_query_frame,
+        )
         with torch.inference_mode():
-            try:
-                with torch.autocast(
-                    device_type=torch_device.type, dtype=torch.float16
-                ):
-                    return model(
-                        video_chunk,
-                        is_first_step=first,
-                        grid_size=grid_size,
-                        grid_query_frame=grid_query_frame,
-                    )
-            except RuntimeError:
-                # Fallback without AMP if model doesn't support fp16
-                return model(
-                    video_chunk,
-                    is_first_step=first,
-                    grid_size=grid_size,
-                    grid_query_frame=grid_query_frame,
-                )
+            # AMP on CUDA only; autocast(fp16) on CPU hangs.
+            if torch_device.type == "cuda":
+                try:
+                    with torch.autocast(device_type="cuda", dtype=torch.float16):
+                        return model(video_chunk, **kwargs)
+                except RuntimeError:
+                    pass
+            return model(video_chunk, **kwargs)
 
     print(f"Tracking {total} frames at {tw}x{th} (grid {grid_size}x{grid_size}) ...")
     cap = cv2.VideoCapture(str(video_path))
