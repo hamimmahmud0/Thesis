@@ -1,0 +1,47 @@
+{
+  "run_name": "e2e-final",
+  "source": "runs/test/synthetic.mp4",
+  "bucket": "hamimmahmud0/test-bucket",
+  "timestamp": "2026-09-11T20:19:50",
+  "params": {
+    "grid_size": 16,
+    "grid_query_frame": 0,
+    "max_video_dim": 1280,
+    "crop_width": 256,
+    "crop_height": 256,
+    "shift_x": 0,
+    "shift_y": 0,
+    "sigma": 10.0,
+    "smoothing": true,
+    "frames": 6,
+    "crf": 20,
+    "width": 3840,
+    "height": 2160,
+    "fps": 23.976
+  },
+  "outputs": {
+    "video": "runs/test/synthetic.mp4",
+    "tracks": "runs/e2e-final/tracks.npz",
+    "motion_npz": "runs/e2e-final/motion.npz",
+    "motion_csv": "runs/e2e-final/motion.csv",
+    "smooth_npz": "runs/e2e-final/motion_smooth.npz",
+    "trajectory_png": "runs/e2e-final/trajectory.png",
+    "stabilized_mp4": "runs/e2e-final/stabilized.mp4"
+  },
+  "step_times_s": {
+    "estimate": 0.006400108337402344,
+    "smooth": 0.18314743041992188,
+    "viz": 0.9307656288146973,
+    "render": 0.08550381660461426,
+    "upload": 34.39197087287903
+  },
+  "uploaded": [
+    "e2e-final/motion.csv",
+    "e2e-final/motion.npz",
+    "e2e-final/motion_smooth.npz",
+    "e2e-final/stabilized.mp4",
+    "e2e-final/summary.json",
+    "e2e-final/tracks.npz",
+    "e2e-final/trajectory.png"
+  ]
+}

@@ -213,7 +213,8 @@ def ensure_bucket(
 ) -> str:
     """Create the bucket if it does not already exist.
 
-    Returns the bucket id (possibly normalised with a namespace).
+    Returns the canonical bucket id (namespace may be added by HF, e.g.
+    ``user/bucket``).
     """
     if bucket_exists(bucket_id, token=token):
         return bucket_id
@@ -221,9 +222,24 @@ def ensure_bucket(
     if private:
         cmd.append("--private")
     proc = _run(cmd, token=token, timeout=120)
-    # The quiet output prints the bucket id on its own line.
-    line = proc.stdout.strip()
-    return line.splitlines()[-1] if line else bucket_id
+    return _bucket_id_from_output(proc.stdout, bucket_id)
+
+
+def _bucket_id_from_output(stdout: str, fallback: str) -> str:
+    """Extract the bucket id from ``hf buckets create`` output.
+
+    The CLI prints a single line like::
+
+        uri=hf://buckets/hamimmahmud0/test-bucket url=https://huggingface.co/buckets/hamimmahmud0/test-bucket
+
+    Returns the ``...`` part of ``uri=hf://buckets/...``.
+    """
+    for line in stdout.splitlines():
+        line = line.strip()
+        for tok in line.split():
+            if tok.startswith("uri=hf://buckets/"):
+                return tok[len("uri=hf://buckets/"):]
+    return fallback
 
 
 def upload_file(

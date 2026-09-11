@@ -12,6 +12,7 @@ All intermediate products land in a local run directory
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import sys
 import time
@@ -293,4 +294,4 @@ def run_pipeline(
 
 
 def _env_token() -> str | None:
-    return None if "HF_TOKEN" not in __import__("os").environ else __import__("os").environ["HF_TOKEN"]
+    return os.environ.get("HF_TOKEN")

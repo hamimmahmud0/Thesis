@@ -1,0 +1,48 @@
+{
+  "run_name": "from-hf-link",
+  "source": "hf://buckets/hamimmahmud0/test-bucket/e2e-final/stabilized.mp4",
+  "bucket": "hamimmahmud0/test-bucket",
+  "timestamp": "2026-09-11T20:20:30",
+  "params": {
+    "grid_size": 16,
+    "grid_query_frame": 0,
+    "max_video_dim": 1280,
+    "crop_width": 192,
+    "crop_height": 192,
+    "shift_x": 0,
+    "shift_y": 0,
+    "sigma": 10.0,
+    "smoothing": true,
+    "frames": 4,
+    "crf": 20,
+    "width": 3840,
+    "height": 2160,
+    "fps": 23.976
+  },
+  "outputs": {
+    "video": "runs/from-hf-link/stabilized.mp4",
+    "tracks": "runs/from-hf-link/tracks.npz",
+    "motion_npz": "runs/from-hf-link/motion.npz",
+    "motion_csv": "runs/from-hf-link/motion.csv",
+    "smooth_npz": "runs/from-hf-link/motion_smooth.npz",
+    "trajectory_png": "runs/from-hf-link/trajectory.png",
+    "stabilized_mp4": "runs/from-hf-link/stabilized.mp4"
+  },
+  "step_times_s": {
+    "download": 4.2252726554870605,
+    "estimate": 0.006323814392089844,
+    "smooth": 0.16051673889160156,
+    "viz": 0.849968671798706,
+    "render": 0.06526827812194824,
+    "upload": 37.150869846343994
+  },
+  "uploaded": [
+    "from-hf-link/motion.csv",
+    "from-hf-link/motion.npz",
+    "from-hf-link/motion_smooth.npz",
+    "from-hf-link/stabilized.mp4",
+    "from-hf-link/summary.json",
+    "from-hf-link/tracks.npz",
+    "from-hf-link/trajectory.png"
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "run_name": "test-run2",
+  "source": "runs/test/synthetic.mp4",
+  "bucket": "uri=hf://buckets/hamimmahmud0/test-bucket url=https://huggingface.co/buckets/hamimmahmud0/test-bucket",
+  "timestamp": "2026-09-11T20:17:59",
+  "params": {
+    "grid_size": 16,
+    "grid_query_frame": 0,
+    "max_video_dim": 1280,
+    "crop_width": 256,
+    "crop_height": 256,
+    "shift_x": 0,
+    "shift_y": 0,
+    "sigma": 10.0,
+    "smoothing": true,
+    "frames": 0,
+    "crf": 20,
+    "width": 3840,
+    "height": 2160,
+    "fps": 23.976
+  },
+  "outputs": {
+    "video": "runs/test/synthetic.mp4",
+    "tracks": "runs/test-run2/tracks.npz",
+    "motion_npz": "runs/test-run2/motion.npz",
+    "motion_csv": "runs/test-run2/motion.csv",
+    "smooth_npz": "runs/test-run2/motion_smooth.npz",
+    "trajectory_png": "runs/test-run2/trajectory.png",
+    "stabilized_mp4": "runs/test-run2/stabilized.mp4"
+  },
+  "step_times_s": {
+    "estimate": 0.007193326950073242,
+    "smooth": 0.19533038139343262,
+    "viz": 1.1077523231506348,
+    "render": 0.12238073348999023
+  }
+}
