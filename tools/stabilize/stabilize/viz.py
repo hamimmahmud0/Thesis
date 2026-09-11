@@ -22,6 +22,9 @@ def _make_plots(df, out_png: str | Path, title: str) -> None:
     inlier_ratio, usable, reliable, cum_x, cum_y, cum_yaw_deg,
     cum_log_scale.
     """
+    # A stale/invalid MPLBACKEND (e.g. a Jupyter inline backend) makes
+    # ``import matplotlib`` itself fail, so force Agg before importing.
+    os.environ["MPLBACKEND"] = "Agg"
     import matplotlib
 
     matplotlib.use("Agg")

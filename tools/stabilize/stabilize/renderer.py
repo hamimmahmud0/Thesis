@@ -16,6 +16,7 @@ from pathlib import Path
 
 import cv2
 import numpy as np
+from tqdm import tqdm
 
 from .utils import eye3, open_video, human_time
 
@@ -199,11 +200,14 @@ def render(
         cap.release()
         raise SystemExit("FFmpeg not found. Install FFmpeg and try again.")
 
+    pbar = tqdm(total=n_render, desc="Rendering", unit="frame",
+                bar_format="{desc}: {percentage:3.1f}%|{bar}| {n_fmt}/{total_fmt} "
+                           "[{elapsed}<{remaining}, {rate_fmt}]")
     try:
         for t in range(n_render):
             ok, frame = cap.read()
             if not ok:
-                print(f"Video ended early at frame {t}")
+                pbar.write(f"Video ended early at frame {t}")
                 break
 
             M = _combined_warp(raw_cum[t], None if smooth_cum is None else smooth_cum[t], (x0, y0))
@@ -215,12 +219,12 @@ def render(
             try:
                 proc.stdin.write(out.tobytes())
             except BrokenPipeError:
-                print("FFmpeg pipe broke — encoder may have failed")
+                pbar.write("FFmpeg pipe broke — encoder may have failed")
                 break
 
-            if t % 500 == 0:
-                print(f"  frame {t}/{n_render}", flush=True)
+            pbar.update(1)
     finally:
+        pbar.close()
         cap.release()
         if proc.stdin:
             proc.stdin.close()

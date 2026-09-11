@@ -15,6 +15,37 @@ from pathlib import Path
 
 import cv2
 import numpy as np
+from tqdm import tqdm
+
+
+def _checkpoint_for_window(checkpoint: Path, window_len: int) -> Path:
+    """Return a checkpoint whose ``time_emb`` matches *window_len*.
+
+    The released online checkpoint ships with ``window_len=16``.  The model's
+    ``time_emb`` is a deterministic sincos positional buffer (not a learned
+    parameter), so when a different window is requested we resize it and cache
+    a copy next to the original.  Returns the original path when no change is
+    needed.
+    """
+    import torch
+    import torch.nn.functional as F
+
+    state = torch.load(checkpoint, map_location="cpu")
+    model_sd = state.get("model", state)
+    emb = model_sd.get("time_emb")
+    if emb is None or emb.shape[1] == window_len:
+        return checkpoint
+    emb = (
+        F.interpolate(
+            emb.float().permute(0, 2, 1), size=window_len, mode="linear"
+        )
+        .permute(0, 2, 1)
+        .to(emb.dtype)
+    )
+    model_sd["time_emb"] = emb
+    out = checkpoint.with_name(f"{checkpoint.stem}_w{window_len}{checkpoint.suffix}")
+    torch.save(state, out)
+    return out
 
 
 def track_video(
@@ -24,6 +55,7 @@ def track_video(
     grid_size: int = 16,
     grid_query_frame: int = 0,
     max_video_dim: int = 1280,
+    step: int = 8,
     device: str | None = None,
 ) -> dict:
     """Track keypoint trajectories through *video_path* using CoTracker3.
@@ -38,6 +70,9 @@ def track_video(
     grid_size : NxN grid of query points (max 32).
     grid_query_frame : frame index the grid is sampled from (default 0).
     max_video_dim : resize longest side to this before tracking (GPU memory).
+    step : online sliding-window stride in frames (default 8).  The CoTracker3
+        online model processes ``window_len = 2 * step`` frames per call and
+        advances by ``step``; larger steps mean fewer, cheaper forward passes.
     device : torch device string, e.g. ``"cuda:0"``.  Auto-detected if None.
 
     Returns
@@ -81,9 +116,17 @@ def track_video(
     th = max(1, int(round(orig_h * scale)) // 2 * 2)
 
     # ---- Load model ----
-    print(f"Loading CoTracker3 from {checkpoint} ...")
+    # The online model's internal stride is window_len // 2, so a custom step
+    # requires rebuilding the model with window_len = 2 * step.
+    step = max(1, int(step))
+    window_len = 2 * step
+    ckpt = _checkpoint_for_window(checkpoint, window_len)
+    print(
+        f"Loading CoTracker3 from {checkpoint} "
+        f"(window {window_len}, step {step}) ..."
+    )
     model = CoTrackerOnlinePredictor(
-        checkpoint=str(checkpoint), offline=False, window_len=16
+        checkpoint=str(ckpt), offline=False, window_len=window_len
     )
     model = model.to(torch_device).eval()
 
@@ -93,15 +136,15 @@ def track_video(
     ish = model.interp_shape
 
     # ---- Streaming tracking loop ----
-    WINDOW_LEN = 16
-    STEP = 8
+    WINDOW_LEN = window_len
+    STEP = step
 
     window: list[np.ndarray] = []
     n = 0
     is_first_step = True
 
     def _process_step(first: bool):
-        chunk = np.stack(window[-STEP * 2:])
+        chunk = np.stack(window[-WINDOW_LEN:])
         video_chunk = (
             torch.from_numpy(chunk)
             .float()
@@ -123,8 +166,18 @@ def track_video(
                     pass
             return model(video_chunk, **kwargs)
 
+    n_forwards = (total - 1) // STEP + 1
     print(f"Tracking {total} frames at {tw}x{th} (grid {grid_size}x{grid_size}) ...")
+    print(
+        f"  {n_forwards} forward passes "
+        f"(stride {STEP}, window {WINDOW_LEN})"
+    )
     cap = cv2.VideoCapture(str(video_path))
+    pbar = tqdm(
+        total=n_forwards, desc="Tracking", unit="step",
+        bar_format="{desc}: {percentage:3.1f}%|{bar}| {n_fmt}/{total_fmt} "
+                   "[{elapsed}<{remaining}, {rate_fmt}]",
+    )
     try:
         while True:
             ok, frame_bgr = cap.read()
@@ -137,22 +190,25 @@ def track_video(
             if n % STEP == 0 and n != 0:
                 _process_step(is_first_step)
                 is_first_step = False
+                pbar.update(1)
+                pbar.set_postfix_str(f"frame {n}/{total}")
             window.append(frame)
-            if len(window) > STEP * 2:
-                window = window[-STEP * 2:]
+            if len(window) > WINDOW_LEN:
+                window = window[-WINDOW_LEN:]
             n += 1
-            if n % 100 == 0:
-                print(f"  read {n}/{total} frames ...", flush=True)
+
+        if n < 2:
+            raise SystemExit(f"Only {n} frame(s) readable from {video_path}")
+
+        # Final step (produces the tracks)
+        pred_tracks, pred_visibility = _process_step(is_first_step)
+        if pred_tracks is None:
+            pred_tracks, pred_visibility = _process_step(False)
+        pbar.update(1)
+        pbar.set_postfix_str(f"done {n} frames")
     finally:
+        pbar.close()
         cap.release()
-
-    if n < 2:
-        raise SystemExit(f"Only {n} frame(s) readable from {video_path}")
-
-    # Final step
-    pred_tracks, pred_visibility = _process_step(is_first_step)
-    if pred_tracks is None:
-        pred_tracks, pred_visibility = _process_step(False)
 
     # ---- Map query points back to original coordinates ----
     query_pts = model.queries[0, :, 1:].detach().float().cpu().numpy()
@@ -178,6 +234,7 @@ def track_video(
         processed_frames=T,
         grid_size=grid_size,
         grid_query_frame=grid_query_frame,
+        step=step,
         num_points=tracks.shape[1],
         source=str(video_path.name),
     )
@@ -201,5 +258,6 @@ def track_video(
         total_frames=total,
         processed_frames=T,
         grid_size=grid_size,
+        step=step,
         num_points=tracks.shape[1],
     )

@@ -141,6 +141,7 @@ def _cmd_run(args: argparse.Namespace) -> None:
         grid_size=args.grid_size,
         grid_query_frame=args.grid_query_frame,
         max_video_dim=args.max_dim,
+        step=args.step,
         crop_width=args.crop_width,
         crop_height=args.crop_height,
         shift_x=args.shift_x,
@@ -200,6 +201,7 @@ def _cmd_track(args: argparse.Namespace) -> None:
         grid_size=args.grid_size,
         grid_query_frame=args.grid_query_frame,
         max_video_dim=args.max_dim,
+        step=args.step,
         device=args.device,
     )
 
@@ -503,6 +505,13 @@ def build_parser() -> argparse.ArgumentParser:
         help="Frame index for the keypoint grid.  Default: 0.",
     )
     p_run.add_argument(
+        "--step", type=int, default=8, metavar="N",
+        help=(
+            "Online sliding-window stride in frames (window_len = 2*step).  "
+            "Default: 8 (window 16).  Larger steps are faster on CPU."
+        ),
+    )
+    p_run.add_argument(
         "--max-dim", type=int, default=1280, metavar="PX",
         help="Longest-side resize for tracking.  Default: 1280.",
     )
@@ -674,6 +683,15 @@ def build_parser() -> argparse.ArgumentParser:
             "Resize the longest side of the video to this many pixels "
             "before tracking (bounded GPU memory).  Tracked coordinates "
             "are mapped back to original resolution.  Default: 1280."
+        ),
+    )
+    p_track.add_argument(
+        "--step", type=int, default=8, metavar="N",
+        help=(
+            "Online sliding-window stride in frames.  CoTracker3's online "
+            "model processes window_len = 2*step frames per call and advances "
+            "by step.  Default: 8 (window 16).  Larger steps mean fewer, "
+            "cheaper forward passes (faster on CPU)."
         ),
     )
     p_track.add_argument(

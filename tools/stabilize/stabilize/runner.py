@@ -42,6 +42,7 @@ def run_pipeline(
     grid_size: int = 16,
     grid_query_frame: int = 0,
     max_video_dim: int = 1280,
+    step: int = 8,
     crop_width: int = 1024,
     crop_height: int | None = None,
     shift_x: int = 0,
@@ -134,6 +135,7 @@ def run_pipeline(
             grid_size=grid_size,
             grid_query_frame=grid_query_frame,
             max_video_dim=max_video_dim,
+            step=step,
             device=device,
         )
         done()
@@ -242,6 +244,7 @@ def run_pipeline(
             "grid_size": grid_size,
             "grid_query_frame": grid_query_frame,
             "max_video_dim": max_video_dim,
+            "step": step,
             "crop_width": crop_width,
             "crop_height": crop_height,
             "shift_x": shift_x,
