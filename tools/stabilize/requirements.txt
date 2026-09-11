@@ -1,0 +1,55 @@
+# Requirements for stabilize (fresh conda environment)
+# =====================================================
+#
+# Setup in a fresh conda environment (recommended):
+#
+#   conda create -n stabilize python=3.11 -y
+#   conda activate stabilize
+#
+#   # PyTorch with CUDA 12.4 (conda)
+#   conda install pytorch torchvision pytorch-cuda=12.4 -c pytorch -c nvidia -y
+#
+#   # Install this package and all pip dependencies
+#   pip install -r requirements.txt
+#   pip install -e .
+#
+# Alternative: pure pip install (PyTorch + CUDA via pip)
+#
+#   conda create -n stabilize python=3.11 -y && conda activate stabilize
+#   pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cu124
+#   pip install -e .
+#
+
+# -----------------------------------------------------------------------
+# GPU tracking (install torch via conda/above first, then these are satisfied)
+# -----------------------------------------------------------------------
+torch>=2.2,<2.7
+torchvision>=0.17,<0.20
+
+# CoTracker3 (no PyPI package — installed from GitHub)
+# pip install git+https://github.com/facebookresearch/co-tracker.git
+# (pinned here as a comment; already installed by requirements.txt via git+)
+
+# -----------------------------------------------------------------------
+# Core dependencies
+# -----------------------------------------------------------------------
+numpy>=1.26,<2.2
+opencv-python>=4.8,<4.14
+pandas>=2.1,<2.3
+scipy>=1.12,<1.14
+matplotlib>=3.8,<3.10
+
+# -----------------------------------------------------------------------
+# HuggingFace CLI (for hf download / buckets / auth)
+# -----------------------------------------------------------------------
+huggingface-hub[cli]>=0.23,<1.0
+
+# -----------------------------------------------------------------------
+# Optional but useful
+# -----------------------------------------------------------------------
+tqdm>=4.66
+
+# -----------------------------------------------------------------------
+# Git installs (not on PyPI)
+# -----------------------------------------------------------------------
+git+https://github.com/facebookresearch/co-tracker.git

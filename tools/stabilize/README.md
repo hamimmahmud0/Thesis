@@ -26,7 +26,10 @@ stabilize --help
 
 - Python 3.10+
 - `ffmpeg` available on PATH
-- For local tracking: PyTorch (CUDA) + a CoTracker3 checkpoint (`scaled_online.pth`)
+- For local tracking: PyTorch (CUDA) + the CoTracker3 checkpoint.  The
+  checkpoint (`scaled_online.pth`, ~100 MB) is **auto-downloaded** from the
+  Hub (`facebook/cotracker3`) on first use into `~/.cache/cotracker3/`, or
+  into the parent directory of an explicitly given `--checkpoint` path.
 - For HF workflows: the `hf` CLI (`pip install huggingface-hub[cli]`) + `HF_TOKEN` or `--token`
 
 ---
@@ -75,7 +78,7 @@ hf://buckets/user/my-stabilized/DJI_0260/
 
 | Flag | Description | Default |
 |---|---|---|
-| `--checkpoint` | CoTracker3 `.pth` — enables local tracking | *required unless `--tracks`* |
+| `--checkpoint` | CoTracker3 `.pth` — enables local tracking. If missing, auto-downloaded from the Hub | `~/.cache/cotracker3/scaled_online.pth` |
 | `--tracks` | Pre-computed tracks file — skips tracking | — |
 | `--bucket` | HF bucket to upload to (`user/name`) | *required unless `--skip-upload`* |
 | `--run` | Sub-folder name inside the bucket | *required* |
@@ -109,13 +112,13 @@ stabilize run \
 ### `track`
 
 ```bash
-stabilize track input.mp4 \
-    -o tracks.npz \
-    --checkpoint ./scaled_online.pth \
-    --grid-size 16
+stabilize track input.mp4 -o tracks.npz --grid-size 16
 ```
 
-Options: `--grid-size` (max 32), `--grid-query-frame`, `--max-dim 1280`, `--device cuda:0`.
+`--checkpoint` is optional — if omitted (or the file is missing), the
+checkpoint auto-downloads from the Hub into `~/.cache/cotracker3/`.
+
+Options: `--checkpoint` (autodownloads if missing), `--grid-size` (max 32), `--grid-query-frame`, `--max-dim 1280`, `--device cuda:0`.
 
 ---
 
