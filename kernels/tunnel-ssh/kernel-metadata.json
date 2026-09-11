@@ -1,0 +1,16 @@
+{
+  "id": "hamimmahmud/tunnel-ssh",
+  "title": "Get access of a machine with ssh",
+  "code_file": "tunnel-ssh.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": "true",
+  "enable_gpu": "false",
+  "enable_tpu": "false",
+  "enable_internet": "true",
+  "machine_shape": "",
+  "dataset_sources": [],
+  "competition_sources": [],
+  "kernel_sources": [],
+  "model_sources": []
+}

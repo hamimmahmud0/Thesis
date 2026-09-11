@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "stabilize"
+version = "0.1.0"
+description = "Drone video stabilisation using CoTracker3 keypoint trajectories"
+requires-python = ">=3.10"
+dependencies = [
+    "opencv-python-headless>=4.8",
+    "numpy>=1.24,<2",
+    "pandas>=2.0",
+    "matplotlib>=3.7",
+    "scipy>=1.10",
+]
+
+[project.optional-dependencies]
+tracking = [
+    "torch>=2.0",
+]
+
+[project.scripts]
+stabilize = "stabilize.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["stabilize*"]

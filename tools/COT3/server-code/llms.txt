@@ -1,0 +1,172 @@
+# CoTracker3 MCP Trajectory Server (agent-tools bucket)
+
+Hardened server code for the CoTracker3 keypoint-trajectory stack. Mirrors the
+SAM3.1 MCP pattern (in `../SAM3.1/server-code/`) so any agent can deploy the
+exact version.
+
+## Purpose
+CoTracker3 (facebookresearch/co-tracker) tracks an NxN grid of keypoints
+through a video and returns per-frame (x, y) trajectories + visibility. This
+stack wraps it in an MCP server so agents can request trajectories from a
+remote GPU host. Images are also accepted (single-frame grid keypoint
+extraction, all visible).
+
+## Files
+- `cot_mcp/cot_mcp_server.py` - streamable-HTTP MCP server (port 8004), exposes
+  `track_media`, `server_health`, `list_capabilities`.
+- `cot_mcp/tunnel.sh` - TunnelMate tunnel setup script (reuse existing tunnel
+  state if present; public endpoint changes on new tunnel).
+- `cot_mcp/requirements.txt` - MCP server deps (mcp>=1.9, opencv, requests,
+  numpy<2, fastapi, uvicorn). torch + cotracker code come from the host env.
+- `cot/cot_tracker_server.py` - FastAPI inference backend (port 8003) that
+  loads the CoTracker3 online checkpoint on a GPU worker process and runs the
+  sliding-window tracking loop.
+
+## Guardrails implemented (2026-08-20)
+### MCP server (cot_mcp_server.py)
+- **Hard concurrency cap**: `COT_MCP_MAX_CONCURRENT` (default 1, one per GPU
+  worker). `threading.BoundedSemaphore` acquired non-blocking at the start of
+  `track_media`; when busy the request is rejected immediately with
+  `{"is_error": true, "error": "Server at capacity..."}` instead of piling up.
+- **grid_size clamped** to `COT_MCP_MAX_GRID_SIZE` (default 32).
+  `max_frames` default is **0 = every frame (no sampling)**; a positive value is
+  clamped to `COT_MCP_MAX_FRAMES` (default 600) and evenly samples.
+- **Upload size capped** at 5 MB with strict base64 validation and empty-file
+  check; videos > 5 MB MUST use source=hf.
+- **Image + video input**: images (jpg/jpeg/png/webp/bmp/tiff) and videos
+  (mp4/mov/avi/mkv/webm/m4v) accepted via BOTH source=upload and source=hf.
+  Images return `"kind": "image"` with the grid keypoints on the image
+  (T=1, all visible).
+- **hf:// sources bypass the upload cap**: for source=hf the MCP layer
+  downloads the file to local disk with the hf CLI and passes the path to the
+  backend via `local_path`, so arbitrarily large files (multi-GB 4K videos)
+  work without hitting the 5 MB / 512 MB upload limits.
+- **Path traversal guarded**: `file_name` sanitized via `Path(file_name).name`.
+- **Unique work dirs** (uuid) so concurrent jobs cannot collide; cleaned in
+  `finally`.
+- **Never crashes**: every tool returns `{"is_error": true, ...}` on any
+  exception; errors cannot kill the server.
+- `server_health` reports `mcp_max_concurrent` and `mcp_available_slots`.
+
+### Inference server (cot_tracker_server.py)
+- **Bounded queue**: `task_queue = mp.Queue(maxsize=COT_MAX_QUEUE=4)`; full
+  queue -> HTTP 503 instead of unbounded work.
+- **Job TTL cleanup**: terminal jobs purged after `COT_JOB_TTL` (default 30 min).
+- **Per-job limits**: `COT_MAX_FRAMES` (600), `COT_MAX_GRID_SIZE` (32),
+  `COT_MAX_TOTAL_UPLOAD` (512 MB). Default `max_frames` = 0 -> **every frame of
+  the video is tracked (no sampling)**; a positive `max_frames` evenly samples
+  when the video is longer. Frames are streamed from disk with a bounded
+  in-memory window (last 16) so full-length 4K videos do not exhaust host RAM.
+- **Bounded GPU memory**: videos downscaled to longest side
+  `COT_MAX_VIDEO_DIM` (default 1280); tracks mapped BACK to original coords.
+- **CUDA OOM recovery**: on `torch.cuda.OutOfMemoryError` the frame budget is
+  halved and the job retried once; `torch.cuda.empty_cache()` after forwards.
+- **Path traversal guarded**: uploaded filenames sanitized via basename.
+- **Worker loop never dies**: per-job exceptions -> job status "failed" with
+  error message; the worker keeps consuming the queue.
+
+## Env overrides
+- MCP: `COT_MCP_PORT`, `COT_MCP_MAX_CONCURRENT`, `COT_MCP_WORK_DIR`,
+  `COT_SERVER_URL`, `COT_MCP_MAX_FRAMES`, `COT_MCP_MAX_GRID_SIZE`,
+  `COT_MCP_POLL_TIMEOUT`.
+- Inference: `COT_SERVER_PORT`, `COT_PROJECT_DIR`, `COT_CHECKPOINT_PATH`,
+  `COT_MAX_QUEUE`, `COT_MAX_FRAMES`, `COT_MAX_GRID_SIZE`, `COT_MAX_TOTAL_UPLOAD`,
+  `COT_JOB_TTL`, `COT_MAX_VIDEO_DIM`, `COT_UPLOAD_DIR`.
+
+## Hosting the server (GPU machine)
+1. Prereqs: Python 3.10+, CUDA GPU, torch+CUDA installed.
+2. Install CoTracker3 code + deps:
+   ```bash
+   git clone https://github.com/facebookresearch/co-tracker.git /root/cotracker3
+   pip install -e /root/cotracker3
+   pip install -r cot_mcp/requirements.txt
+   ```
+3. Download checkpoint (scaled_online.pth, ~100 MB) from
+   hf.co/facebook/cotracker3:
+   ```bash
+   mkdir -p /root/cotracker3/checkpoints
+   hf download facebook/cotracker3 scaled_online.pth \
+     --local-dir /root/cotracker3/checkpoints
+   ```
+4. Start the inference backend (tmux):
+   ```bash
+   tmux new-session -d -s cot-server \
+     "cd <this dir> && COT_PROJECT_DIR=/root/cotracker3 \
+      COT_CHECKPOINT_PATH=/root/cotracker3/checkpoints/scaled_online.pth \
+      python cot/cot_tracker_server.py"
+   curl -s http://127.0.0.1:8003/health   # expect "status": "ready"
+   ```
+5. Start the MCP server (tmux):
+   ```bash
+   tmux new-session -d -s cot-mcp \
+     "cd <this dir> && COT_MCP_PORT=8004 python cot_mcp/cot_mcp_server.py"
+   # verify locally:
+   curl -s -o /dev/null -w "%{http_code}\n" -X POST http://127.0.0.1:8004/mcp \
+     -H "Accept: application/json, text/event-stream" \
+     -H "Content-Type: application/json" \
+     -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"probe","version":"0"}}}'
+   # (expect 200)
+   ```
+6. Expose via TunnelMate tunnel (keep running in tmux):
+   ```bash
+   bash cot_mcp/tunnel.sh   # prints the public endpoint; keep running
+   ```
+   Tunnels expire after 24h unless renewed (POST /v1/tunnels/{id}/renew) -
+   if the endpoint dies, re-run tunnel.sh and publish the new port.
+
+## Client-side usage for agents
+Any MCP client can connect to the endpoint and call the tools:
+```
+# connect to http://<host>:<port>/mcp (streamable HTTP)
+# call track_media with source=upload (base64, <=5MB) or source=hf (hf:// address)
+# works for videos AND images (jpg/jpeg/png/webp/bmp/tiff)
+```
+Result example (per job):
+```json
+{"kind": "video", "width": 3840, "height": 2160, "fps": 24.0,
+ "total_frames": 7852, "processed_frames": 7856, "grid_size": 16,
+ "grid_query_frame": 0, "num_points": 256,
+ "query_points": [[x0,y0],...],
+ "tracks": {"shape": [T,N,2], "dtype": "float32", "encoding": "zlib+base64", "data": "..."},
+ "visibility": {"shape": [T,N], "dtype": "bool", "encoding": "zlib+base64+packbits", "data": "..."}}
+```
+Decode:
+```python
+import base64, zlib, numpy as np
+tracks = np.frombuffer(zlib.decompress(base64.b64decode(d["tracks"]["data"])),
+                       dtype=np.float32).reshape(d["tracks"]["shape"])
+vis = np.unpackbits(np.frombuffer(zlib.decompress(base64.b64decode(d["visibility"]["data"])),
+                      dtype=np.uint8)).reshape(d["visibility"]["shape"])
+```
+Concurrency guardrail: at most 1 concurrent `track_media` request (one GPU
+worker). When busy, calls return `{"is_error": true, "error": "Server at
+capacity..."}` - treat as transient and retry with backoff.
+
+## Provenance
+Built 2026-08-20 by agent session, mirroring the SAM3.1 MCP server pattern.
+Model: CoTracker3 online (scaled_online.pth), sliding 16-frame windows
+(window_len=16, step=8).
+## Fix (2026-08-20T18:30Z, task_cot3-eval-2026-08-20T1805Z)
+- FIXED empty-upload bug: `file_b64` default is now None; empty base64 string
+  correctly returns "Uploaded file is empty" (was misreported as
+  "file_b64 is required").
+- FIXED upload-size guardrail: the StreamableHTTP transport default body cap
+  (4 MiB in mcp) rejected oversized uploads with a raw HTTP 413 before the
+  tool's 5 MB check could run. MCP now starts with
+  `max_request_body_size` = COT_MCP_MAX_BODY_BYTES (default 16 MiB) so
+  uploads up to 16 MiB reach the tool and get the structured
+  "larger than the 5 MB upload limit" error; >16 MiB still returns 413 as a
+  hard safety bound. Env: COT_MCP_MAX_BODY_BYTES.
+- Fixed file published to server-code/cot_mcp/cot_mcp_server.py.
+## Fix (2026-08-20T21:10Z, no-frame-skip default)
+- CHANGED default behavior: `track_media` no longer samples frames by default.
+  `max_frames` default is now 0 = track EVERY frame (keypoints for the full
+  video). A positive `max_frames` still evenly samples (clamped to 600).
+  Verified: default call on a 7,852-frame 4K video returned 7,856 predictions
+  (all frames + predictor window padding), 0 NaN, bounded GPU memory (~7.4 GB),
+  no OOM. Explicit `max_frames` (e.g. 16/48) still samples correctly.
+- Backend `run_tracking` rewritten to stream frames with a bounded window
+  (last 16) instead of loading the whole video into RAM; CUDA-OOM fallback for
+  all-frames jobs now retries with the capped 600-frame sampled budget.
+- Updated files published to server-code/cot/cot_tracker_server.py and
+  server-code/cot_mcp/cot_mcp_server.py.

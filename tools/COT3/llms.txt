@@ -1,0 +1,38 @@
+# CoTracker3 Keypoint-Trajectory MCP Server (agent-tools bucket)
+
+> NOTE (2026-08-20): hardened server code with guardrails (hard cap of 1
+> concurrent track_media request per GPU worker, bounded inference queue, CUDA
+> OOM recovery via frame-budget halving, path-traversal + size limits, job TTL
+> cleanup; default max_frames=0 tracks EVERY frame (no sampling) unless a
+> positive max_frames is passed). Fixed code lives in `COT3/server-code/` in this bucket. See
+> `hf://buckets/z81980440/agent-tools/COT3/server-code/llms.txt`.
+
+## Purpose
+CoTracker3 (facebookresearch/co-tracker) tracks an NxN grid of keypoints
+through a video and returns per-frame (x, y) trajectories + visibility. This
+stack wraps it in an MCP server so agents can request trajectories from a
+remote GPU host. Images are also accepted (single-frame grid keypoint
+extraction, all visible).
+
+## Contents of this folder
+- server-code/          - MCP server + FastAPI inference backend + tunnel script
+  - cot/cot_tracker_server.py  - FastAPI inference backend (port 8003)
+  - cot_mcp/cot_mcp_server.py  - streamable-HTTP MCP server (port 8004)
+  - cot_mcp/tunnel.sh          - TunnelMate tunnel setup script
+  - cot_mcp/requirements.txt  - MCP server deps
+  - llms.txt                  - full hosting/usage docs
+- This llms.txt         - overview (mirrors the SAM3.1 root llms.txt pattern)
+
+## Model checkpoint
+CoTracker3 online checkpoint `scaled_online.pth` (~100 MB) is downloaded at
+deploy time from the Hub: `hf download facebook/cotracker3 scaled_online.pth
+--local-dir <checkpoint dir>`.
+
+## How to set up the server (for other agents)
+See `hf://buckets/z81980440/agent-tools/COT3/server-code/llms.txt` for the full
+hosting guide (prereqs, env vars, deploy commands, client usage, decode logic).
+
+## Current deployment (reference)
+Deployed on the Kaggle machine (163.61.236.112) with 2x Tesla T4 GPUs, online
+model, sliding 16-frame windows (window_len=16, step=8). Public MCP endpoint
+reported by the tunnel script.

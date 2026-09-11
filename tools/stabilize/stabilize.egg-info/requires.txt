@@ -1,0 +1,8 @@
+opencv-python-headless>=4.8
+numpy<2,>=1.24
+pandas>=2.0
+matplotlib>=3.7
+scipy>=1.10
+
+[tracking]
+torch>=2.0

@@ -1,0 +1,79 @@
+# stabilization/ - track-locked video stabilization toolkit
+
+Stabilize a nadir/drone video so every tracked keypoint keeps its
+FIRST-FRAME pixel position. Output is a fixed WxH window (optionally
+offset in frame-0 coordinates). CPU-only, no GPU needed.
+
+Pipeline: CoTracker3 tracks (.npz) -> camera motion.csv -> stabilized mp4.
+
+## MANDATORY: verify parameters with the user BEFORE rendering
+
+The tool enforces this mechanically. Do not bypass it.
+
+1. Choose parameters (crop size, shift-x/y, frame range) from the video's
+   resolution and the user's goal.
+2. Run `plan` and paste the PROPOSED PARAMETERS block to the user VERBATIM:
+       python3 stabilize.py plan --video V.mp4 --tracks-npz T.npz \
+           --motion-csv motion.csv --out out.mp4 \
+           [--crop 1024] [--shift-x 0] [--shift-y 0] [--frames 0] [--crf 20]
+   The block includes crop window coords, border-safety check, runtime and
+   size estimates.
+3. Ask the user to approve or adjust. For videos longer than ~2 minutes,
+   offer a preview first (`--frames 1200`) and let them check framing and
+   stability before committing to the full render.
+4. Only after EXPLICIT approval run `render` with the same arguments plus:
+       --confirm "<what the user approved>"
+   Without --confirm the tool exits with code 2 and renders nothing.
+
+## Subcommands
+
+- plan    validate inputs + print parameter block for the user (no output file)
+- render  render stabilized video (requires --confirm)
+- viz     regenerate the camera-motion sheet (trajectory.png style: XY path,
+          per-frame translation, yaw, zoom scale, diagnostics, summary strip)
+          from an existing motion.csv - instant, no RANSAC re-run:
+      python3 stabilize.py viz --motion-csv motion.csv [--fps 23.976] \
+          [--video-name DJI_0260.MP4] [--gsd m_per_px] [--out-png trajectory.png]
+
+## Prerequisites per video
+
+1. tracks .npz - keys: tracks (T,N,2) float32 ORIGINAL-pixel coords,
+   visibility (T,N) bool, query_points (N,2), meta (JSON string with
+   width/height/fps). Produce via COT3/ in this bucket; see REPRODUCE.md.
+2. motion.csv - camera-convention per-frame similarity motion, produced by
+   motion_from_tracks.py (same folder):
+       python3 motion_from_tracks.py tracks.npz --out-dir out [--gsd m/px]
+   Writes motion.csv + trajectory.png + printed summary.
+3. stabilize.py plan / render as above.
+
+Dependencies: python3.10+, numpy, opencv-python-headless, pandas,
+matplotlib (viz only), ffmpeg on PATH.
+
+## Conventions (critical)
+
+- motion.csv stores CAMERA motion; stabilize.py inverts to IMAGE motion
+  internally: tx_img=-dx, ty_img=-dy, phi_img=-d_yaw_deg, s=scale.
+- Cumulative forward map C_t maps frame-0 coords -> frame-t coords;
+  output relation dst(u) = src_t(C_t (o+u)) is applied with
+  cv2.warpAffine(..., flags=INTER_LINEAR|WARP_INVERSE_MAP). Dropping that
+  flag produces garbage - do not "fix" it away.
+- Border safety uses ABSOLUTE corners (origin+local) mapped through C_t.
+
+## Known gotchas
+
+- RANSAC is nondeterministic: motion.csv is the single source of truth;
+  never re-fit transforms inside the renderer.
+- Per-frame scale bias accumulates over long chains (~x0.992 det drift over
+  7800 frames observed); keep crops well inside the sensor or smooth first.
+- CoTracker pads windows: T = n_frames + 4; renderer caps at video length.
+- npz meta needs allow_pickle=True when loading.
+
+## Reference result
+
+task_video-stabilize-full-2026-08-22T0544Z in z81980440/agent_bucket:
+DJI_0260.MP4 (3840x2160@23.976, 7852 frames), crop 1024 shift-x 150 ->
+residual keypoint drift <=6 px after 7851 frames, ~11 min render on 4 vCPU.
+
+## Reproduce on another video
+
+Read REPRODUCE.md (same folder).
