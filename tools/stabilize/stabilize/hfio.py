@@ -138,6 +138,78 @@ def is_local_path(path: str) -> bool:
 
 
 # ---------------------------------------------------------------------------
+# Model checkpoints
+# ---------------------------------------------------------------------------
+
+DEFAULT_CHECKPOINT = (
+    Path.home() / ".cache" / "cotracker3" / "scaled_online.pth"
+)
+COTRACKER3_REPO = "facebook/cotracker3"
+
+def resolve_checkpoint(
+    checkpoint: str | Path | None = None,
+    token: str | None = None,
+) -> Path:
+    """Return a usable checkpoint path, downloading it if missing.
+
+    Parameters
+    ----------
+    checkpoint : explicit path to ``scaled_online.pth``.  If the file is
+        missing, it is downloaded from the Hub into the given path's parent
+        directory.  If None, uses the default cache path
+        ``~/.cache/cotracker3/scaled_online.pth`` (downloaded if absent).
+    token : HF token for the download.  Defaults to ``HF_TOKEN`` env var.
+
+    Returns
+    -------
+    Path to the (possibly just-downloaded) checkpoint file.
+    """
+    if checkpoint is not None:
+        cp = Path(checkpoint).expanduser()
+        if cp.is_file():
+            return cp
+        print(f"[checkpoint] not found: {cp} — downloading from Hub ...")
+        return _download_checkpoint(cp.parent, token=token)
+
+    cp = DEFAULT_CHECKPOINT
+    if cp.is_file():
+        return cp
+    print(f"[checkpoint] not found: {cp} — downloading from Hub ...")
+    cp.parent.mkdir(parents=True, exist_ok=True)
+    return _download_checkpoint(cp.parent, token=token)
+
+
+def _download_checkpoint(
+    local_dir: str | Path,
+    token: str | None = None,
+) -> Path:
+    """Download ``scaled_online.pth`` from ``facebook/cotracker3``.
+
+    Mirrors the canonical deploy-time command::
+
+        hf download facebook/cotracker3 scaled_online.pth --local-dir <dir>
+    """
+    local_dir = Path(local_dir)
+    local_dir.mkdir(parents=True, exist_ok=True)
+    print(f"[checkpoint] hf download {COTRACKER3_REPO} scaled_online.pth -> {local_dir}")
+    _run(
+        ["download", COTRACKER3_REPO, "scaled_online.pth",
+         "--local-dir", str(local_dir)],
+        token=token,
+        timeout=_DEFAULT_TIMEOUT,
+    )
+    cp = local_dir / "scaled_online.pth"
+    if not cp.is_file():
+        names = sorted(p.name for p in local_dir.iterdir()) if local_dir.exists() else []
+        raise HfError(
+            f"Download produced no scaled_online.pth in {local_dir}"
+            f" (found: {names})"
+        )
+    print(f"[checkpoint] ready: {cp} ({cp.stat().st_size / 1e6:.0f} MB)")
+    return cp
+
+
+# ---------------------------------------------------------------------------
 # Download
 # ---------------------------------------------------------------------------
 

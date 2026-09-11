@@ -65,7 +65,8 @@ def run_pipeline(
     token : HF token for bucket access.  Defaults to ``HF_TOKEN`` env var.
     out_dir : local parent directory for run folders.
     checkpoint : CoTracker3 checkpoint path; enables local tracking.  If
-        None, ``tracks_npz`` must be provided.
+        None (and ``tracks_npz`` is also None), the default cached
+        checkpoint is used and auto-downloaded from the Hub if missing.
     tracks_npz : pre-computed tracks to use instead of tracking.
     skip_upload : do everything locally but skip the upload step.
 
@@ -80,11 +81,10 @@ def run_pipeline(
     if token is None:
         token = _env_token()
 
-    if not checkpoint and not tracks_npz:
-        raise ValueError(
-            "Either --checkpoint (to track locally) or --tracks (pre-computed "
-            "tracks) is required."
-        )
+    if not tracks_npz and not checkpoint:
+        # Neither provided: resolve the default cached checkpoint,
+        # downloading it from the Hub on first use.
+        checkpoint = hfio.resolve_checkpoint(None, token=token)
     if bucket is None and not skip_upload:
         raise ValueError("--bucket is required unless --skip-upload is used.")
 

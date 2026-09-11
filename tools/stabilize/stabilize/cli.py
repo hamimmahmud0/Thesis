@@ -480,7 +480,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--checkpoint", metavar="scaled_online.pth",
         help=(
             "Path to CoTracker3 checkpoint.  When provided, tracks are "
-            "computed locally on a GPU.  Mutually exclusive with --tracks."
+            "computed locally on a GPU.  If the file is missing, it is "
+            "auto-downloaded from the Hub (facebook/cotracker3) into its "
+            "parent directory.  If omitted, the default cache "
+            "~/.cache/cotracker3/scaled_online.pth is used (downloaded on "
+            "first use).  Mutually exclusive with --tracks."
         ),
     )
     p_run.add_argument(
@@ -626,8 +630,8 @@ def build_parser() -> argparse.ArgumentParser:
         ),
         epilog=(
             "Requires: torch (CUDA), cotracker Python package, and a GPU.\n"
-            "The model checkpoint (scaled_online.pth, ~100 MB) can be\n"
-            "downloaded from https://github.com/facebookresearch/co-tracker\n\n"
+            "The model checkpoint (scaled_online.pth, ~100 MB) is downloaded\n"
+            "automatically from the Hub (facebook/cotracker3) on first use.\n\n"
             "For remote/server tracking (no local GPU), use the CoTracker3\n"
             "MCP server or FastAPI backend instead."
         ),
@@ -642,8 +646,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Output path for the tracks .npz file.",
     )
     p_track.add_argument(
-        "--checkpoint", required=True, metavar="scaled_online.pth",
-        help="Path to the CoTracker3 online model checkpoint file.",
+        "--checkpoint", default=None, metavar="scaled_online.pth",
+        help=(
+            "Path to the CoTracker3 online model checkpoint.  If omitted or "
+            "the file is missing, it is auto-downloaded from the Hub "
+            "(facebook/cotracker3) into ~/.cache/cotracker3/ on first use."
+        ),
     )
     p_track.add_argument(
         "--grid-size", type=int, default=16, metavar="N",

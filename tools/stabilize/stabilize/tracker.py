@@ -20,7 +20,7 @@ import numpy as np
 def track_video(
     video_path: str | Path,
     output_npz: str | Path,
-    checkpoint: str | Path,
+    checkpoint: str | Path | None = None,
     grid_size: int = 16,
     grid_query_frame: int = 0,
     max_video_dim: int = 1280,
@@ -32,7 +32,9 @@ def track_video(
     ----------
     video_path : path to the input video.
     output_npz : path to write the output .npz file.
-    checkpoint : path to ``scaled_online.pth``.
+    checkpoint : path to ``scaled_online.pth``.  If missing or None, it is
+        auto-downloaded from the Hub (``facebook/cotracker3``) into the
+        given path's parent, or into ``~/.cache/cotracker3/`` by default.
     grid_size : NxN grid of query points (max 32).
     grid_query_frame : frame index the grid is sampled from (default 0).
     max_video_dim : resize longest side to this before tracking (GPU memory).
@@ -47,14 +49,14 @@ def track_video(
     from cotracker.models.core.model_utils import get_points_on_a_grid
     from cotracker.predictor import CoTrackerOnlinePredictor
 
+    from .hfio import resolve_checkpoint
+
     video_path = Path(video_path)
     output_npz = Path(output_npz)
-    checkpoint = Path(checkpoint)
+    checkpoint = resolve_checkpoint(checkpoint)
 
     if not video_path.is_file():
         raise FileNotFoundError(f"Video not found: {video_path}")
-    if not checkpoint.is_file():
-        raise FileNotFoundError(f"Checkpoint not found: {checkpoint}")
 
     if device is None:
         device = "cuda:0" if torch.cuda.is_available() else "cpu"
