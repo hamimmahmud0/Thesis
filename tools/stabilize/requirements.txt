@@ -24,7 +24,7 @@
 # GPU tracking (install torch via conda/above first, then these are satisfied)
 # -----------------------------------------------------------------------
 torch>=2.2,<2.7
-torchvision>=0.17,<0.20
+torchvision>=0.17,<0.30
 
 # CoTracker3 (no PyPI package — installed from GitHub)
 # pip install git+https://github.com/facebookresearch/co-tracker.git
