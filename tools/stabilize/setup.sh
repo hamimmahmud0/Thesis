@@ -48,7 +48,16 @@ install_miniconda() {
 
     # Source the shell hook so conda is on PATH for this script invocation.
     # shellcheck disable=SC1091
-    source "$MINICONDA_INSTALL_DIR/etc/profile.d/conda.sh"
+
+    # Init conda
+    "$MINICONDA_INSTALL_DIR/bin/conda" init
+    source ~/.bashrc
+
+    # Accept
+    conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
+    conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
+
+    # source "$MINICONDA_INSTALL_DIR/etc/profile.d/conda.sh"
 
     info "Miniconda installed -> $MINICONDA_INSTALL_DIR"
     warn "Add this to your shell profile for future sessions:"
