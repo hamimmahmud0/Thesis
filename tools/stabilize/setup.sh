@@ -53,9 +53,6 @@ install_miniconda() {
     "$MINICONDA_INSTALL_DIR/bin/conda" init
     # source ~/.bashrc
 
-    # Accept
-    conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
-    conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
 
     # source "$MINICONDA_INSTALL_DIR/etc/profile.d/conda.sh"
 
@@ -75,6 +72,12 @@ else
 fi
 
 # ──── 2. Create / update conda environment ────────────────────────────────────
+
+# Accept
+conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
+conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
+
+
 if conda env list | grep -qw "$ENV_NAME"; then
     info "conda env '$ENV_NAME' already exists — keeping as-is"
 else
