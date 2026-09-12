@@ -85,6 +85,8 @@ else
     conda create -n "$ENV_NAME" "python=$PYTHON_VERSION" -y
 fi
 
+conda init
+
 conda activate "$ENV_NAME"
 info "Activated: $(python --version) @ $(which python)"
 
