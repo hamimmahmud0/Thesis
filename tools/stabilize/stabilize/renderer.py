@@ -24,7 +24,7 @@ from .utils import eye3, open_video, human_time
 
 EST_SEC_PER_1024 = 0.09
 EST_BYTES_PER_1024 = 31_000
-EST_LOSSLESS_FACTOR = 4  # rough size multiplier of lossless vs CRF 20
+EST_LOSSLESS_FACTOR = 16  # rough size multiplier of lossless vs CRF 20 (measured on 4K drone footage)
 
 _FFMPEG_ENCODER: str | None = None
 
@@ -357,6 +357,15 @@ def render(
                 f"leaves video {W}x{H}. Reduce shift or crop size."
             )
         crop_desc = f"{out_w}x{out_h}"
+
+    # ---- H.264 with yuv420p requires even dimensions ----
+    if out_w % 2 or out_h % 2:
+        print(
+            f"NOTE: crop {out_w}x{out_h} not divisible by 2 — "
+            "trimmed by 1 px for yuv420p"
+        )
+        out_w -= out_w % 2
+        out_h -= out_h % 2
 
     # ---- Border safety check ----
     if crop_black_border:

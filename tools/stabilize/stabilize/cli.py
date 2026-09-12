@@ -352,6 +352,10 @@ def _cmd_plan(args: argparse.Namespace) -> None:
             sys.exit(1)
         crop_desc = f"{out_w}x{out_h}"
 
+    # Match the renderer: yuv420p H.264 needs even dimensions.
+    out_w -= out_w % 2
+    out_h -= out_h % 2
+
     if crop_black_border:
         safe = out_w >= 1 and out_h >= 1
     elif no_crop:
