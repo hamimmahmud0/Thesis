@@ -58,7 +58,7 @@ stabilize run \
 4. **smooth** — Gaussian σ=12, interpolates gaps ≤5 frames → `motion_smooth.npz`
 5. **viz** — trajectory diagnostics → `trajectory.png`
 6. **overlay** — tracked keypoints drawn on the source video → `tracks_overlay.mp4`
-7. **render** — FFmpeg H.264 CRF20, 1920×1080, smoothed path → `stabilized.mp4`
+7. **render** — FFmpeg H.264 (lossless by default), smoothed path → `stabilized.mp4`
 8. **upload** — pushes everything to `hf://buckets/user/my-stabilized/DJI_0260/`
 9. **summary.json** — metadata, params, step timings
 
@@ -92,7 +92,7 @@ hf://buckets/user/my-stabilized/DJI_0260/
 | `--sigma` | Gaussian smoothing strength (frames) | 10 |
 | `--no-smooth` | Skip smoothing (track-locked only) | off |
 | `--frames` | Render only first N frames (0 = all) | 0 |
-| `--crf` | x264 quality (lower = better) | 20 |
+| `--crf` | Output quality: 0 = lossless, else x264 CRF (lower = better) | 0 (lossless) |
 | `--skip-upload` | Do everything locally, skip upload | off |
 | `--skip-overlay` | Skip generating the tracks-overlay video | off |
 | `--device` | torch device (`cuda:0`, `cpu`) | auto |

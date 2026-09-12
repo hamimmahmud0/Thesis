@@ -157,10 +157,10 @@ def _add_common_render_args(p: argparse.ArgumentParser) -> None:
         ),
     )
     p.add_argument(
-        "--crf", type=int, default=20, metavar="N",
+        "--crf", type=int, default=0, metavar="N",
         help=(
-            "x264 Constant Rate Factor for output quality.  Lower = better "
-            "quality, larger file.  Typical range: 18-28.  Default: 20."
+            "Output quality: 0 = lossless (default); otherwise x264 CRF "
+            "(lower = better, 18-28 typical for much smaller files)."
         ),
     )
 
@@ -361,10 +361,19 @@ def _cmd_plan(args: argparse.Namespace) -> None:
 
     unreliable = float((~motion["reliable"]).mean()) if T_csv else 1.0
     scale_px = (out_w / 1024.0) * (out_h / 1024.0)
-    from .renderer import EST_SEC_PER_1024, EST_BYTES_PER_1024
+    from .renderer import (
+        EST_BYTES_PER_1024,
+        EST_LOSSLESS_FACTOR,
+        EST_SEC_PER_1024,
+        _encoder_preset,
+        _quality_label,
+        resolve_encoder,
+    )
 
     est_sec = EST_SEC_PER_1024 * scale_px * n_render
     est_mb = EST_BYTES_PER_1024 * scale_px * n_render / 1e6
+    if args.crf <= 0:
+        est_mb *= EST_LOSSLESS_FACTOR
     dur = human_time(n_render / fps)
 
     warnings = []
@@ -396,7 +405,9 @@ def _cmd_plan(args: argparse.Namespace) -> None:
     full = min(n_vid, T_csv)
     rng = f"all {n_render}" if n_render == full else f"FIRST {n_render} (preview)"
     print(f"frames to render:  {rng} (~{dur} at {fps:.3f} fps)")
-    print(f"encoder:           libx264 CRF{args.crf} veryfast, yuv420p")
+    encoder = resolve_encoder()
+    q_label = _quality_label(encoder, args.crf)
+    print(f"encoder:           {encoder} {q_label} {_encoder_preset(encoder)}, yuv420p")
     print(f"border safety:     {'OK' if safe else 'FAIL'}")
     print(f"est. render time:  ~{human_time(est_sec)} (4 vCPU reference)")
     print(f"est. output size:  ~{est_mb:.0f} MB")
@@ -672,8 +683,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Render only the first N frames (0 = all).",
     )
     p_run.add_argument(
-        "--crf", type=int, default=20, metavar="N",
-        help="x264 CRF for output quality.  Default: 20.",
+        "--crf", type=int, default=0, metavar="N",
+        help=(
+            "Output quality: 0 = lossless (default); otherwise x264 CRF "
+            "(lower = better, 18-28 typical)."
+        ),
     )
     p_run.add_argument(
         "--skip-upload", action="store_true",

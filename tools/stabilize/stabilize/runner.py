@@ -54,7 +54,7 @@ def run_pipeline(
     interp_gap: int = 5,
     use_smoothing: bool = True,
     n_frames: int = 0,
-    crf: int = 20,
+    crf: int = 0,
     skip_upload: bool = False,
     device: str | None = None,
     no_crop: bool = False,

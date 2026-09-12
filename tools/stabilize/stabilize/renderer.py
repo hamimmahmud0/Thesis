@@ -24,6 +24,7 @@ from .utils import eye3, open_video, human_time
 
 EST_SEC_PER_1024 = 0.09
 EST_BYTES_PER_1024 = 31_000
+EST_LOSSLESS_FACTOR = 4  # rough size multiplier of lossless vs CRF 20
 
 _FFMPEG_ENCODER: str | None = None
 
@@ -79,6 +80,36 @@ def _encoder_preset(encoder: str) -> str:
     default); the software encoders use x264-style presets.
     """
     return "p4" if encoder == "h264_nvenc" else "veryfast"
+
+
+def _quality_args(
+    encoder: str, crf: int, w: int, h: int, fps: float
+) -> list[str]:
+    """Return FFmpeg quality arguments appropriate for *encoder*.
+
+    ``crf <= 0`` means lossless where the encoder supports it: ``-crf 0``
+    for libx264 and ``-tune lossless`` for NVENC.  libopenh264 exposes no
+    CRF/QP control at all, so it gets a bits-per-pixel bitrate heuristic
+    (and cannot be truly lossless).
+    """
+    if encoder == "libx264":
+        return ["-crf", str(max(crf, 0))]
+    if encoder == "h264_nvenc":
+        if crf <= 0:
+            return ["-tune", "lossless"]
+        return ["-cq", str(crf)]
+    # libopenh264: bitrate-only wrapper.
+    bpp = 1.0 if crf <= 0 else max(0.02, 0.15 - 0.004 * crf)
+    return ["-b:v", str(int(w * h * fps * bpp))]
+
+
+def _quality_label(encoder: str, crf: int) -> str:
+    """Human-readable quality description for log lines."""
+    if crf > 0:
+        return f"CRF{crf}"
+    if encoder == "libopenh264":
+        return "high-bitrate (no lossless mode)"
+    return "lossless"
 
 
 def _combined_warp(
@@ -234,7 +265,7 @@ def render(
     shift_y: int = 0,
     n_frames: int = 0,
     fps_override: float | None = None,
-    crf: int = 20,
+    crf: int = 0,
     no_crop: bool = False,
     crop_black_border: bool = False,
 ) -> None:
@@ -250,7 +281,8 @@ def render(
     shift_x, shift_y : shift the crop window centre (frame-0 px).
     n_frames : render only the first N frames (0 = all).
     fps_override : override the output FPS (None = use source video FPS).
-    crf : x264 CRF quality (lower = better, 18–28 typical).
+    crf : output quality.  0 (default) = lossless; otherwise x264 CRF
+        (lower = better, 18-28 typical for much smaller files).
     no_crop : render the full source frame (WxH) instead of cropping.
         Black borders may appear where content moved out of view.
     crop_black_border : auto-detect the largest centred crop that removes
@@ -338,6 +370,11 @@ def render(
     scale_px = (out_w / 1024.0) * (out_h / 1024.0)
     est_sec = EST_SEC_PER_1024 * scale_px * n_render
     est_mb = EST_BYTES_PER_1024 * scale_px * n_render / 1e6
+    if crf <= 0:
+        est_mb *= EST_LOSSLESS_FACTOR
+
+    encoder = resolve_encoder()
+    preset = _encoder_preset(encoder)
 
     if not safe:
         print("WARNING: border safety check FAILED — output may contain black edges")
@@ -348,7 +385,7 @@ def render(
     print(f"Motion:      {T_csv} rows from {Path(motion_npz).name}")
     print(f"Render:      {n_render} frames, crop {crop_desc}")
     print(f"Window:      x=[{x0}..{x0 + out_w}], y=[{y0}..{y0 + out_h}]")
-    print(f"Encoder:     {resolve_encoder()} CRF{crf} yuv420p")
+    print(f"Encoder:     {encoder} {_quality_label(encoder, crf)} yuv420p")
     print(f"Border:      {'OK' if safe else 'FAIL'}")
     print(f"Est. time:   ~{human_time(est_sec)} (4 vCPU reference)")
     print(f"Est. size:   ~{est_mb:.0f} MB")
@@ -358,8 +395,6 @@ def render(
         print("Smoothing:   disabled (track-locked)")
 
     # ---- Start FFmpeg ----
-    encoder = resolve_encoder()
-    preset = _encoder_preset(encoder)
     cmd = [
         "ffmpeg", "-y", "-loglevel", "error",
         "-f", "rawvideo", "-pix_fmt", "bgr24",
@@ -368,7 +403,7 @@ def render(
         "-i", "-",
         "-an",
         "-c:v", encoder, "-preset", preset,
-        "-crf", str(crf),
+        *_quality_args(encoder, crf, out_w, out_h, fps),
         "-pix_fmt", "yuv420p",
         "-movflags", "+faststart",
         str(output_path),

@@ -278,7 +278,8 @@ def overlay_tracks(
     trail : length of the position trail in frames (0 disables trails).
     max_points : if the tracks contain more than N points, draw only N
         evenly spaced points (0 = draw all).
-    crf : x264 CRF quality (lower = better, 18-28 typical).
+    crf : encode quality.  0 = lossless; 20 (default) is fine for the
+        diagnostic overlay.
     """
     import json
     import subprocess
@@ -286,7 +287,7 @@ def overlay_tracks(
     import cv2
     from tqdm import tqdm
 
-    from .renderer import _encoder_preset, resolve_encoder
+    from .renderer import _encoder_preset, _quality_args, _quality_label, resolve_encoder
     from .utils import load_tracks, open_video
 
     # ---- Load tracks ----
@@ -350,7 +351,7 @@ def overlay_tracks(
         "-i", "-",
         "-an",
         "-c:v", encoder, "-preset", preset,
-        "-crf", str(crf),
+        *_quality_args(encoder, crf, W, H, fps),
         "-pix_fmt", "yuv420p",
         "-movflags", "+faststart",
         str(output_path),
@@ -364,7 +365,7 @@ def overlay_tracks(
     print(f"Video:       {n_vid} frames, {W}x{H} @ {fps:.3f} fps")
     print(f"Tracks:      {T} frames, {N} points ({Path(tracks_npz).name})")
     print(f"Overlay:     {n_render} frames, radius {radius}, trail {trail}")
-    print(f"Encoder:     {encoder} CRF{crf} yuv420p")
+    print(f"Encoder:     {encoder} {_quality_label(encoder, crf)} yuv420p")
 
     red = (0, 0, 200)
     cyan = (255, 255, 0)
