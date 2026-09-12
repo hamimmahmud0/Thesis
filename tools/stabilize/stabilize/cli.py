@@ -157,10 +157,10 @@ def _add_common_render_args(p: argparse.ArgumentParser) -> None:
         ),
     )
     p.add_argument(
-        "--crf", type=int, default=0, metavar="N",
+        "--crf", type=int, default=18, metavar="N",
         help=(
-            "Output quality: 0 = lossless (default); otherwise x264 CRF "
-            "(lower = better, 18-28 typical for much smaller files)."
+            "Output quality: x264 CRF, lower = better.  Default: 18 "
+            "(visually lossless).  0 = mathematically lossless (very large)."
         ),
     )
 
@@ -190,7 +190,7 @@ def _cmd_run(args: argparse.Namespace) -> None:
         shift_y=args.shift_y,
         sigma=args.sigma,
         interp_gap=args.interp_gap,
-        use_smoothing=not args.no_smooth,
+        use_smoothing=args.smooth,
         n_frames=args.frames,
         crf=args.crf,
         skip_upload=args.skip_upload,
@@ -679,18 +679,22 @@ def build_parser() -> argparse.ArgumentParser:
         help="Interpolate unreliable gaps shorter than N frames.  Default: 5.",
     )
     p_run.add_argument(
-        "--no-smooth", action="store_true",
-        help="Skip the smoothing step (track-locked render only).",
+        "--smooth", action="store_true",
+        help=(
+            "Enable camera-path smoothing (natural-motion mode): removes "
+            "jitter but preserves slow drift.  Default is track-locked "
+            "(fully stabilised, scene locked to the first frame)."
+        ),
     )
     p_run.add_argument(
         "--frames", type=int, default=0, metavar="N",
         help="Render only the first N frames (0 = all).",
     )
     p_run.add_argument(
-        "--crf", type=int, default=0, metavar="N",
+        "--crf", type=int, default=18, metavar="N",
         help=(
-            "Output quality: 0 = lossless (default); otherwise x264 CRF "
-            "(lower = better, 18-28 typical)."
+            "Output quality: x264 CRF, lower = better.  Default: 18 "
+            "(visually lossless).  0 = mathematically lossless (very large)."
         ),
     )
     p_run.add_argument(

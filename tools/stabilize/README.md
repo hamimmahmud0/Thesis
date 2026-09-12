@@ -58,7 +58,7 @@ stabilize run \
 4. **smooth** — Gaussian σ=12, interpolates gaps ≤5 frames → `motion_smooth.npz`
 5. **viz** — trajectory diagnostics → `trajectory.png`
 6. **overlay** — tracked keypoints drawn on the source video → `tracks_overlay.mp4`
-7. **render** — FFmpeg H.264 (lossless by default), smoothed path → `stabilized.mp4`
+7. **render** — FFmpeg H.264 (CRF 18, visually lossless), track-locked by default → `stabilized.mp4`
 8. **upload** — pushes everything to `hf://buckets/user/my-stabilized/DJI_0260/`
 9. **summary.json** — metadata, params, step timings
 
@@ -89,10 +89,10 @@ hf://buckets/user/my-stabilized/DJI_0260/
 | `--crop-height` | Fixed-crop output height (square if only width given) | auto black-border |
 | `--no-crop` | Stabilise the full source frame (WxH); black borders may appear | off |
 | `--crop-black-border` | Auto-detect the largest centred crop that removes the black borders from stabilisation | **on (default)** |
-| `--sigma` | Gaussian smoothing strength (frames) | 10 |
-| `--no-smooth` | Skip smoothing (track-locked only) | off |
+| `--sigma` | Gaussian smoothing strength (frames), used with `--smooth` | 10 |
+| `--smooth` | Natural-motion mode: removes jitter, keeps slow drift | off (track-locked) |
 | `--frames` | Render only first N frames (0 = all) | 0 |
-| `--crf` | Output quality: 0 = lossless, else x264 CRF (lower = better) | 0 (lossless) |
+| `--crf` | Output quality: x264 CRF, 0 = mathematically lossless | 18 (visually lossless) |
 | `--skip-upload` | Do everything locally, skip upload | off |
 | `--skip-overlay` | Skip generating the tracks-overlay video | off |
 | `--device` | torch device (`cuda:0`, `cpu`) | auto |

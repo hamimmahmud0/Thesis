@@ -265,7 +265,7 @@ def render(
     shift_y: int = 0,
     n_frames: int = 0,
     fps_override: float | None = None,
-    crf: int = 0,
+    crf: int = 18,
     no_crop: bool = False,
     crop_black_border: bool = False,
 ) -> None:
@@ -281,8 +281,8 @@ def render(
     shift_x, shift_y : shift the crop window centre (frame-0 px).
     n_frames : render only the first N frames (0 = all).
     fps_override : override the output FPS (None = use source video FPS).
-    crf : output quality.  0 (default) = lossless; otherwise x264 CRF
-        (lower = better, 18-28 typical for much smaller files).
+    crf : output quality.  18 (default) = visually lossless; 0 =
+        mathematically lossless (very large files); otherwise x264 CRF.
     no_crop : render the full source frame (WxH) instead of cropping.
         Black borders may appear where content moved out of view.
     crop_black_border : auto-detect the largest centred crop that removes
