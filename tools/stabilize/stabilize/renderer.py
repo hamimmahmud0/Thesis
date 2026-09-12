@@ -170,7 +170,7 @@ def render(
     print(f"Motion:      {T_csv} rows from {Path(motion_npz).name}")
     print(f"Render:      {n_render} frames, crop {crop_width}x{crop_height}")
     print(f"Window:      x=[{x0}..{x0 + crop_width}], y=[{y0}..{y0 + crop_height}]")
-    print(f"Encoder:     libx264 CRF{crf} veryfast, yuv420p")
+    print(f"Encoder:     libopenh264 CRF{crf} veryfast, yuv420p")
     print(f"Border:      {'OK' if safe else 'FAIL'}")
     print(f"Est. time:   ~{human_time(est_sec)} (4 vCPU reference)")
     print(f"Est. size:   ~{est_mb:.0f} MB")
@@ -187,7 +187,7 @@ def render(
         "-r", f"{fps:.6f}",
         "-i", "-",
         "-an",
-        "-c:v", "libx264", "-preset", "veryfast",
+        "-c:v", "libopenh264", "-preset", "veryfast",
         "-crf", str(crf),
         "-pix_fmt", "yuv420p",
         "-movflags", "+faststart",
