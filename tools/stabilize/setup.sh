@@ -51,7 +51,7 @@ install_miniconda() {
 
     # Init conda
     "$MINICONDA_INSTALL_DIR/bin/conda" init
-    source ~/.bashrc
+    # source ~/.bashrc
 
     # Accept
     conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
