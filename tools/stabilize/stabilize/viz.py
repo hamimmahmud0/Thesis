@@ -286,6 +286,7 @@ def overlay_tracks(
     import cv2
     from tqdm import tqdm
 
+    from .renderer import _encoder_preset, resolve_encoder
     from .utils import load_tracks, open_video
 
     # ---- Load tracks ----
@@ -337,6 +338,9 @@ def overlay_tracks(
         cap.release()
         raise SystemExit(f"No frames to overlay (video {n_vid}, tracks {T})")
 
+    encoder = resolve_encoder()
+    preset = _encoder_preset(encoder)
+
     # ---- Start FFmpeg ----
     cmd = [
         "ffmpeg", "-y", "-loglevel", "error",
@@ -345,7 +349,7 @@ def overlay_tracks(
         "-r", f"{fps:.6f}",
         "-i", "-",
         "-an",
-        "-c:v", "libopenh264", "-preset", "veryfast",
+        "-c:v", encoder, "-preset", preset,
         "-crf", str(crf),
         "-pix_fmt", "yuv420p",
         "-movflags", "+faststart",
@@ -360,7 +364,7 @@ def overlay_tracks(
     print(f"Video:       {n_vid} frames, {W}x{H} @ {fps:.3f} fps")
     print(f"Tracks:      {T} frames, {N} points ({Path(tracks_npz).name})")
     print(f"Overlay:     {n_render} frames, radius {radius}, trail {trail}")
-    print(f"Encoder:     libopenh264 CRF{crf} veryfast, yuv420p")
+    print(f"Encoder:     {encoder} CRF{crf} yuv420p")
 
     red = (0, 0, 200)
     cyan = (255, 255, 0)

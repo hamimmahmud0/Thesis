@@ -25,6 +25,61 @@ from .utils import eye3, open_video, human_time
 EST_SEC_PER_1024 = 0.09
 EST_BYTES_PER_1024 = 31_000
 
+_FFMPEG_ENCODER: str | None = None
+
+# Preferred H.264 encoders, in order.  NVENC is used first when it is
+# actually usable on the system (fastest on NVIDIA GPUs); libopenh264 is
+# the compact fallback, and libx264 the universally available last resort.
+_ENCODER_PREFERENCE = ("h264_nvenc", "libopenh264", "libx264")
+
+
+def _probe_encoder(name: str) -> bool:
+    """Return True if the installed FFmpeg can *actually* encode with *name*.
+
+    A functional one-frame encode is used rather than just grepping
+    ``ffmpeg -encoders``, because an encoder can be compiled in yet still
+    be unusable at runtime (e.g. ``h264_nvenc`` without a reachable GPU).
+    """
+    try:
+        rc = subprocess.run(
+            [
+                "ffmpeg", "-hide_banner", "-loglevel", "error",
+                "-f", "lavfi", "-i", "color=black:s=64x64:d=0.05",
+                "-frames:v", "1", "-c:v", name,
+                "-f", "null", "-",
+            ],
+            capture_output=True, text=True, timeout=30,
+        ).returncode
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        return False
+    return rc == 0
+
+
+def resolve_encoder() -> str:
+    """Return the H.264 encoder to use (cached across calls).
+
+    Preference order: ``h264_nvenc`` (NVIDIA GPU) -> ``libopenh264`` ->
+    ``libx264``.  The probe verifies a real encode, so a compiled but
+    unusable encoder is skipped.
+    """
+    global _FFMPEG_ENCODER
+    if _FFMPEG_ENCODER is None:
+        for name in _ENCODER_PREFERENCE:
+            if _probe_encoder(name):
+                _FFMPEG_ENCODER = name
+                break
+        _FFMPEG_ENCODER = _FFMPEG_ENCODER or "libx264"
+    return _FFMPEG_ENCODER
+
+
+def _encoder_preset(encoder: str) -> str:
+    """Return the ``-preset`` value appropriate for *encoder*.
+
+    NVENC uses quality presets ``p1``..``p7`` (``p4`` is the balanced
+    default); the software encoders use x264-style presets.
+    """
+    return "p4" if encoder == "h264_nvenc" else "veryfast"
+
 
 def _combined_warp(
     raw_cum: np.ndarray,
@@ -293,7 +348,7 @@ def render(
     print(f"Motion:      {T_csv} rows from {Path(motion_npz).name}")
     print(f"Render:      {n_render} frames, crop {crop_desc}")
     print(f"Window:      x=[{x0}..{x0 + out_w}], y=[{y0}..{y0 + out_h}]")
-    print(f"Encoder:     libopenh264 CRF{crf} veryfast, yuv420p")
+    print(f"Encoder:     {resolve_encoder()} CRF{crf} yuv420p")
     print(f"Border:      {'OK' if safe else 'FAIL'}")
     print(f"Est. time:   ~{human_time(est_sec)} (4 vCPU reference)")
     print(f"Est. size:   ~{est_mb:.0f} MB")
@@ -303,6 +358,8 @@ def render(
         print("Smoothing:   disabled (track-locked)")
 
     # ---- Start FFmpeg ----
+    encoder = resolve_encoder()
+    preset = _encoder_preset(encoder)
     cmd = [
         "ffmpeg", "-y", "-loglevel", "error",
         "-f", "rawvideo", "-pix_fmt", "bgr24",
@@ -310,7 +367,7 @@ def render(
         "-r", f"{fps:.6f}",
         "-i", "-",
         "-an",
-        "-c:v", "libopenh264", "-preset", "veryfast",
+        "-c:v", encoder, "-preset", preset,
         "-crf", str(crf),
         "-pix_fmt", "yuv420p",
         "-movflags", "+faststart",
