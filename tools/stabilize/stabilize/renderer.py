@@ -4,8 +4,10 @@ Reads each frame from the source video, applies a per-frame affine warp
 that locks tracked keypoints to their first-frame positions (optionally
 with camera-path smoothing), and writes the result via FFmpeg.
 
-Supports rectangular crops (``--crop-width``, ``--crop-height``),
-validates border safety, and handles FFmpeg failures properly.
+Supports rectangular crops (``--crop-width``, ``--crop-height``), full-frame
+output (``--no-crop``), automatic black-border trimming
+(``--crop-black-border``), validates border safety, and handles FFmpeg
+failures properly.
 """
 
 from __future__ import annotations
@@ -62,6 +64,77 @@ def _combined_warp(
     return np.hstack([lin, off]).astype(np.float32)
 
 
+def _black_border_crop(
+    raw_cum: np.ndarray,
+    smooth_cum: np.ndarray | None,
+    n_render: int,
+    vid_w: int,
+    vid_h: int,
+    shift_x: int = 0,
+    shift_y: int = 0,
+) -> tuple[int, int, int, int]:
+    """Return the largest centred crop window ``(x0, y0, w, h)`` whose four
+    corners stay inside the source frame for every rendered frame.
+
+    The result is the biggest (by area) crop that removes the black borders
+    introduced by stabilisation: the output pixel at ``(x0 + u, y0 + v)`` is
+    never sampled from outside the source frame.  The warp used for the
+    check is the *effective* per-frame warp (``raw @ inv(smooth)`` when
+    smoothing is active, ``raw`` otherwise).
+    """
+    if n_render <= 0:
+        return 0, 0, vid_w, vid_h
+
+    raw = raw_cum[:n_render]
+    if smooth_cum is None:
+        warp = raw
+    else:
+        sm = smooth_cum[:n_render]
+        if len(sm) != n_render:
+            raise SystemExit(
+                f"Smoothed path has {len(sm)} frames but motion has {n_render}"
+            )
+        warp = np.einsum("tij,tjk->tik", raw, np.linalg.inv(sm))
+
+    cx = min(max(vid_w // 2 + shift_x, 0), vid_w - 1)
+    cy = min(max(vid_h // 2 + shift_y, 0), vid_h - 1)
+
+    def safe(w: int, h: int) -> bool:
+        x0 = cx - w // 2
+        y0 = cy - h // 2
+        return _border_check(warp, n_render, x0, y0, w, h, vid_w, vid_h,
+                             far_margin=1)
+
+    def max_w(h: int) -> int:
+        lo, hi = 0, vid_w
+        while lo < hi:
+            mid = (lo + hi + 1) // 2
+            if safe(mid, h):
+                lo = mid
+            else:
+                hi = mid - 1
+        return lo
+
+    def max_h(w: int) -> int:
+        lo, hi = 0, vid_h
+        while lo < hi:
+            mid = (lo + hi + 1) // 2
+            if safe(w, mid):
+                lo = mid
+            else:
+                hi = mid - 1
+        return lo
+
+    w, h = vid_w, vid_h
+    for _ in range(8):
+        nw, nh = max_w(h), max_h(w)
+        if (nw, nh) == (w, h):
+            break
+        w, h = nw, nh
+
+    return cx - w // 2, cy - h // 2, w, h
+
+
 def _border_check(
     cumulative: np.ndarray,
     n_render: int,
@@ -71,8 +144,14 @@ def _border_check(
     crop_h: int,
     vid_w: int,
     vid_h: int,
+    far_margin: int = 0,
 ) -> bool:
-    """Check whether the crop window stays within frame bounds for all frames."""
+    """Check whether the crop window stays within frame bounds for all frames.
+
+    Corners are warp-mapped and required to stay in ``[0, vid_w-1+far_margin]``
+    x ``[0, vid_h-1+far_margin]``.  ``far_margin=1`` allows a corner to touch
+    the outermost boundary (the exact corner point is never a rendered pixel).
+    """
     corners = np.array([
         [x0,      y0,      1],
         [x0 + crop_w, y0,      1],
@@ -82,9 +161,9 @@ def _border_check(
     src_xy = np.einsum("tij,kj->tki", cumulative[:n_render], corners)
     ok = (
         (src_xy[..., 0] >= 0).all()
-        and (src_xy[..., 0] <= vid_w - 1).all()
+        and (src_xy[..., 0] <= vid_w - 1 + far_margin).all()
         and (src_xy[..., 1] >= 0).all()
-        and (src_xy[..., 1] <= vid_h - 1).all()
+        and (src_xy[..., 1] <= vid_h - 1 + far_margin).all()
     )
     return bool(ok)
 
@@ -101,6 +180,8 @@ def render(
     n_frames: int = 0,
     fps_override: float | None = None,
     crf: int = 20,
+    no_crop: bool = False,
+    crop_black_border: bool = False,
 ) -> None:
     """Render a stabilised video.
 
@@ -115,6 +196,11 @@ def render(
     n_frames : render only the first N frames (0 = all).
     fps_override : override the output FPS (None = use source video FPS).
     crf : x264 CRF quality (lower = better, 18–28 typical).
+    no_crop : render the full source frame (WxH) instead of cropping.
+        Black borders may appear where content moved out of view.
+    crop_black_border : auto-detect the largest centred crop that removes
+        the black borders introduced by stabilisation, instead of using
+        ``crop_width``/``crop_height``.  Mutually exclusive with ``no_crop``.
     """
     from .motion import load_motion
 
@@ -140,36 +226,73 @@ def render(
     if fps_override is not None:
         fps = fps_override
 
-    if crop_width > W or crop_height > H:
-        cap.release()
+    if no_crop and crop_black_border:
         raise SystemExit(
-            f"Crop {crop_width}x{crop_height} exceeds video {W}x{H}"
+            "--no-crop and --crop-black-border are mutually exclusive"
         )
+
+    if crop_width is None:
+        crop_width = crop_height or 1024
+    if crop_height is None:
+        crop_height = crop_width
 
     n_render = min(n_vid, T_csv, n_frames) if n_frames > 0 else min(n_vid, T_csv)
 
-    x0 = (W - crop_width) // 2 + shift_x
-    y0 = (H - crop_height) // 2 + shift_y
-    if x0 < 0 or y0 < 0 or x0 + crop_width > W or y0 + crop_height > H:
-        cap.release()
-        raise SystemExit(
-            f"Crop window ({x0},{y0}) size {crop_width}x{crop_height} "
-            f"leaves video {W}x{H}. Reduce shift or crop size."
+    # ---- Choose the output size and crop-window origin ----
+    if no_crop:
+        out_w, out_h = W, H
+        x0 = y0 = 0
+        crop_desc = f"full frame {W}x{H} (no-crop)"
+    elif crop_black_border:
+        x0, y0, out_w, out_h = _black_border_crop(
+            raw_cum, smooth_cum, n_render, W, H, shift_x, shift_y
         )
+        if out_w < 1 or out_h < 1:
+            cap.release()
+            raise SystemExit(
+                f"Auto black-border crop found no safe region on a {W}x{H} "
+                f"frame.  Reduce --shift-x/--shift-y or use --no-crop."
+            )
+        crop_desc = f"auto black-border {out_w}x{out_h}"
+    else:
+        if crop_width > W or crop_height > H:
+            cap.release()
+            raise SystemExit(
+                f"Crop {crop_width}x{crop_height} exceeds video {W}x{H}"
+            )
+        out_w, out_h = crop_width, crop_height
+        x0 = (W - out_w) // 2 + shift_x
+        y0 = (H - out_h) // 2 + shift_y
+        if x0 < 0 or y0 < 0 or x0 + out_w > W or y0 + out_h > H:
+            cap.release()
+            raise SystemExit(
+                f"Crop window ({x0},{y0}) size {out_w}x{out_h} "
+                f"leaves video {W}x{H}. Reduce shift or crop size."
+            )
+        crop_desc = f"{out_w}x{out_h}"
 
     # ---- Border safety check ----
-    safe = _border_check(raw_cum, n_render, x0, y0, crop_width, crop_height, W, H)
-    scale_px = (crop_width / 1024.0) * (crop_height / 1024.0)
+    if crop_black_border:
+        # Auto-crop is safe by construction (largest in-bounds window).
+        safe = True
+    elif no_crop:
+        # Full frame: black borders are expected; no check performed.
+        safe = True
+    else:
+        safe = _border_check(raw_cum, n_render, x0, y0, out_w, out_h, W, H)
+    scale_px = (out_w / 1024.0) * (out_h / 1024.0)
     est_sec = EST_SEC_PER_1024 * scale_px * n_render
     est_mb = EST_BYTES_PER_1024 * scale_px * n_render / 1e6
 
     if not safe:
         print("WARNING: border safety check FAILED — output may contain black edges")
+    if no_crop:
+        print("NOTE: no-crop — black borders appear where the warp moves content out of frame")
 
     print(f"Video:       {n_vid} frames, {W}x{H} @ {fps:.3f} fps")
     print(f"Motion:      {T_csv} rows from {Path(motion_npz).name}")
-    print(f"Render:      {n_render} frames, crop {crop_width}x{crop_height}")
-    print(f"Window:      x=[{x0}..{x0 + crop_width}], y=[{y0}..{y0 + crop_height}]")
+    print(f"Render:      {n_render} frames, crop {crop_desc}")
+    print(f"Window:      x=[{x0}..{x0 + out_w}], y=[{y0}..{y0 + out_h}]")
     print(f"Encoder:     libopenh264 CRF{crf} veryfast, yuv420p")
     print(f"Border:      {'OK' if safe else 'FAIL'}")
     print(f"Est. time:   ~{human_time(est_sec)} (4 vCPU reference)")
@@ -183,7 +306,7 @@ def render(
     cmd = [
         "ffmpeg", "-y", "-loglevel", "error",
         "-f", "rawvideo", "-pix_fmt", "bgr24",
-        "-s", f"{crop_width}x{crop_height}",
+        "-s", f"{out_w}x{out_h}",
         "-r", f"{fps:.6f}",
         "-i", "-",
         "-an",
@@ -212,7 +335,7 @@ def render(
 
             M = _combined_warp(raw_cum[t], None if smooth_cum is None else smooth_cum[t], (x0, y0))
             out = cv2.warpAffine(
-                frame, M, (crop_width, crop_height),
+                frame, M, (out_w, out_h),
                 flags=cv2.INTER_LINEAR | cv2.WARP_INVERSE_MAP,
             )
 

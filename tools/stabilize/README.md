@@ -83,8 +83,10 @@ hf://buckets/user/my-stabilized/DJI_0260/
 | `--bucket` | HF bucket to upload to (`user/name`) | *required unless `--skip-upload`* |
 | `--run` | Sub-folder name inside the bucket | *required* |
 | `--token` | HF token (or set `HF_TOKEN` env var) | — |
-| `--crop-width` | Output width | 1024 |
-| `--crop-height` | Output height (square if omitted) | same as width |
+| `--crop-width` | Fixed-crop output width | auto black-border |
+| `--crop-height` | Fixed-crop output height (square if only width given) | auto black-border |
+| `--no-crop` | Stabilise the full source frame (WxH); black borders may appear | off |
+| `--crop-black-border` | Auto-detect the largest centred crop that removes the black borders from stabilisation | **on (default)** |
 | `--sigma` | Gaussian smoothing strength (frames) | 10 |
 | `--no-smooth` | Skip smoothing (track-locked only) | off |
 | `--frames` | Render only first N frames (0 = all) | 0 |
@@ -104,6 +106,25 @@ stabilize run \
     --run DJI_0260 \
     --skip-upload
 ```
+
+### Crop modes
+
+The output crop mode is chosen as follows (highest priority first):
+
+- **`--no-crop`:** outputs the *full* source frame (W×H) so nothing is thrown
+  away.  Because stabilisation warps the frame, black borders can appear at
+  the edges where content moved out of view — expected, and this is what
+  `--crop-black-border` fixes.
+- **`--crop-black-border` (default, on unless `--crop-width`/`--crop-height`
+  are given):** auto-detects the largest centred crop window (based on the
+  estimated camera motion) that stays inside the source frame for every
+  rendered frame, trimming exactly the black borders.
+- **Fixed crop:** set `--crop-width` × `--crop-height` for a fixed-size
+  output, centred on the frame-0 centre (`--shift-x`/`--shift-y` nudge the
+  centre).  This is what you opt into when passing either crop size.
+
+`--no-crop` and `--crop-black-border` are mutually exclusive, and either one
+overrides `--crop-width`/`--crop-height`.
 
 ---
 
@@ -165,6 +186,10 @@ stabilize plan input.mp4 \
     --crop-width 1920 --crop-height 1080 \
     --shift-x 150
 ```
+
+`plan` and `render` also accept `--no-crop` (full-frame output) and
+`--crop-black-border` (auto-trim the black borders) instead of
+`--crop-width`/`--crop-height`.
 
 ---
 

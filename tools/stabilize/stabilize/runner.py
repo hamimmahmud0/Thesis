@@ -54,6 +54,8 @@ def run_pipeline(
     crf: int = 20,
     skip_upload: bool = False,
     device: str | None = None,
+    no_crop: bool = False,
+    crop_black_border: bool = False,
 ) -> dict:
     """Run the full download->track->estimate->smooth->render->upload pipeline.
 
@@ -69,6 +71,11 @@ def run_pipeline(
         None (and ``tracks_npz`` is also None), the default cached
         checkpoint is used and auto-downloaded from the Hub if missing.
     tracks_npz : pre-computed tracks to use instead of tracking.
+    no_crop : render the full source frame (WxH) instead of cropping.
+        Black borders may appear.  Overrides ``crop_width``/``crop_height``.
+    crop_black_border : auto-detect the largest centred crop that removes
+        the black borders introduced by stabilisation.  Mutually exclusive
+        with ``no_crop``.
     skip_upload : do everything locally but skip the upload step.
 
     Returns
@@ -207,7 +214,12 @@ def run_pipeline(
 
     stable = run_dir / "stabilized.mp4"
     done = _tick("render")
-    print(f"[render] crop {crop_width}x{crop_height}, smoothing={'on' if use_smoothing else 'off'}")
+    crop_desc = (
+        "no-crop (full frame)" if no_crop else
+        "crop-black-border (auto)" if crop_black_border else
+        f"crop {crop_width}x{crop_height}"
+    )
+    print(f"[render] {crop_desc}, smoothing={'on' if use_smoothing else 'off'}")
     render(
         video_path=video_path,
         output_path=stable,
@@ -219,6 +231,8 @@ def run_pipeline(
         shift_y=shift_y,
         n_frames=n_frames,
         crf=crf,
+        no_crop=no_crop,
+        crop_black_border=crop_black_border,
     )
     done()
 
@@ -247,6 +261,10 @@ def run_pipeline(
             "step": step,
             "crop_width": crop_width,
             "crop_height": crop_height,
+            "crop_mode": (
+                "no_crop" if no_crop else
+                "crop_black_border" if crop_black_border else "fixed"
+            ),
             "shift_x": shift_x,
             "shift_y": shift_y,
             "sigma": sigma if use_smoothing else None,

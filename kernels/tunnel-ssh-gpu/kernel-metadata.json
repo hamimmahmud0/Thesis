@@ -1,0 +1,17 @@
+{
+  "id": "hamimmahmud/tunnel-ssh-gpu",
+  "title": "tunnel_ssh_gpu",
+  "code_file": "tunnel-ssh.py",
+  "language": "python",
+  "kernel_type": "script",
+  "is_private": "true",
+  "enable_gpu": "true",
+  "gpu_type": "NvidiaTeslaT4",
+  "enable_tpu": "false",
+  "enable_internet": "true",
+  "machine_shape": "",
+  "dataset_sources": [],
+  "competition_sources": [],
+  "kernel_sources": [],
+  "model_sources": []
+}

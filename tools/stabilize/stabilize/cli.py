@@ -38,6 +38,24 @@ import argparse
 import sys
 
 
+def _effective_crop(args: argparse.Namespace) -> tuple[bool, bool, int | None, int | None]:
+    """Resolve crop flags into ``(no_crop, crop_black_border, width, height)``.
+
+    Priority: ``--no-crop`` wins over everything; an explicit
+    ``--crop-black-border`` selects the automatic mode.  Otherwise any
+    explicit ``--crop-width``/``--crop-height`` selects fixed cropped
+    output.  With none of these, the default is the automatic
+    black-border crop.
+    """
+    if args.no_crop:
+        return True, False, None, None
+    if args.crop_black_border or (args.crop_width is None and args.crop_height is None):
+        return False, True, None, None
+    crop_w = args.crop_width if args.crop_width is not None else (args.crop_height or 1024)
+    crop_h = args.crop_height if args.crop_height is not None else crop_w
+    return False, False, crop_w, crop_h
+
+
 def _add_common_render_args(p: argparse.ArgumentParser) -> None:
     """Add arguments shared by ``plan`` and ``render``."""
     p.add_argument(
@@ -73,19 +91,22 @@ def _add_common_render_args(p: argparse.ArgumentParser) -> None:
         help="Path for the output stabilised video file.",
     )
     p.add_argument(
-        "--crop-width", type=int, default=1024, metavar="PX",
+        "--crop-width", type=int, default=None, metavar="PX",
         help=(
-            "Width of the stabilised output frame in pixels. "
-            "The crop window is centred on the frame-0 centre by default "
-            "(adjustable with --shift-x / --shift-y). Default: 1024."
+            "Width of a fixed-size crop window in pixels.  When neither "
+            "--crop-width nor --crop-height is given, the automatic "
+            "--crop-black-border mode is used by default.  If only this is "
+            "given, --crop-height defaults to the same value (square).  "
+            "Default: auto black-border crop."
         ),
     )
     p.add_argument(
         "--crop-height", type=int, default=None, metavar="PX",
         help=(
-            "Height of the stabilised output frame in pixels. "
-            "If omitted, defaults to --crop-width (square output). "
-            "Use --crop-height 1080 --crop-width 1920 for 16:9 output."
+            "Height of a fixed-size crop window in pixels.  If omitted "
+            "but --crop-width is given, defaults to --crop-width (square "
+            "output).  Use --crop-height 1080 --crop-width 1920 for 16:9 "
+            "output.  Default: auto black-border crop."
         ),
     )
     p.add_argument(
@@ -100,6 +121,23 @@ def _add_common_render_args(p: argparse.ArgumentParser) -> None:
         help=(
             "Shift the crop window centre down by PX pixels (in frame-0 "
             "coordinates).  Positive values shift down.  Default: 0 (centred)."
+        ),
+    )
+    crop_mode = p.add_mutually_exclusive_group()
+    crop_mode.add_argument(
+        "--no-crop", action="store_true",
+        help=(
+            "Do not crop the output: stabilise the full source frame (WxH). "
+            "Black borders may appear where content moved out of view."
+        ),
+    )
+    crop_mode.add_argument(
+        "--crop-black-border", action="store_true",
+        help=(
+            "Auto-detect the largest centred crop window that removes the "
+            "black borders introduced by stabilisation.  This is the default "
+            "mode; passing the flag is optional.  Overrides "
+            "--crop-width/--crop-height."
         ),
     )
     p.add_argument(
@@ -129,6 +167,8 @@ def _cmd_run(args: argparse.Namespace) -> None:
     """Execute the ``run`` subcommand — full end-to-end pipeline."""
     from .runner import run_pipeline
 
+    no_crop, crop_black_border, crop_width, crop_height = _effective_crop(args)
+
     run_pipeline(
         source=args.video,
         bucket=args.bucket,
@@ -142,8 +182,8 @@ def _cmd_run(args: argparse.Namespace) -> None:
         grid_query_frame=args.grid_query_frame,
         max_video_dim=args.max_dim,
         step=args.step,
-        crop_width=args.crop_width,
-        crop_height=args.crop_height,
+        crop_width=crop_width,
+        crop_height=crop_height,
         shift_x=args.shift_x,
         shift_y=args.shift_y,
         sigma=args.sigma,
@@ -153,6 +193,8 @@ def _cmd_run(args: argparse.Namespace) -> None:
         crf=args.crf,
         skip_upload=args.skip_upload,
         device=args.device,
+        no_crop=no_crop,
+        crop_black_border=crop_black_border,
     )
 
 
@@ -260,10 +302,8 @@ def _cmd_smooth(args: argparse.Namespace) -> None:
 def _cmd_plan(args: argparse.Namespace) -> None:
     """Execute the ``plan`` subcommand."""
     from .motion import load_motion
-    from .renderer import _border_check
+    from .renderer import _border_check, _black_border_crop
     from .utils import open_video, human_time
-
-    crop_h = args.crop_height or args.crop_width
 
     cap, n_vid, W, H, fps = open_video(args.video)
     if args.fps:
@@ -271,29 +311,53 @@ def _cmd_plan(args: argparse.Namespace) -> None:
     cap.release()
 
     motion = load_motion(args.motion)
-    T_csv = len(motion["cumulative"])
+    raw_cum = motion["cumulative"]
+    T_csv = len(raw_cum)
+
+    smooth_cum = None
+    if args.smooth:
+        from .smoother import load_smoothed
+
+        smooth_cum = load_smoothed(args.smooth)["smoothed_cumulative"]
 
     n_render = min(n_vid, T_csv, args.frames) if args.frames > 0 else min(n_vid, T_csv)
 
-    if args.crop_width > W or crop_h > H:
-        print(f"ERROR: crop {args.crop_width}x{crop_h} exceeds video {W}x{H}")
-        sys.exit(1)
+    no_crop, crop_black_border, crop_w, crop_h = _effective_crop(args)
 
-    x0 = (W - args.crop_width) // 2 + args.shift_x
-    y0 = (H - crop_h) // 2 + args.shift_y
-    if x0 < 0 or y0 < 0 or x0 + args.crop_width > W or y0 + crop_h > H:
-        print(
-            f"ERROR: crop window ({x0},{y0}) size {args.crop_width}x{crop_h} "
-            f"leaves video {W}x{H}. Reduce shift."
+    # ---- Determine the output size and crop-window origin ----
+    if no_crop:
+        out_w, out_h = W, H
+        x0 = y0 = 0
+        crop_desc = f"full frame {W}x{H} (no-crop)"
+    elif crop_black_border:
+        x0, y0, out_w, out_h = _black_border_crop(
+            raw_cum, smooth_cum, n_render, W, H, args.shift_x, args.shift_y
         )
-        sys.exit(1)
+        crop_desc = f"auto black-border {out_w}x{out_h}"
+    else:
+        out_w, out_h = crop_w, crop_h
+        if out_w > W or out_h > H:
+            print(f"ERROR: crop {out_w}x{out_h} exceeds video {W}x{H}")
+            sys.exit(1)
+        x0 = (W - out_w) // 2 + args.shift_x
+        y0 = (H - out_h) // 2 + args.shift_y
+        if x0 < 0 or y0 < 0 or x0 + out_w > W or y0 + out_h > H:
+            print(
+                f"ERROR: crop window ({x0},{y0}) size {out_w}x{out_h} "
+                f"leaves video {W}x{H}. Reduce shift."
+            )
+            sys.exit(1)
+        crop_desc = f"{out_w}x{out_h}"
 
-    safe = _border_check(
-        motion["cumulative"], n_render, x0, y0, args.crop_width, crop_h, W, H
-    )
+    if crop_black_border:
+        safe = out_w >= 1 and out_h >= 1
+    elif no_crop:
+        safe = True
+    else:
+        safe = _border_check(raw_cum, n_render, x0, y0, out_w, out_h, W, H)
 
     unreliable = float((~motion["reliable"]).mean()) if T_csv else 1.0
-    scale_px = (args.crop_width / 1024.0) * (crop_h / 1024.0)
+    scale_px = (out_w / 1024.0) * (out_h / 1024.0)
     from .renderer import EST_SEC_PER_1024, EST_BYTES_PER_1024
 
     est_sec = EST_SEC_PER_1024 * scale_px * n_render
@@ -301,7 +365,11 @@ def _cmd_plan(args: argparse.Namespace) -> None:
     dur = human_time(n_render / fps)
 
     warnings = []
-    if not safe:
+    if no_crop:
+        warnings.append("no-crop: black borders may appear (use --crop-black-border to trim them)")
+    elif not safe and crop_black_border:
+        warnings.append("auto black-border crop found no safe region")
+    elif not safe:
         warnings.append("BORDER WARNING: crop window leaves the frame on some frames")
     if T_csv < n_vid:
         warnings.append(f"Motion data covers only {T_csv}/{n_vid} video frames")
@@ -318,9 +386,9 @@ def _cmd_plan(args: argparse.Namespace) -> None:
         print(f"smoothed npz:      {args.smooth}")
     print(f"output:            {args.output}")
     print(f"mode:              {mode}")
-    print(f"crop size:         {args.crop_width}x{crop_h} px")
-    print(f"crop window:       x [{x0}..{x0 + args.crop_width}], "
-          f"y [{y0}..{y0 + crop_h}] "
+    print(f"crop size:         {crop_desc} px")
+    print(f"crop window:       x [{x0}..{x0 + out_w}], "
+          f"y [{y0}..{y0 + out_h}] "
           f"(centre shifted +{args.shift_x} x, +{args.shift_y} y)")
     full = min(n_vid, T_csv)
     rng = f"all {n_render}" if n_render == full else f"FIRST {n_render} (preview)"
@@ -348,19 +416,21 @@ def _cmd_render(args: argparse.Namespace) -> None:
 
     from .renderer import render
 
-    crop_h = args.crop_height or args.crop_width
+    no_crop, crop_black_border, crop_width, crop_height = _effective_crop(args)
     render(
         video_path=args.video,
         output_path=args.output,
         motion_npz=args.motion,
         smooth_npz=args.smooth,
-        crop_width=args.crop_width,
-        crop_height=crop_h,
+        crop_width=crop_width,
+        crop_height=crop_height,
         shift_x=args.shift_x,
         shift_y=args.shift_y,
         n_frames=args.frames,
         fps_override=args.fps,
         crf=args.crf,
+        no_crop=no_crop,
+        crop_black_border=crop_black_border,
     )
 
 
@@ -517,12 +587,21 @@ def build_parser() -> argparse.ArgumentParser:
         help="Longest-side resize for tracking.  Default: 1280.",
     )
     p_run.add_argument(
-        "--crop-width", type=int, default=1024, metavar="PX",
-        help="Stabilised output width.  Default: 1024.",
+        "--crop-width", type=int, default=None, metavar="PX",
+        help=(
+            "Width of a fixed-size crop window in pixels.  When neither "
+            "--crop-width nor --crop-height is given, the automatic "
+            "--crop-black-border mode is used by default.  Default: auto "
+            "black-border crop."
+        ),
     )
     p_run.add_argument(
         "--crop-height", type=int, default=None, metavar="PX",
-        help="Stabilised output height.  Defaults to --crop-width.",
+        help=(
+            "Height of a fixed-size crop window in pixels.  If omitted but "
+            "--crop-width is given, defaults to --crop-width (square).  "
+            "Default: auto black-border crop."
+        ),
     )
     p_run.add_argument(
         "--shift-x", type=int, default=0, metavar="PX",
@@ -531,6 +610,23 @@ def build_parser() -> argparse.ArgumentParser:
     p_run.add_argument(
         "--shift-y", type=int, default=0, metavar="PX",
         help="Crop centre vertical shift.  Default: 0.",
+    )
+    crop_mode = p_run.add_mutually_exclusive_group()
+    crop_mode.add_argument(
+        "--no-crop", action="store_true",
+        help=(
+            "Do not crop the output: stabilise the full source frame (WxH). "
+            "Black borders may appear where content moved out of view."
+        ),
+    )
+    crop_mode.add_argument(
+        "--crop-black-border", action="store_true",
+        help=(
+            "Auto-detect the largest centred crop window that removes the "
+            "black borders introduced by stabilisation.  This is the default "
+            "mode; passing the flag is optional.  Overrides "
+            "--crop-width/--crop-height."
+        ),
     )
     p_run.add_argument(
         "--sigma", type=float, default=10.0, metavar="F",
