@@ -85,16 +85,15 @@ else
     conda create -n "$ENV_NAME" "python=$PYTHON_VERSION" -y
 fi
 
-. ~/.bashrc
 
-conda activate "$ENV_NAME"
+conda init && conda activate "$ENV_NAME"
 info "Activated: $(python --version) @ $(which python)"
 
 # ──── 3. Install PyTorch + CUDA via conda (idempotent) ───────────────────────
 TORCH_VER=$(python -c "import torch; print(torch.__version__)" 2>/dev/null || true)
 if [ -z "$TORCH_VER" ]; then
     info "Installing PyTorch + CUDA $CUDA_VERSION via conda ..."
-    conda install -y -n "$ENV_NAME" \
+    conda init && conda install -y -n "$ENV_NAME" \
         pytorch \
         torchvision \
         "pytorch-cuda=$CUDA_VERSION" \
