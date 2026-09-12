@@ -252,7 +252,7 @@ info "Installing pip requirements ..."
 pip install --upgrade pip
 # --no-deps for torch/torchvision is already satisfied via conda
 pip install -r "$REQUIREMENTS"
-
+pip install hf==1.31
 # ──── 5. Install the package in editable mode ────────────────────────────────
 info "Installing stabilize (editable) ..."
 pip install -e "$SCRIPT_DIR"
