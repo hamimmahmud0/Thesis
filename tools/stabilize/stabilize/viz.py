@@ -2,7 +2,8 @@
 
 Generates a multi-panel diagnostic plot from motion estimation results.
 Can also work directly from a ``motion.csv`` file for backward
-compatibility.
+compatibility.  Also overlays the tracked keypoints on the source video
+as an annotated MP4 for checking tracker quality.
 """
 
 from __future__ import annotations
@@ -243,3 +244,199 @@ def viz_from_csv(
     print(f"Net scale   : x{np.exp(df['cum_log_scale'].iloc[-1]):.4f}")
     print(f"Unreliable  : {(~df['reliable']).mean() * 100:.2f}%")
     print(f"Wrote: {out_png}")
+
+
+def overlay_tracks(
+    video_path: str | Path,
+    tracks_npz: str | Path,
+    output_path: str | Path,
+    n_frames: int = 0,
+    fps_override: float | None = None,
+    radius: int = 4,
+    trail: int = 8,
+    max_points: int = 0,
+    crf: int = 20,
+) -> None:
+    """Visualise the tracked keypoints on top of the source video.
+
+    Writes an H.264 MP4 of the original video with each tracked point drawn
+    on every frame: a coloured dot (colour fixed per point id, from the
+    turbo colormap) with a short trail of its recent positions.  Points the
+    tracker currently considers invisible are drawn as red crosses.  On the
+    grid-query frame, the initial query locations are additionally outlined
+    with hollow cyan squares.
+
+    Parameters
+    ----------
+    video_path : source video file.
+    tracks_npz : ``tracks.npz`` from ``stabilize track`` or the CoTracker3
+        API, with coordinates in original video pixels.
+    output_path : output .mp4 file.
+    n_frames : overlay only the first N frames (0 = all).
+    fps_override : override the output FPS (None = source video FPS).
+    radius : dot radius in pixels.
+    trail : length of the position trail in frames (0 disables trails).
+    max_points : if the tracks contain more than N points, draw only N
+        evenly spaced points (0 = draw all).
+    crf : x264 CRF quality (lower = better, 18-28 typical).
+    """
+    import json
+    import subprocess
+
+    import cv2
+    from tqdm import tqdm
+
+    from .utils import load_tracks, open_video
+
+    # ---- Load tracks ----
+    data = load_tracks(tracks_npz)
+    tracks = data["tracks"]
+    visibility = data["visibility"]
+    query_points = data["query_points"]
+    T, N, _ = tracks.shape
+    if N < 1:
+        raise SystemExit(f"No tracked points in {tracks_npz}")
+
+    # Grid-query frame used for the hollow square markers.
+    q_frame = 0
+    try:
+        meta = json.loads(str(np.load(tracks_npz, allow_pickle=True)["meta"]))
+        q_frame = int(meta.get("grid_query_frame", 0))
+    except Exception:
+        pass
+
+    # ---- Point colours (turbo, fixed per point id, BGR) ----
+    # A stale/invalid MPLBACKEND breaks ``import matplotlib``, so force Agg.
+    os.environ["MPLBACKEND"] = "Agg"
+    import matplotlib
+
+    matplotlib.use("Agg")
+    cmap = matplotlib.colormaps.get("turbo")
+    colors = np.empty((N, 3))
+    for i in range(N):
+        r, g, b, _ = cmap(i / max(N - 1, 1))
+        colors[i] = (b * 255, g * 255, r * 255)
+    colors = np.rint(colors).clip(0, 255).astype(np.uint8)
+
+    # ---- Optional downsampling of a dense grid ----
+    if max_points > 0 and N > max_points:
+        sel = np.linspace(0, N - 1, max_points).round().astype(int)
+        tracks = tracks[:, sel, :]
+        visibility = visibility[:, sel]
+        colors = colors[sel]
+        if query_points is not None:
+            query_points = query_points[sel, :]
+        N = len(sel)
+
+    # ---- Video probe ----
+    cap, n_vid, W, H, fps = open_video(video_path)
+    if fps_override is not None:
+        fps = fps_override
+    n_render = min(n_vid, T, n_frames) if n_frames > 0 else min(n_vid, T)
+    if n_render < 1:
+        cap.release()
+        raise SystemExit(f"No frames to overlay (video {n_vid}, tracks {T})")
+
+    # ---- Start FFmpeg ----
+    cmd = [
+        "ffmpeg", "-y", "-loglevel", "error",
+        "-f", "rawvideo", "-pix_fmt", "bgr24",
+        "-s", f"{W}x{H}",
+        "-r", f"{fps:.6f}",
+        "-i", "-",
+        "-an",
+        "-c:v", "libopenh264", "-preset", "veryfast",
+        "-crf", str(crf),
+        "-pix_fmt", "yuv420p",
+        "-movflags", "+faststart",
+        str(output_path),
+    ]
+    try:
+        proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
+    except FileNotFoundError:
+        cap.release()
+        raise SystemExit("FFmpeg not found. Install FFmpeg and try again.")
+
+    print(f"Video:       {n_vid} frames, {W}x{H} @ {fps:.3f} fps")
+    print(f"Tracks:      {T} frames, {N} points ({Path(tracks_npz).name})")
+    print(f"Overlay:     {n_render} frames, radius {radius}, trail {trail}")
+    print(f"Encoder:     libopenh264 CRF{crf} veryfast, yuv420p")
+
+    red = (0, 0, 200)
+    cyan = (255, 255, 0)
+    mark_size = max(radius * 3, 6)
+    if query_points is None:
+        query_points = tracks[min(q_frame, n_render - 1), :, :]
+
+    pbar = tqdm(
+        total=n_render, desc="Overlaying", unit="frame",
+        bar_format="{desc}: {percentage:3.1f}%|{bar}| {n_fmt}/{total_fmt} "
+                   "[{elapsed}<{remaining}, {rate_fmt}]",
+    )
+    try:
+        for t in range(n_render):
+            ok, frame = cap.read()
+            if not ok:
+                pbar.write(f"Video ended early at frame {t}")
+                break
+
+            xs = tracks[t, :, 0]
+            ys = tracks[t, :, 1]
+            vis = visibility[t] & np.isfinite(xs) & np.isfinite(ys)
+
+            if t == q_frame:
+                for x, y in query_points:
+                    if not (np.isfinite(x) and np.isfinite(y)):
+                        continue
+                    cv2.drawMarker(
+                        frame, (int(round(float(x))), int(round(float(y)))),
+                        color=cyan, markerType=cv2.MARKER_SQUARE,
+                        markerSize=mark_size, thickness=2,
+                    )
+
+            for i in range(N):
+                if not vis[i]:
+                    x, y = int(round(float(xs[i]))), int(round(float(ys[i])))
+                    if 0 <= x < W and 0 <= y < H:
+                        cv2.drawMarker(
+                            frame, (x, y), color=red,
+                            markerType=cv2.MARKER_TILTED_CROSS,
+                            markerSize=mark_size, thickness=1,
+                        )
+                    continue
+
+                x, y = int(round(float(xs[i]))), int(round(float(ys[i])))
+                color = tuple(int(c) for c in colors[i])
+                if trail > 1 and t > 0:
+                    hist = tracks[max(0, t - trail + 1): t + 1, i]
+                    good = np.isfinite(hist[:, 0]) & np.isfinite(hist[:, 1])
+                    hx = np.rint(hist[good, 0]).astype(np.int32)
+                    hy = np.rint(hist[good, 1]).astype(np.int32)
+                    if len(hx) > 1:
+                        cv2.polylines(
+                            frame,
+                            [np.stack([hx, hy], axis=-1).reshape(-1, 1, 2)],
+                            False, color, thickness=1,
+                        )
+                cv2.circle(frame, (x, y), max(radius, 1), color, -1)
+
+            try:
+                proc.stdin.write(frame.tobytes())
+            except BrokenPipeError:
+                pbar.write("FFmpeg pipe broke — encoder may have failed")
+                break
+            pbar.update(1)
+    finally:
+        pbar.close()
+        cap.release()
+        if proc.stdin:
+            proc.stdin.close()
+
+    return_code = proc.wait()
+    if return_code != 0:
+        raise SystemExit(f"FFmpeg failed with return code {return_code}")
+
+    if T < n_vid:
+        print(f"NOTE: tracks cover only {T}/{n_vid} video frames — the "
+              f"overlay is shorter than the source video")
+    print(f"Wrote: {output_path}")

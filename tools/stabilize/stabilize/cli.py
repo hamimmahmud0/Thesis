@@ -1,6 +1,6 @@
 """Command-line interface for drone video stabilisation.
 
-Eight subcommands cover both the low-level pipeline and automated
+Nine subcommands cover both the low-level pipeline and automated
 Hugging-Face-integrated runs:
 
   run       Download, stabilise, and upload in one shot.
@@ -11,6 +11,7 @@ Hugging-Face-integrated runs:
   smooth    Gaussian-smooth the estimated camera path.
   render    Warp the source video to produce a stabilised output.
   viz       Generate a diagnostic trajectory plot.
+  overlay   Visualise tracked keypoints on the source video.
 
 Automated end-to-end workflow::
 
@@ -28,6 +29,7 @@ Step-by-step workflow::
   stabilize render    input.mp4 --tracks tracks.npz --motion motion.npz \\
                            --crop 1024 --output stable.mp4 --confirm "approved"
   stabilize viz       motion.npz -o trajectory.png
+  stabilize overlay   input.mp4 --tracks tracks.npz -o tracks_overlay.mp4
 
 Run ``stabilize <subcommand> --help`` for per-command details.
 """
@@ -195,6 +197,7 @@ def _cmd_run(args: argparse.Namespace) -> None:
         device=args.device,
         no_crop=no_crop,
         crop_black_border=crop_black_border,
+        skip_overlay=args.skip_overlay,
     )
 
 
@@ -462,6 +465,28 @@ def _cmd_viz(args: argparse.Namespace) -> None:
         sys.exit(1)
 
 
+def _cmd_overlay(args: argparse.Namespace) -> None:
+    """Execute the ``overlay`` subcommand."""
+    from pathlib import Path
+
+    from .viz import overlay_tracks
+
+    out = args.output or str(
+        Path(args.video).with_suffix(".tracks_overlay.mp4")
+    )
+    overlay_tracks(
+        video_path=args.video,
+        tracks_npz=args.tracks,
+        output_path=out,
+        n_frames=args.frames,
+        fps_override=args.fps,
+        radius=args.radius,
+        trail=args.trail,
+        max_points=args.max_points,
+        crf=args.crf,
+    )
+
+
 def build_parser() -> argparse.ArgumentParser:
     """Build the top-level argument parser with all subcommands."""
 
@@ -472,7 +497,7 @@ def build_parser() -> argparse.ArgumentParser:
         prog="stabilize",
         description=(
             "Drone video stabilisation using CoTracker3 keypoint trajectories. "
-            "Eight subcommands cover the low-level pipeline and automated "
+            "Nine subcommands cover the low-level pipeline and automated "
             "Hugging-Face-integrated runs."
         ),
         epilog=(
@@ -487,6 +512,7 @@ def build_parser() -> argparse.ArgumentParser:
             "  stabilize render   input.mp4 --tracks tracks.npz --motion motion.npz \\\n"
             "                          --crop 1024 --output stable.mp4 --confirm 'approved'\n"
             "  stabilize viz      motion.npz -o trajectory.png\n"
+            "  stabilize overlay  input.mp4 --tracks tracks.npz -o tracks_overlay.mp4\n"
             "\n"
             "Run 'stabilize <subcommand> --help' for per-command details."
         ),
@@ -517,6 +543,7 @@ def build_parser() -> argparse.ArgumentParser:
             "  hf://buckets/<bucket>/<run>/motion_smooth.npz  (unless --no-smooth)\n"
             "  hf://buckets/<bucket>/<run>/stabilized.mp4\n"
             "  hf://buckets/<bucket>/<run>/trajectory.png\n"
+            "  hf://buckets/<bucket>/<run>/tracks_overlay.mp4  (unless --skip-overlay)\n"
             "  hf://buckets/<bucket>/<run>/summary.json\n"
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -651,6 +678,10 @@ def build_parser() -> argparse.ArgumentParser:
     p_run.add_argument(
         "--skip-upload", action="store_true",
         help="Run the full pipeline locally but skip the HF upload.",
+    )
+    p_run.add_argument(
+        "--skip-overlay", action="store_true",
+        help="Skip generating the tracks-overlay video.",
     )
     p_run.add_argument(
         "--device", default=None, metavar="DEVICE",
@@ -1005,6 +1036,81 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     p_viz.set_defaults(func=_cmd_viz)
+
+    # -----------------------------------------------------------------------
+    # overlay
+    # -----------------------------------------------------------------------
+    p_ov = sub.add_parser(
+        "overlay",
+        help="Visualise tracked keypoints on the source video.",
+        description=(
+            "Draws the CoTracker3 keypoint trajectories on top of the "
+            "original video and encodes the result as an MP4.  Visible "
+            "points are coloured dots (colour fixed per point id, with a "
+            "short trail of recent positions); points the tracker currently "
+            "considers invisible are drawn as red crosses.  The grid-query "
+            "frame is marked with hollow cyan squares at the initial query "
+            "locations."
+        ),
+        epilog=(
+            "Points are drawn in original-video resolution (the .npz\n"
+            "coordinates are mapped back to it by 'stabilize track').  Use\n"
+            "--max-points to subsample a dense grid for a cleaner image.\n\n"
+            "Requires FFmpeg with the libopenh264 encoder."
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    p_ov.add_argument(
+        "video",
+        help="Path to the source video file (MP4, MOV, AVI, MKV, etc.).",
+    )
+    p_ov.add_argument(
+        "--tracks", required=True, metavar="TRACKS_NPZ",
+        help=(
+            "Path to the tracks .npz file produced by ``stabilize track`` "
+            "(or the CoTracker3 API).  Coordinates must be in original "
+            "video pixels."
+        ),
+    )
+    p_ov.add_argument(
+        "-o", "--output", default=None, metavar="OUTPUT.mp4",
+        help=(
+            "Output path for the overlay video.  Default: "
+            "<video>.tracks_overlay.mp4 next to the source video."
+        ),
+    )
+    p_ov.add_argument(
+        "--max-points", type=int, default=0, metavar="N",
+        help=(
+            "If the tracks contain more than N points, draw only N evenly "
+            "spaced points (cleaner image on dense grids).  "
+            "0 (default) draws all points."
+        ),
+    )
+    p_ov.add_argument(
+        "--radius", type=int, default=4, metavar="PX",
+        help="Dot radius in pixels.  Default: 4.",
+    )
+    p_ov.add_argument(
+        "--trail", type=int, default=8, metavar="N",
+        help=(
+            "Length of the position trail behind each visible point, in "
+            "frames.  0 disables trails.  Default: 8."
+        ),
+    )
+    p_ov.add_argument(
+        "--frames", type=int, default=0, metavar="N",
+        help="Overlay only the first N frames.  0 (default) overlays all.",
+    )
+    p_ov.add_argument(
+        "--fps", type=float, default=None, metavar="FPS",
+        help="Override the output frame rate.  Default: source video FPS.",
+    )
+    p_ov.add_argument(
+        "--crf", type=int, default=20, metavar="N",
+        help="x264 CRF for output quality.  Default: 20.",
+    )
+    p_ov.set_defaults(func=_cmd_overlay)
 
     return parser
 

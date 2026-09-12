@@ -21,10 +21,13 @@ from pathlib import Path
 from . import hfio
 
 
-def _steps_desc(use_smoothing: bool) -> str:
+def _steps_desc(use_smoothing: bool, skip_overlay: bool = False) -> str:
     base = ["download", "track", "estimate"]
     if use_smoothing:
         base.append("smooth")
+    base += ["viz"]
+    if not skip_overlay:
+        base.append("overlay")
     base += ["render", "upload"]
     return " -> ".join(base)
 
@@ -56,6 +59,7 @@ def run_pipeline(
     device: str | None = None,
     no_crop: bool = False,
     crop_black_border: bool = False,
+    skip_overlay: bool = False,
 ) -> dict:
     """Run the full download->track->estimate->smooth->render->upload pipeline.
 
@@ -77,6 +81,7 @@ def run_pipeline(
         the black borders introduced by stabilisation.  Mutually exclusive
         with ``no_crop``.
     skip_upload : do everything locally but skip the upload step.
+    skip_overlay : skip generating the tracks-overlay video.
 
     Returns
     -------
@@ -208,7 +213,23 @@ def run_pipeline(
     done()
 
     # ------------------------------------------------------------------
-    # 6. Render
+    # 6. Track overlay
+    # ------------------------------------------------------------------
+    overlay = None
+    if not skip_overlay:
+        done = _tick("overlay")
+        overlay = run_dir / "tracks_overlay.mp4"
+        viz_mod.overlay_tracks(
+            video_path=video_path,
+            tracks_npz=tracks,
+            output_path=overlay,
+        )
+        done()
+    else:
+        print("[skip-overlay] skipping tracks-overlay video (--skip-overlay)")
+
+    # ------------------------------------------------------------------
+    # 7. Render
     # ------------------------------------------------------------------
     from .renderer import render
 
@@ -237,7 +258,7 @@ def run_pipeline(
     done()
 
     # ------------------------------------------------------------------
-    # 7. Summary + upload
+    # 8. Summary + upload
     # ------------------------------------------------------------------
     outputs = {
         "video": str(video_path),
@@ -246,6 +267,7 @@ def run_pipeline(
         "motion_csv": str(motion_prefix.with_suffix(".csv")),
         "smooth_npz": str(smooth_npz) if smooth_npz else None,
         "trajectory_png": str(run_dir / "trajectory.png"),
+        "tracks_overlay_mp4": str(overlay) if overlay else None,
         "stabilized_mp4": str(stable),
     }
 
@@ -269,6 +291,7 @@ def run_pipeline(
             "shift_y": shift_y,
             "sigma": sigma if use_smoothing else None,
             "smoothing": use_smoothing,
+            "overlay": not skip_overlay,
             "frames": n_frames,
             "crf": crf,
             "width": width,
@@ -310,7 +333,7 @@ def run_pipeline(
 
     print("\n===== DONE =====")
     print(f"local run dir: {run_dir}")
-    print(f"pipeline:      {_steps_desc(use_smoothing)}")
+    print(f"pipeline:      {_steps_desc(use_smoothing, skip_overlay)}")
     return summary
 
 

@@ -5,7 +5,7 @@ Drone video stabilisation using CoTracker3 keypoint trajectories.
 Two workflows are supported:
 
 - **Automated (Hugging Face):** `stabilize run` downloads a video from an `hf://` link, runs the full pipeline locally, and uploads every artefact to an HF bucket.
-- **Step-by-step:** `track` → `estimate` → `smooth` → `plan` → `render` → `viz` — each as a separate CLI command.
+- **Step-by-step:** `track` → `estimate` → `smooth` → `plan` → `render` → `viz` → `overlay` — each as a separate CLI command.
 
 ---
 
@@ -57,9 +57,10 @@ stabilize run \
 3. **estimate** — RANSAC similarity per frame pair → `motion.npz` + `motion.csv`
 4. **smooth** — Gaussian σ=12, interpolates gaps ≤5 frames → `motion_smooth.npz`
 5. **viz** — trajectory diagnostics → `trajectory.png`
-6. **render** — FFmpeg H.264 CRF20, 1920×1080, smoothed path → `stabilized.mp4`
-7. **upload** — pushes everything to `hf://buckets/user/my-stabilized/DJI_0260/`
-8. **summary.json** — metadata, params, step timings
+6. **overlay** — tracked keypoints drawn on the source video → `tracks_overlay.mp4`
+7. **render** — FFmpeg H.264 CRF20, 1920×1080, smoothed path → `stabilized.mp4`
+8. **upload** — pushes everything to `hf://buckets/user/my-stabilized/DJI_0260/`
+9. **summary.json** — metadata, params, step timings
 
 Local outputs live at `./runs/DJI_0260/`. The bucket ends up with:
 
@@ -70,6 +71,7 @@ hf://buckets/user/my-stabilized/DJI_0260/
   motion.csv
   motion_smooth.npz
   trajectory.png
+  tracks_overlay.mp4
   stabilized.mp4
   summary.json
 ```
@@ -92,6 +94,7 @@ hf://buckets/user/my-stabilized/DJI_0260/
 | `--frames` | Render only first N frames (0 = all) | 0 |
 | `--crf` | x264 quality (lower = better) | 20 |
 | `--skip-upload` | Do everything locally, skip upload | off |
+| `--skip-overlay` | Skip generating the tracks-overlay video | off |
 | `--device` | torch device (`cuda:0`, `cpu`) | auto |
 
 ### Tracking from the API instead of locally
@@ -221,6 +224,23 @@ Works with both `.npz` and `.csv` motion files. Red shading marks unreliable reg
 
 ---
 
+### `overlay`
+
+Draws the tracked keypoints on the source video and encodes the result as an MP4:
+
+```bash
+stabilize overlay input.mp4 --tracks tracks.npz -o tracks_overlay.mp4
+```
+
+Visible points are coloured dots (colour fixed per point id, with a short
+trail of recent positions); points the tracker currently considers invisible
+are drawn as red crosses. The grid-query frame is marked with hollow cyan
+squares at the initial query locations.
+
+Options: `--max-points` (evenly subsample a dense grid), `--radius`, `--trail` (trail length, 0 = off), `--frames`, `--fps`, `--crf`.
+
+---
+
 ## `hf://` link format
 
 | Kind | Format |
@@ -255,7 +275,7 @@ stabilize upload ./runs/DJI_0260/ --bucket user/my-bucket --remote-prefix DJI_02
 | `motion.py` | RANSAC similarity estimation |
 | `smoother.py` | Gaussian path smoothing |
 | `renderer.py` | FFmpeg affine-warped rendering |
-| `viz.py` | Trajectory diagnostics plot |
+| `viz.py` | Trajectory diagnostic plot + tracks-overlay video |
 | `utils.py` | Video I/O, matrix helpers, shared utils |
 
 ---
