@@ -225,6 +225,7 @@ fi
 
 
 conda activate "$ENV_NAME"
+conda install -y -c conda-forge "mkl=2024.0.0"
 info "Activated: $(python --version) @ $(which python)"
 
 # ──── 3. Install PyTorch + CUDA via conda (idempotent) ───────────────────────
