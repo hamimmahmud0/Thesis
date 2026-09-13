@@ -1,162 +1,674 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# ──── Configuration ───────────────────────────────────────────────────────────
+# =============================================================================
+# Configuration
+# =============================================================================
+
 ENV_NAME="sam31"
 PYTHON_VERSION="3.12"
+
 TORCH_VERSION="2.10.0"
 TORCH_INDEX="https://download.pytorch.org/whl/cu128"
+
 MINICONDA_URL="https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh"
 MINICONDA_INSTALL_DIR="$HOME/miniconda3"
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# By default, sam3 is expected next to the sam31 directory:
+#
+#   tools/
+#   ├── sam31/
+#   │   ├── setup
+#   │   ├── requirements.txt
+#   │   └── ...
+#   └── sam3/
+#
+# Override with:
+#
+#   SAM3_SRC_DIR=/some/path/sam3 ./setup
+#
 SAM3_SRC_DIR="${SAM3_SRC_DIR:-$(dirname "$SCRIPT_DIR")/sam3}"
-VENV_DIR="$SCRIPT_DIR/.venv"
 
-# ──── Colour helpers ──────────────────────────────────────────────────────────
-RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; NC='\033[0m'
-info()  { echo -e "${GREEN}[INFO]${NC}  $*"; }
-warn()  { echo -e "${YELLOW}[WARN]${NC}  $*"; }
-error() { echo -e "${RED}[ERROR]${NC} $*" >&2; }
 
-# ──── 1. Environment: venv (system python >= 3.12) → conda → miniconda ───────
+# =============================================================================
+# Colour helpers
+# =============================================================================
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+info() {
+    echo -e "${GREEN}[INFO]${NC}  $*"
+}
+
+warn() {
+    echo -e "${YELLOW}[WARN]${NC}  $*"
+}
+
+error() {
+    echo -e "${RED}[ERROR]${NC} $*" >&2
+}
+
+step() {
+    echo ""
+    echo -e "${BLUE}==============================================================================${NC}"
+    echo -e "${BLUE}$*${NC}"
+    echo -e "${BLUE}==============================================================================${NC}"
+}
+
+
+# =============================================================================
+# Helper: find conda
+# =============================================================================
+
 find_conda() {
     local candidates=(
-        conda
+        "conda"
         "$HOME/miniconda3/bin/conda"
         "$HOME/anaconda3/bin/conda"
         "/opt/conda/bin/conda"
         "/opt/miniconda3/bin/conda"
     )
+
+    local c
+
     for c in "${candidates[@]}"; do
-        if command -v "$c" &>/dev/null || [ -x "$c" ]; then
+
+        # Command available in PATH
+        if command -v "$c" >/dev/null 2>&1; then
+            command -v "$c"
+            return 0
+        fi
+
+        # Absolute path
+        if [ -x "$c" ]; then
             echo "$c"
             return 0
         fi
+
     done
+
     return 1
 }
 
+
+# =============================================================================
+# Helper: install Miniconda
+# =============================================================================
+
 install_miniconda() {
-    info "conda not found — installing Miniconda headlessly ..."
-    local installer="/tmp/miniconda_installer.sh"
-    if [ ! -f "$installer" ]; then
-        curl -fsSL "$MINICONDA_URL" -o "$installer"
+    info "Conda not found."
+    info "Installing Miniconda headlessly ..."
+
+    local installer="/tmp/miniconda_installer_$$.sh"
+
+    # -------------------------------------------------------------------------
+    # Make sure curl exists
+    # -------------------------------------------------------------------------
+
+    if ! command -v curl >/dev/null 2>&1; then
+        error "'curl' is required to download Miniconda."
+
+        if command -v apt-get >/dev/null 2>&1; then
+            info "Attempting to install curl using apt ..."
+
+            apt-get update
+            apt-get install -y curl
+        else
+            error "Please install curl and run this setup again."
+            exit 1
+        fi
     fi
-    bash "$installer" -b -p "$MINICONDA_INSTALL_DIR"
+
+    # -------------------------------------------------------------------------
+    # Handle incomplete Miniconda installation
+    # -------------------------------------------------------------------------
+
+    if [ -e "$MINICONDA_INSTALL_DIR" ] && \
+       [ ! -x "$MINICONDA_INSTALL_DIR/bin/conda" ]; then
+
+        warn "Directory exists but does not contain a valid Conda installation:"
+        warn "  $MINICONDA_INSTALL_DIR"
+        warn "Removing incomplete Miniconda installation."
+
+        rm -rf "$MINICONDA_INSTALL_DIR"
+    fi
+
+    # -------------------------------------------------------------------------
+    # Download + install
+    # -------------------------------------------------------------------------
+
+    info "Downloading Miniconda ..."
+
+    curl \
+        -fL \
+        --retry 3 \
+        --retry-delay 2 \
+        "$MINICONDA_URL" \
+        -o "$installer"
+
+    info "Installing Miniconda -> $MINICONDA_INSTALL_DIR"
+
+    bash "$installer" \
+        -b \
+        -p "$MINICONDA_INSTALL_DIR"
+
     rm -f "$installer"
-    "$MINICONDA_INSTALL_DIR/bin/conda" init >/dev/null 2>&1 || true
-    info "Miniconda installed -> $MINICONDA_INSTALL_DIR"
+
+    # -------------------------------------------------------------------------
+    # Verify
+    # -------------------------------------------------------------------------
+
+    if [ ! -x "$MINICONDA_INSTALL_DIR/bin/conda" ]; then
+        error "Miniconda installation failed."
+        exit 1
+    fi
+
+    info "Miniconda installed successfully."
 }
 
-SYS_PY="$(command -v python3 || true)"
-SYS_TORCH_OK=0
-if [ -n "$SYS_PY" ] && "$SYS_PY" -c 'import torch' 2>/dev/null; then
-    SYS_TORCH_OK=1
-fi
-# A valid venv must contain bin/python and bin/activate.
-# If the directory exists but is incomplete, remove and recreate it.
-if [ ! -x "$VENV_DIR/bin/python" ] || [ ! -f "$VENV_DIR/bin/activate" ]; then
 
-    if [ -e "$VENV_DIR" ]; then
-        warn "Existing venv at $VENV_DIR is incomplete/broken — recreating it"
-        rm -rf "$VENV_DIR"
-    fi
+# =============================================================================
+# 1. Find / install Conda
+# =============================================================================
 
-    if [ "$SYS_TORCH_OK" = 1 ]; then
-        info "system python $("$SYS_PY" --version 2>&1) >= 3.12 with torch — venv reuses system torch"
-        "$SYS_PY" -m venv --system-site-packages "$VENV_DIR"
-    else
-        info "system python $("$SYS_PY" --version 2>&1) >= 3.12 — creating venv at $VENV_DIR"
-        "$SYS_PY" -m venv "$VENV_DIR"
-    fi
+step "1. Conda"
+
+CONDA_BIN=""
+
+if CONDA_BIN="$(find_conda)"; then
+
+    info "Conda found:"
+    info "  $CONDA_BIN"
+
 else
-    info "Existing venv found: $VENV_DIR"
+
+    install_miniconda
+
+    CONDA_BIN="$MINICONDA_INSTALL_DIR/bin/conda"
+
+fi
+
+
+# =============================================================================
+# 2. Initialise Conda for this shell
+# =============================================================================
+
+step "2. Initialise Conda"
+
+CONDA_BASE="$("$CONDA_BIN" info --base)"
+
+if [ ! -f "$CONDA_BASE/etc/profile.d/conda.sh" ]; then
+    error "Could not find:"
+    error "  $CONDA_BASE/etc/profile.d/conda.sh"
+    exit 1
 fi
 
 # shellcheck disable=SC1091
-source "$VENV_DIR/bin/activate"
-else
-    CONDA_BIN=""
-    if CONDA_BIN="$(find_conda)"; then
-        info "conda found: $CONDA_BIN"
-        eval "$("$CONDA_BIN" shell.bash hook 2>/dev/null || true)"
-    else
-        install_miniconda
-        CONDA_BIN="$MINICONDA_INSTALL_DIR/bin/conda"
-        eval "$("$CONDA_BIN" shell.bash hook 2>/dev/null || true)"
-    fi
-    CONDA_BASE="$("$CONDA_BIN" info --base)"
-    # shellcheck disable=SC1091
-    source "$CONDA_BASE/etc/profile.d/conda.sh"
-    conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main >/dev/null 2>&1 || true
-    conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r >/dev/null 2>&1 || true
-    if conda env list | grep -qw "$ENV_NAME"; then
-        info "conda env '$ENV_NAME' already exists — keeping as-is"
-    else
-        info "Creating conda env '$ENV_NAME' (python $PYTHON_VERSION) ..."
-        conda create -n "$ENV_NAME" "python=$PYTHON_VERSION" -y
-    fi
-    conda activate "$ENV_NAME"
-fi
-info "Activated: $(python --version 2>&1) @ $(which python)"
+source "$CONDA_BASE/etc/profile.d/conda.sh"
 
-# ──── 2. PyTorch with CUDA (idempotent) ───────────────────────────────────────
-if python -c "import torch" 2>/dev/null; then
-    info "PyTorch already installed: $(python -c 'import torch; print(torch.__version__)')"
-else
-    info "Installing PyTorch $TORCH_VERSION + torchvision (CUDA wheels) ..."
-    pip install --upgrade pip -q
-    pip install "torch==${TORCH_VERSION}" torchvision --index-url "$TORCH_INDEX" \
-        || pip install torch torchvision --index-url "$TORCH_INDEX"
+info "Conda base:"
+info "  $CONDA_BASE"
+
+info "Conda version:"
+info "  $(conda --version)"
+
+
+# =============================================================================
+# 3. Accept Anaconda ToS if required
+# =============================================================================
+
+# Newer Conda installations may require explicit ToS acceptance.
+# Older Conda installations may not have the "conda tos" command,
+# therefore failures are intentionally ignored.
+
+if conda tos --help >/dev/null 2>&1; then
+
+    info "Accepting Anaconda channel Terms of Service if required ..."
+
+    conda tos accept \
+        --override-channels \
+        --channel https://repo.anaconda.com/pkgs/main \
+        >/dev/null 2>&1 || true
+
+    conda tos accept \
+        --override-channels \
+        --channel https://repo.anaconda.com/pkgs/r \
+        >/dev/null 2>&1 || true
+
 fi
 
-# ──── 3. SAM 3 repository (code) ──────────────────────────────────────────────
-if [ -f "$SAM3_SRC_DIR/pyproject.toml" ] || [ -d "$SAM3_SRC_DIR/.git" ]; then
-    info "sam3 source found at $SAM3_SRC_DIR"
+
+# =============================================================================
+# 4. Create / activate Conda environment
+# =============================================================================
+
+step "3. Conda Environment"
+
+if conda env list | awk '{print $1}' | grep -Fxq "$ENV_NAME"; then
+
+    info "Conda environment '$ENV_NAME' already exists."
+
 else
-    info "Cloning sam3 -> $SAM3_SRC_DIR (set SAM3_SRC_DIR to override)"
-    mkdir -p "$(dirname "$SAM3_SRC_DIR")"
-    git clone --depth 1 https://github.com/facebookresearch/sam3.git "$SAM3_SRC_DIR"
-fi
-if python -c "import sam3" 2>/dev/null; then
-    info "sam3 package already importable"
-else
-    pip install -e "$SAM3_SRC_DIR"
+
+    info "Creating Conda environment:"
+    info "  name   : $ENV_NAME"
+    info "  Python : $PYTHON_VERSION"
+
+    conda create \
+        -n "$ENV_NAME" \
+        "python=$PYTHON_VERSION" \
+        pip \
+        -y
+
 fi
 
-# ──── 4. sam31 tool deps + editable install ──────────────────────────────────
-info "Installing sam31 requirements ..."
-pip install -q -r "$SCRIPT_DIR/requirements.txt"
-info "Installing sam31 (editable) ..."
-pip install -q -e "$SCRIPT_DIR"
 
-# ──── 5. hf CLI for bucket uploads (best effort) ─────────────────────────────
-if ! command -v hf >/dev/null 2>&1; then
-    pip install -q "huggingface-hub[cli]>=0.23" 2>/dev/null \
-        || warn "hf CLI install failed — bucket uploads will not work"
-fi
+info "Activating Conda environment '$ENV_NAME' ..."
 
-# ──── 6. Verify ───────────────────────────────────────────────────────────────
-info "Running smoke test ..."
-if sam31 --help >/dev/null 2>&1; then
-    info "sam31 CLI installed successfully"
-else
-    error "sam31 --help failed — check output above"
+conda activate "$ENV_NAME"
+
+
+# =============================================================================
+# Verify correct environment
+# =============================================================================
+
+ACTIVE_ENV="${CONDA_DEFAULT_ENV:-}"
+
+if [ "$ACTIVE_ENV" != "$ENV_NAME" ]; then
+    error "Failed to activate Conda environment '$ENV_NAME'."
+    error "Current environment: ${ACTIVE_ENV:-none}"
     exit 1
 fi
+
+info "Environment activated successfully."
+info "Python version : $(python --version 2>&1)"
+info "Python path    : $(which python)"
+info "Pip path       : $(which pip)"
+
+
+# =============================================================================
+# 5. Upgrade pip
+# =============================================================================
+
+step "4. Upgrade pip"
+
+python -m pip install --upgrade pip
+
+
+# =============================================================================
+# 6. Install PyTorch + CUDA wheels
+# =============================================================================
+
+step "5. PyTorch"
+
+INSTALLED_TORCH=""
+
+if INSTALLED_TORCH="$(
+    python -c 'import torch; print(torch.__version__)' 2>/dev/null
+)"; then
+
+    info "Existing PyTorch detected:"
+    info "  $INSTALLED_TORCH"
+
+fi
+
+
+# Accept versions such as:
+#
+#   2.10.0
+#   2.10.0+cu128
+#
+if [[ "$INSTALLED_TORCH" == "$TORCH_VERSION"* ]]; then
+
+    info "Required PyTorch version is already installed."
+
+else
+
+    if [ -n "$INSTALLED_TORCH" ]; then
+        info "PyTorch version does not match requested version."
+        info "Requested : $TORCH_VERSION"
+        info "Installed : $INSTALLED_TORCH"
+    fi
+
+    info "Installing PyTorch $TORCH_VERSION ..."
+    info "CUDA wheel index:"
+    info "  $TORCH_INDEX"
+
+    if ! python -m pip install \
+        "torch==${TORCH_VERSION}" \
+        torchvision \
+        --index-url "$TORCH_INDEX"; then
+
+        warn "Exact PyTorch $TORCH_VERSION installation failed."
+        warn "Falling back to latest compatible PyTorch from:"
+        warn "  $TORCH_INDEX"
+
+        python -m pip install \
+            torch \
+            torchvision \
+            --index-url "$TORCH_INDEX"
+
+    fi
+
+fi
+
+
+# =============================================================================
+# Verify PyTorch
+# =============================================================================
+
 python - <<'EOF'
 import torch
-print(f"torch {torch.__version__}  cuda_available={torch.cuda.is_available()}  "
-      f"devices={torch.cuda.device_count()}")
-import sam3
-print("sam3 import OK")
+
+print()
+print("PyTorch verification")
+print("--------------------")
+print("torch version   :", torch.__version__)
+print("CUDA available  :", torch.cuda.is_available())
+print("CUDA version    :", torch.version.cuda)
+print("CUDA devices    :", torch.cuda.device_count())
+
+if torch.cuda.is_available():
+    for i in range(torch.cuda.device_count()):
+        print(f"GPU {i}           :", torch.cuda.get_device_name(i))
 EOF
 
-echo ""
-info "===== SETUP COMPLETE ====="
-if [ -d "$VENV_DIR" ]; then
-    info "Activate with:  source $VENV_DIR/bin/activate"
+
+# =============================================================================
+# 7. Git dependency
+# =============================================================================
+
+step "6. Git"
+
+if ! command -v git >/dev/null 2>&1; then
+
+    warn "git is not installed."
+
+    if command -v apt-get >/dev/null 2>&1; then
+
+        info "Installing git using apt ..."
+
+        apt-get update
+        apt-get install -y git
+
+    else
+
+        error "git is required to clone SAM3."
+        error "Please install git and run setup again."
+        exit 1
+
+    fi
+
 else
-    info "Activate with:  conda activate $ENV_NAME"
+
+    info "git found:"
+    info "  $(git --version)"
+
 fi
-info "First run will download the 3.5 GB checkpoint to ~/.cache/sam31/ (or run: sam31 download)"
+
+
+# =============================================================================
+# 8. SAM3 repository
+# =============================================================================
+
+step "7. SAM3"
+
+if [ -f "$SAM3_SRC_DIR/pyproject.toml" ] || \
+   [ -d "$SAM3_SRC_DIR/.git" ]; then
+
+    info "SAM3 source already exists:"
+    info "  $SAM3_SRC_DIR"
+
+else
+
+    info "Cloning SAM3 repository ..."
+    info "Destination:"
+    info "  $SAM3_SRC_DIR"
+
+    mkdir -p "$(dirname "$SAM3_SRC_DIR")"
+
+    git clone \
+        --depth 1 \
+        https://github.com/facebookresearch/sam3.git \
+        "$SAM3_SRC_DIR"
+
+fi
+
+
+# =============================================================================
+# Install SAM3 editable
+# =============================================================================
+
+info "Installing SAM3 in editable mode ..."
+
+python -m pip install -e "$SAM3_SRC_DIR"
+
+
+# =============================================================================
+# Verify SAM3 import
+# =============================================================================
+
+if python -c "import sam3" >/dev/null 2>&1; then
+
+    info "SAM3 import successful."
+
+else
+
+    error "SAM3 was installed but 'import sam3' failed."
+    exit 1
+
+fi
+
+
+# =============================================================================
+# 9. sam31 requirements
+# =============================================================================
+
+step "8. sam31 Dependencies"
+
+REQUIREMENTS_FILE="$SCRIPT_DIR/requirements.txt"
+
+if [ -f "$REQUIREMENTS_FILE" ]; then
+
+    info "Installing requirements:"
+    info "  $REQUIREMENTS_FILE"
+
+    python -m pip install \
+        -r "$REQUIREMENTS_FILE"
+
+else
+
+    warn "requirements.txt not found:"
+    warn "  $REQUIREMENTS_FILE"
+    warn "Skipping requirements installation."
+
+fi
+
+
+# =============================================================================
+# 10. sam31 editable installation
+# =============================================================================
+
+step "9. Install sam31"
+
+if [ ! -f "$SCRIPT_DIR/pyproject.toml" ] && \
+   [ ! -f "$SCRIPT_DIR/setup.py" ] && \
+   [ ! -f "$SCRIPT_DIR/setup.cfg" ]; then
+
+    error "sam31 package metadata not found in:"
+    error "  $SCRIPT_DIR"
+    error ""
+    error "Expected one of:"
+    error "  pyproject.toml"
+    error "  setup.py"
+    error "  setup.cfg"
+    exit 1
+
+fi
+
+info "Installing sam31 in editable mode ..."
+
+python -m pip install -e "$SCRIPT_DIR"
+
+
+# =============================================================================
+# 11. Hugging Face CLI
+# =============================================================================
+
+step "10. Hugging Face CLI"
+
+if command -v hf >/dev/null 2>&1; then
+
+    info "hf CLI already installed:"
+    info "  $(command -v hf)"
+
+else
+
+    info "Installing Hugging Face CLI ..."
+
+    if python -m pip install "huggingface-hub[cli]>=0.23"; then
+
+        info "Hugging Face CLI installed."
+
+    else
+
+        warn "Hugging Face CLI installation failed."
+        warn "sam31 itself can still work, but bucket upload features may fail."
+
+    fi
+
+fi
+
+
+# =============================================================================
+# 12. Smoke tests
+# =============================================================================
+
+step "11. Smoke Tests"
+
+
+# -----------------------------------------------------------------------------
+# sam31 CLI
+# -----------------------------------------------------------------------------
+
+info "Testing sam31 CLI ..."
+
+if command -v sam31 >/dev/null 2>&1; then
+
+    info "sam31 executable:"
+    info "  $(command -v sam31)"
+
+else
+
+    error "'sam31' executable is not available in PATH."
+    exit 1
+
+fi
+
+
+if sam31 --help >/dev/null 2>&1; then
+
+    info "sam31 --help: OK"
+
+else
+
+    error "sam31 --help failed."
+    exit 1
+
+fi
+
+
+# -----------------------------------------------------------------------------
+# Python imports
+# -----------------------------------------------------------------------------
+
+info "Testing Python imports ..."
+
+python - <<'EOF'
+import sys
+
+print()
+print("Python environment")
+print("------------------")
+print("Executable :", sys.executable)
+print("Version    :", sys.version.split()[0])
+
+print()
+
+import torch
+
+print("PyTorch")
+print("-------")
+print("Version        :", torch.__version__)
+print("CUDA available :", torch.cuda.is_available())
+print("CUDA version   :", torch.version.cuda)
+print("Device count   :", torch.cuda.device_count())
+
+if torch.cuda.is_available():
+    for i in range(torch.cuda.device_count()):
+        print(f"GPU {i}          :", torch.cuda.get_device_name(i))
+
+print()
+
+import sam3
+
+print("SAM3")
+print("----")
+print("sam3 import OK")
+
+print()
+EOF
+
+
+# =============================================================================
+# 13. Final information
+# =============================================================================
+
+echo ""
+echo -e "${GREEN}==============================================================================${NC}"
+echo -e "${GREEN}                         SETUP COMPLETE${NC}"
+echo -e "${GREEN}==============================================================================${NC}"
+echo ""
+
+info "Conda environment:"
+info "  $ENV_NAME"
+
+info "Python:"
+info "  $(which python)"
+
+info "Python version:"
+info "  $(python --version 2>&1)"
+
+info "SAM3 source:"
+info "  $SAM3_SRC_DIR"
+
+info "sam31 source:"
+info "  $SCRIPT_DIR"
+
+echo ""
+
+info "Activate later with:"
+echo ""
+echo "    conda activate $ENV_NAME"
+echo ""
+
+info "Run sam31 with:"
+echo ""
+echo "    sam31 --help"
+echo ""
+
+info "Download the model checkpoint with:"
+echo ""
+echo "    sam31 download"
+echo ""
+
+info "The first run may automatically download the checkpoint to:"
+echo ""
+echo "    ~/.cache/sam31/"
+echo ""
