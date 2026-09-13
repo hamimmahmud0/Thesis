@@ -6,7 +6,7 @@ set -euo pipefail
 # =============================================================================
 
 ENV_NAME="sam31"
-PYTHON_VERSION="3.12"
+PYTHON_VERSION="3.8"
 
 TORCH_VERSION="2.10.0"
 TORCH_INDEX="https://download.pytorch.org/whl/cu128"
