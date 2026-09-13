@@ -302,10 +302,58 @@ python -m pip install --upgrade pip
 
 
 # =============================================================================
-# 6. Install PyTorch + CUDA wheels
+# 6. Python dependencies (requirements.txt — required BEFORE SAM3)
+# =============================================================================
+#
+# This MUST run before the SAM3 install below. SAM3 has import-time
+# requirements that are missing from its own dependency metadata, so a fresh
+# 'pip install -e sam3' is not enough — 'import sam3' fails with
+# ModuleNotFoundError until these are present (all included in
+# requirements.txt):
+#
+#   setuptools<81  - sam3/model_builder.py imports pkg_resources, removed in
+#                    setuptools 81 (fresh conda envs ship >= 81)
+#   numpy<2        - SAM3 requires numpy>=1.26,<2; pinning it early also
+#                    stops the torchvision solver from pulling numpy 2.x
+#   einops         - sam3/sam/rope.py (only in sam3's 'notebooks' extra)
+#   psutil         - sam3/model/sam3_video_predictor.py (undeclared)
+#   pycocotools    - sam3/train/data/coco_json_loaders.py (only in sam3's
+#                    'dev' extra, but imported at 'import sam3' time)
+#   pillow         - sam3/train/data/sam3_image_dataset.py (undeclared)
+#
+# The remaining requirements (opencv, requests, tqdm) are needed by sam31
+# itself.
 # =============================================================================
 
-step "5. PyTorch"
+step "5. Python Dependencies"
+
+REQUIREMENTS_FILE="$SCRIPT_DIR/requirements.txt"
+
+if [ -f "$REQUIREMENTS_FILE" ]; then
+
+    info "Installing requirements (includes SAM3's undeclared import-time deps):"
+    info "  $REQUIREMENTS_FILE"
+
+    python -m pip install \
+        -r "$REQUIREMENTS_FILE"
+
+else
+
+    error "requirements.txt not found:"
+    error "  $REQUIREMENTS_FILE"
+    error ""
+    error "It contains dependencies SAM3 needs at import time; without it"
+    error "'import sam3' will fail. Please restore the file and re-run setup."
+    exit 1
+
+fi
+
+
+# =============================================================================
+# 7. Install PyTorch + CUDA wheels
+# =============================================================================
+
+step "6. PyTorch"
 
 INSTALLED_TORCH=""
 
@@ -384,7 +432,7 @@ EOF
 # 7. Git dependency
 # =============================================================================
 
-step "6. Git"
+step "7. Git"
 
 if ! command -v git >/dev/null 2>&1; then
 
@@ -417,7 +465,7 @@ fi
 # 8. SAM3 repository
 # =============================================================================
 
-step "7. SAM3"
+step "8. SAM3"
 
 if [ -f "$SAM3_SRC_DIR/pyproject.toml" ] || \
    [ -d "$SAM3_SRC_DIR/.git" ]; then
@@ -461,38 +509,21 @@ if python -c "import sam3" >/dev/null 2>&1; then
 else
 
     error "SAM3 was installed but 'import sam3' failed."
+    error "Import traceback (for diagnosis):"
+    error ""
+
+    python -c "import sam3" || true
+
+    error ""
+    error "If this shows ModuleNotFoundError for 'pkg_resources', 'einops' or"
+    error "'psutil', the 'Base Python Dependencies' step above failed."
     exit 1
 
 fi
 
 
 # =============================================================================
-# 9. sam31 requirements
-# =============================================================================
-
-step "8. sam31 Dependencies"
-
-REQUIREMENTS_FILE="$SCRIPT_DIR/requirements.txt"
-
-if [ -f "$REQUIREMENTS_FILE" ]; then
-
-    info "Installing requirements:"
-    info "  $REQUIREMENTS_FILE"
-
-    python -m pip install \
-        -r "$REQUIREMENTS_FILE"
-
-else
-
-    warn "requirements.txt not found:"
-    warn "  $REQUIREMENTS_FILE"
-    warn "Skipping requirements installation."
-
-fi
-
-
-# =============================================================================
-# 10. sam31 editable installation
+# 9. sam31 editable installation
 # =============================================================================
 
 step "9. Install sam31"
