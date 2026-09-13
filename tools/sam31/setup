@@ -53,18 +53,28 @@ SYS_TORCH_OK=0
 if [ -n "$SYS_PY" ] && "$SYS_PY" -c 'import torch' 2>/dev/null; then
     SYS_TORCH_OK=1
 fi
-if [ -z "${SAM31_FORCE_CONDA:-}" ] && [ -n "$SYS_PY" ] && "$SYS_PY" -c 'import sys; sys.exit(0 if sys.version_info >= (3, 12) else 1)'; then
-    if [ ! -d "$VENV_DIR" ]; then
-        if [ "$SYS_TORCH_OK" = 1 ]; then
-            info "system python $("$SYS_PY" --version 2>&1) >= 3.12 with torch — venv reuses system torch"
-            "$SYS_PY" -m venv --system-site-packages "$VENV_DIR"
-        else
-            info "system python $("$SYS_PY" --version 2>&1) >= 3.12 — using a venv at $VENV_DIR"
-            "$SYS_PY" -m venv "$VENV_DIR"
-        fi
+# A valid venv must contain bin/python and bin/activate.
+# If the directory exists but is incomplete, remove and recreate it.
+if [ ! -x "$VENV_DIR/bin/python" ] || [ ! -f "$VENV_DIR/bin/activate" ]; then
+
+    if [ -e "$VENV_DIR" ]; then
+        warn "Existing venv at $VENV_DIR is incomplete/broken — recreating it"
+        rm -rf "$VENV_DIR"
     fi
-    # shellcheck disable=SC1091
-    source "$VENV_DIR/bin/activate"
+
+    if [ "$SYS_TORCH_OK" = 1 ]; then
+        info "system python $("$SYS_PY" --version 2>&1) >= 3.12 with torch — venv reuses system torch"
+        "$SYS_PY" -m venv --system-site-packages "$VENV_DIR"
+    else
+        info "system python $("$SYS_PY" --version 2>&1) >= 3.12 — creating venv at $VENV_DIR"
+        "$SYS_PY" -m venv "$VENV_DIR"
+    fi
+else
+    info "Existing venv found: $VENV_DIR"
+fi
+
+# shellcheck disable=SC1091
+source "$VENV_DIR/bin/activate"
 else
     CONDA_BIN=""
     if CONDA_BIN="$(find_conda)"; then
