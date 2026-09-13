@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sam31"
+version = "0.1.0"
+description = "SAM 3.1 text-prompted annotator: image directories + text prompts -> COCO 1.0 instance-segmentation datasets"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.26,<2",
+    "opencv-python-headless>=4.8",
+    "pillow>=10.0",
+    "pycocotools>=2.0.7",
+    "requests>=2.28",
+    "tqdm>=4.65",
+]
+
+[project.optional-dependencies]
+hf = [
+    "huggingface-hub[cli]>=0.23",
+]
+
+[project.scripts]
+sam31 = "sam31.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["sam31*"]

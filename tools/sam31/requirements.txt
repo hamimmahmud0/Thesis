@@ -1,0 +1,25 @@
+# Requirements for the sam31 annotator (installed into the sam31 env,
+# which already has torch and the sam3 repo — see the `setup` script).
+#
+# Setup (fresh machine):
+#
+#   bash setup                       # creates the env + installs everything
+#   conda activate sam31             # (or source .venv/bin/activate)
+#
+
+# pkg_resources is used by sam3.model_builder; setuptools >= 81 removed
+# pkg_resources entirely, so pin below the removal.
+setuptools>=68,<81
+
+# Core dependencies
+numpy>=1.26,<2
+opencv-python-headless>=4.8
+pillow>=10.0
+pycocotools>=2.0.7
+requests>=2.28
+tqdm>=4.65
+
+# Runtime imports of sam3 (sam3/sam/rope.py, sam3_video_predictor.py) need
+# einops and psutil, but sam3 only lists them in optional extras.
+einops>=0.7
+psutil>=5.9

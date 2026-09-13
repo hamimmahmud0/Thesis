@@ -3,6 +3,7 @@
 import os
 import signal
 import subprocess
+import threading
 import sys
 import time
 from pathlib import Path
@@ -12,9 +13,15 @@ from urllib.parse import urlparse, unquote
 # Configuration
 # =============================================================================
 
-HF_VIDEO_LINKS = []
-HF_TOKEN = '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'
+HF_VIDEO_LINKS = [
+    'https://huggingface.co/datasets/hamimmahmud0/DRINF/resolve/main/Nadirs/Doyel%20Chattor/Sep%203%2C%202026/DJI_0403_merged.mp4',
+    'https://huggingface.co/datasets/hamimmahmud0/DRINF/resolve/main/Nadirs/Doyel%20Chattor/Sep%203%2C%202026/DJI_0406_merged.mp4'
+    ]
 
+
+HF_TOKEN = None
+if not HF_TOKEN:
+    exit()
 BUCKET = 'hamimmahmud0/DRINF_stabilized'
 VIDEO_FILE_NAMES = [
     unquote(os.path.basename(urlparse(url).path))
@@ -38,7 +45,7 @@ STAGES = [
         "Install stabilizer",
         [
             [
-                "Stabilizer",
+                "Stabilizer Setup",
                 "git clone https://github.com/hamimmahmud0/Thesis.git; "
                 "cd Thesis; "
                 "tools/stabilize/setup"
@@ -51,9 +58,10 @@ STAGES = [
         [
             [
                 f"cuda:{i}",
-                f"wget '{HF_VIDEO_LINKS[i]}' -O '{VIDEO_FILE_NAMES[i]}'; "
-                f"stabilize run '{VIDEO_FILE_NAMES[i]}' "
+                f"cd ~ && wget '{HF_VIDEO_LINKS[i]}' -O '{VIDEO_FILE_NAMES[i]}'; "
+                f"/root/miniconda3/envs/stabilize/bin/stabilize run ~/'{VIDEO_FILE_NAMES[i]}' "
                 f"--run '{VIDEO_FILE_NAMES[i]}' "
+                f"--frames 0 "
                 f"--bucket '{BUCKET}' "
                 f"--token '{HF_TOKEN}' "
                 f"--step 1 "
@@ -189,6 +197,29 @@ def stop_all_jobs(jobs):
             kill_process(job["process"])
 
 
+# Lock console writes so output from parallel jobs does not corrupt each line.
+PRINT_LOCK = threading.Lock()
+
+
+def stream_process_output(process, job_name, log_file):
+    """
+    Stream a process output to both the terminal and its log file in real time.
+    Each terminal line is prefixed with the command/job name.
+    """
+    try:
+        for line in iter(process.stdout.readline, ""):
+            # Save raw command output to the log file.
+            log_file.write(line)
+            log_file.flush()
+
+            # Show the same output live in the terminal.
+            with PRINT_LOCK:
+                print(f"[{job_name}] {line}", end="", flush=True)
+    finally:
+        if process.stdout is not None:
+            process.stdout.close()
+
+
 # =============================================================================
 # Stage execution
 # =============================================================================
@@ -304,10 +335,22 @@ def run_stage(stage_index, stage_name, commands):
                 "-lc",
                 command,
             ],
-            stdout=log_file,
+            stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
+            text=True,
+            bufsize=1,
+            errors="replace",
             start_new_session=True,
+            env={**os.environ, "PYTHONUNBUFFERED": "1"},
         )
+
+        # Tee the process output to both terminal and log file in real time.
+        output_thread = threading.Thread(
+            target=stream_process_output,
+            args=(process, name, log_file),
+            daemon=True,
+        )
+        output_thread.start()
 
         print(
             f"        Started PID: {process.pid}"
@@ -323,6 +366,7 @@ def run_stage(stage_index, stage_name, commands):
                 "log_path": log_path,
                 "start_time": time.time(),
                 "reported": False,
+                "output_thread": output_thread,
             }
         )
 
@@ -402,6 +446,13 @@ def run_stage(stage_index, stage_name, commands):
     finally:
 
         for job in jobs:
+
+            # Ensure all remaining buffered output has been printed/logged
+            # before closing the log file.
+            try:
+                job["output_thread"].join(timeout=2)
+            except Exception:
+                pass
 
             try:
                 job["log_file"].close()

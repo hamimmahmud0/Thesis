@@ -3,59 +3,101 @@
 import os
 import signal
 import subprocess
+import threading
 import sys
 import time
 from pathlib import Path
+from urllib.parse import urlparse, unquote
 
+os.chdir('/root')
 
 # =============================================================================
 # Configuration
 # =============================================================================
 
+HF_VIDEO_LINKS = [
+    'https://huggingface.co/buckets/hamimmahmud0/DRINF_stabilized/resolve/DJI_0102.MP4/stabilized.mp4',
+    'https://huggingface.co/buckets/hamimmahmud0/DRINF_stabilized/resolve/DJI_0103.MP4/stabilized.mp4',
+    'https://huggingface.co/buckets/hamimmahmud0/DRINF_stabilized/resolve/DJI_0263_merged/stabilized.mp4',
+    'https://huggingface.co/buckets/hamimmahmud0/DRINF_stabilized/resolve/DJI_0266_merged/stabilized.mp4'
+]
+
+HF_TOKEN = None
+if not HF_TOKEN:
+    exit()
+
+SAMPLING_RATE=5
+
+BUCKET = 'hamimmahmud0/CVAT_frame_extraction'
+
+
+VIDEO_DIR_NAMES = [
+    os.path.splitext(
+        unquote(
+            os.path.basename(
+                os.path.dirname(urlparse(url).path)
+            )
+        )
+    )[0]
+    for url in HF_VIDEO_LINKS
+]
+
+
+VIDEO_FILE_NAMES = [
+    f"{name}.mp4"
+    for name in VIDEO_DIR_NAMES
+]
+
+
+print(VIDEO_FILE_NAMES)
+
+
+VIDEO_FILE_NAMES_WITHOUT_EXTENTION = [name.split('.')[0] for name in VIDEO_FILE_NAMES]
+
+#MAX_DIM = 3840 # 4k video
 STAGES = [
     [
-        "Stage 1 - Preparation",
+        "Prepare Environment",
         [
             [
-                "Prepare dataset A",
-                "echo 'Preparing A'; sleep 5; echo 'A finished'"
-            ],
-            [
-                "Prepare dataset B",
-                "echo 'Preparing B'; sleep 3; echo 'B finished'"
-            ],
-            [
-                "Prepare dataset C",
-                "echo 'Preparing C'; sleep 4; echo 'C finished'"
-            ],
+                "Install",
+                "cd ~; apt update; apt install -y btop wget git ffmpeg;"
+            ]
         ],
     ],
 
     [
-        "Stage 2 - Processing",
+        f"Download video, extract frame and upload to {BUCKET}",
         [
             [
-                "Process A",
-                "echo 'Processing A'; sleep 6; echo 'A processed'"
-            ],
-            [
-                "Process B",
-                "echo 'Processing B'; sleep 4; echo 'B processed'"
-            ],
-        ],
-    ],
+                f"video:{i}|'{VIDEO_DIR_NAMES[i]}'",
 
-    [
-        "Stage 3 - Finalization",
-        [
-            [
-                "Final task",
-                "echo 'Finalizing'; sleep 2; echo 'Done'"
-            ],
+                f"conda activate stabilize; "
+                f"mkdir -p '{VIDEO_DIR_NAMES[i]}'; "
+
+                f"wget '{HF_VIDEO_LINKS[i]}' "
+                f"-O '{VIDEO_FILE_NAMES[i]}'; "
+
+                f'''ffmpeg -i '{VIDEO_FILE_NAMES[i]}' '''
+                f'''-vf "fps=1/{SAMPLING_RATE}" '''
+                f'''-y '{VIDEO_DIR_NAMES[i]}/frame_%06d.jpg'; '''
+
+                f"pip install hf; "
+
+                f"export HF_TOKEN='{HF_TOKEN}'; "
+
+                f"hf buckets create '{BUCKET}' "
+                f"--exist-ok "
+                f"--token '{HF_TOKEN}'; "
+
+                f"hf sync './{VIDEO_DIR_NAMES[i]}' "
+                f"'hf://buckets/{BUCKET}/{VIDEO_DIR_NAMES[i]}' "
+                f"--token '{HF_TOKEN}'"
+            ]
+            for i in range(len(HF_VIDEO_LINKS))
         ],
     ],
 ]
-
 
 # Directory where logs will be written
 LOG_DIR = Path("logs")
@@ -178,6 +220,29 @@ def stop_all_jobs(jobs):
             kill_process(job["process"])
 
 
+# Lock console writes so output from parallel jobs does not corrupt each line.
+PRINT_LOCK = threading.Lock()
+
+
+def stream_process_output(process, job_name, log_file):
+    """
+    Stream a process output to both the terminal and its log file in real time.
+    Each terminal line is prefixed with the command/job name.
+    """
+    try:
+        for line in iter(process.stdout.readline, ""):
+            # Save raw command output to the log file.
+            log_file.write(line)
+            log_file.flush()
+
+            # Show the same output live in the terminal.
+            with PRINT_LOCK:
+                print(f"[{job_name}] {line}", end="", flush=True)
+    finally:
+        if process.stdout is not None:
+            process.stdout.close()
+
+
 # =============================================================================
 # Stage execution
 # =============================================================================
@@ -293,10 +358,22 @@ def run_stage(stage_index, stage_name, commands):
                 "-lc",
                 command,
             ],
-            stdout=log_file,
+            stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
+            text=True,
+            bufsize=1,
+            errors="replace",
             start_new_session=True,
+            env={**os.environ, "PYTHONUNBUFFERED": "1"},
         )
+
+        # Tee the process output to both terminal and log file in real time.
+        output_thread = threading.Thread(
+            target=stream_process_output,
+            args=(process, name, log_file),
+            daemon=True,
+        )
+        output_thread.start()
 
         print(
             f"        Started PID: {process.pid}"
@@ -312,6 +389,7 @@ def run_stage(stage_index, stage_name, commands):
                 "log_path": log_path,
                 "start_time": time.time(),
                 "reported": False,
+                "output_thread": output_thread,
             }
         )
 
@@ -391,6 +469,13 @@ def run_stage(stage_index, stage_name, commands):
     finally:
 
         for job in jobs:
+
+            # Ensure all remaining buffered output has been printed/logged
+            # before closing the log file.
+            try:
+                job["output_thread"].join(timeout=2)
+            except Exception:
+                pass
 
             try:
                 job["log_file"].close()
