@@ -22,11 +22,31 @@ Required schema: tracks (T,N,2) float32 ORIGINAL-pixel coords, visibility
 
 ## 2. Camera motion (.csv) + visualization
 
-    python3 motion_from_tracks.py tracks.npz --out-dir out [--gsd m_per_px]
+WINDOWED GRID (default, --window 100): grid points are RE-DEFINED every
+--window frames (windows 0-99, 99-199, 199-299, ... sharing one anchor
+frame) so usable correspondences do not diminish over a long video.
+Per-window motion is combined by chaining through the shared anchor frames
+into one global frame-0-referenced trajectory. --window 0 = legacy single
+grid (queries only at frame 0).
+
+To get FRESH grids per window, track per window and merge:
+
+    # a) cut the video into chunks sharing anchor frames (0-99, 99-199, ...)
+    #    or run COT3 once per anchor with grid_query_frame=anchor and keep
+    #    [anchor, next_anchor] frames per run
+    # b) merge chunks (assumes shared-anchor arrangement by default)
+    python3 merge_tracks.py chunk_0.npz chunk_1.npz chunk_2.npz --out merged.npz
+    # c) windowed motion estimation
+    python3 motion_from_tracks.py merged.npz --out-dir out --window 100
+
+A single-query npz also works with --window (the grid at each anchor is
+then the points still alive at that anchor - no fresh points can appear).
 
 Writes out/motion.csv (camera convention; columns frame,dx,dy,d_yaw_deg,
-scale,inliers,inlier_ratio,cum_x,cum_y,cum_yaw_deg,reliable[,usable,
-cum_log_scale]) and out/trajectory.png (the camera-motion sheet).
+scale,inliers,inlier_ratio,cum_x,cum_y,cum_yaw_deg,reliable,usable,
+cum_log_scale,window,grid_size) and out/trajectory.png (the camera-motion
+sheet; gray vertical lines mark grid re-seed anchors). The printed summary
+includes a per-window table (anchor, grid_pts, mean usable, unreliable %).
 Runtime ~=90 s for T=7856,N=32400 on 4 vCPU.
 
 Regenerate the sheet later from any motion.csv:

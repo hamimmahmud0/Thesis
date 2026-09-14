@@ -20,9 +20,13 @@ TWO+ subcommands - the verification gate is MANDATORY:
 Pipeline prerequisites per video:
   1) tracks .npz   (keys: tracks [T,N,2] f32 original-px, visibility [T,N]
                     bool, query_points, meta JSON with width/height/fps)
-     -> see COT3/llms.txt in this bucket to produce them.
+      -> see COT3/llms.txt in this bucket to produce them.
   2) motion.csv    (camera-convention per-frame motion; produced by
-                    motion_from_tracks.py in this folder)
+                    motion_from_tracks.py in this folder, which re-defines
+                    the grid points every --window frames (default 100,
+                    windows 0-99, 99-199, 199-299, ...) so correspondences
+                    do not diminish over a long video; the per-window motion
+                    is combined by chaining through the shared anchor frames)
   3) stabilize.py plan / render (this script)
 
 Math (do not "simplify"):
@@ -79,6 +83,25 @@ def combined_warp(C3, origin):
     lin = C3[:2, :2]
     off = C3[:2, 2:3] + lin @ np.asarray(origin, dtype=np.float64).reshape(2, 1)
     return np.hstack([lin, off]).astype(np.float32)
+
+
+def motion_window_info(df):
+    """Windowed-grid info from a motion.csv produced with --window.
+
+    Returns (n_windows, window_len or None). Windowed CSVs carry a `window`
+    column; the grid was re-defined (anchored) every `window` frames and the
+    per-frame motion was chained through the shared anchor frames, so the
+    cumulative map C_t needs no special handling here.
+    """
+    if "window" not in df.columns:
+        return None, None
+    w = df["window"].to_numpy()
+    n = int(w.max()) + 1
+    if n < 2 or len(w) < 2:
+        return n, None
+    change = df["frame"].to_numpy()[1:][np.diff(w) != 0]
+    spacing = np.diff(change)
+    return n, (int(np.median(spacing)) if len(spacing) else None)
 
 
 def open_video(path):
@@ -181,6 +204,13 @@ def print_plan(args, c):
           f"{c['W']}x{c['H']} @ {c['fps']:.3f} fps)")
     print(f"tracks npz:        {args.tracks_npz} (meta matches video)")
     print(f"motion csv:        {args.motion_csv} ({c['T_csv']} rows)")
+    n_win, win_len = motion_window_info(c["df"])
+    if n_win is not None and n_win > 1:
+        note = f"every {win_len} frames" if win_len else "per window"
+        print(f"motion windows:    {n_win} (grid points re-defined {note}; "
+              f"motion chained through shared anchors)")
+    else:
+        print("motion windows:    none (single grid for the whole video)")
     print(f"output:            {args.out}")
     print(f"crop size:         {args.crop}x{args.crop} px (fixed, frame-0 locked)")
     print(f"crop window:       x [{c['x0']}..{c['x0'] + args.crop}], "

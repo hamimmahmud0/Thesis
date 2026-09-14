@@ -42,9 +42,23 @@ The tool enforces this mechanically. Do not bypass it.
    width/height/fps). Produce via COT3/ in this bucket; see REPRODUCE.md.
 2. motion.csv - camera-convention per-frame similarity motion, produced by
    motion_from_tracks.py (same folder):
-       python3 motion_from_tracks.py tracks.npz --out-dir out [--gsd m/px]
-   Writes motion.csv + trajectory.png + printed summary.
-3. stabilize.py plan / render as above.
+       python3 motion_from_tracks.py tracks.npz --out-dir out [--gsd m/px] \
+           [--window 100]
+   Grid points are re-defined every --window frames (default 100; windows
+   0-99, 99-199, 199-299, ... sharing one anchor frame) because they
+   diminish over a long context; the per-window motion is combined by
+   chaining through the shared anchor frames. --window 0 = legacy single
+   grid. Writes motion.csv + trajectory.png + printed summary (incl. a
+   per-window table: anchor, grid size, mean usable, unreliable %).
+   For FRESH grids per window, track per window (query grid at each
+   anchor frame) and merge first:
+       python3 merge_tracks.py chunk_0.npz chunk_1.npz ... --out merged.npz
+   (chunks share anchor frames by default; see REPRODUCE.md). A
+   single-query npz also works with --window, but the re-defined grid at
+   each anchor is then limited to points still alive at that anchor.
+3. stabilize.py plan / render as above. The renderer is agnostic to
+   windowing: it chains the per-frame rows of motion.csv exactly as
+   before; `plan` reports the windowing found in the CSV.
 
 Dependencies: python3.10+, numpy, opencv-python-headless, pandas,
 matplotlib (viz only), ffmpeg on PATH.
@@ -63,6 +77,10 @@ matplotlib (viz only), ffmpeg on PATH.
 
 - RANSAC is nondeterministic: motion.csv is the single source of truth;
   never re-fit transforms inside the renderer.
+- Grid points diminish over long videos; keep --window (default 100) ON so
+  the correspondence set is refreshed at every anchor. If a window anchor
+  has few visible points, the per-window table printed by
+  motion_from_tracks.py will show it (low grid_pts / mean_usable).
 - Per-frame scale bias accumulates over long chains (~x0.992 det drift over
   7800 frames observed); keep crops well inside the sensor or smooth first.
 - CoTracker pads windows: T = n_frames + 4; renderer caps at video length.
