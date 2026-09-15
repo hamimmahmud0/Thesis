@@ -28,7 +28,9 @@ extraction, all visible).
   worker). `threading.BoundedSemaphore` acquired non-blocking at the start of
   `track_media`; when busy the request is rejected immediately with
   `{"is_error": true, "error": "Server at capacity..."}` instead of piling up.
-- **grid_size clamped** to `COT_MCP_MAX_GRID_SIZE` (default 32).
+- **grid_size UNLOCKED** (2026-09-15): no default cap; any NxN grid is
+  accepted (GPU memory scales with N^2). Operators can enforce a ceiling by
+  setting `COT_MCP_MAX_GRID_SIZE` > 0.
   `max_frames` default is **0 = every frame (no sampling)**; a positive value is
   clamped to `COT_MCP_MAX_FRAMES` (default 600) and evenly samples.
 - **Upload size capped** at 5 MB with strict base64 validation and empty-file
@@ -52,8 +54,9 @@ extraction, all visible).
 - **Bounded queue**: `task_queue = mp.Queue(maxsize=COT_MAX_QUEUE=4)`; full
   queue -> HTTP 503 instead of unbounded work.
 - **Job TTL cleanup**: terminal jobs purged after `COT_JOB_TTL` (default 30 min).
-- **Per-job limits**: `COT_MAX_FRAMES` (600), `COT_MAX_GRID_SIZE` (32),
-  `COT_MAX_TOTAL_UPLOAD` (512 MB). Default `max_frames` = 0 -> **every frame of
+- **Per-job limits**: `COT_MAX_FRAMES` (600), `COT_MAX_TOTAL_UPLOAD`
+  (512 MB). Grid size is UNLOCKED (no default cap); set `COT_MAX_GRID_SIZE`
+  > 0 to enforce a ceiling. Default `max_frames` = 0 -> **every frame of
   the video is tracked (no sampling)**; a positive `max_frames` evenly samples
   when the video is longer. Frames are streamed from disk with a bounded
   in-memory window (last 16) so full-length 4K videos do not exhaust host RAM.

@@ -19,10 +19,10 @@ HF_VIDEO_LINKS = [
     ]
 
 
-HF_TOKEN = None
+HF_TOKEN = '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'
 if not HF_TOKEN:
     exit()
-BUCKET = 'hamimmahmud0/DRINF_stabilized'
+BUCKET = 'z81980440/DRINF_stabilized'
 VIDEO_FILE_NAMES = [
     unquote(os.path.basename(urlparse(url).path))
     for url in HF_VIDEO_LINKS
@@ -65,6 +65,7 @@ STAGES = [
                 f"--bucket '{BUCKET}' "
                 f"--token '{HF_TOKEN}' "
                 f"--step 1 "
+                f"--grid-size 256 "
                 f"--max-dim $(ffprobe -v error "
                 f"-select_streams v:0 "
                 f"-show_entries stream=width "

@@ -142,7 +142,7 @@ stabilize track input.mp4 -o tracks.npz --grid-size 16
 `--checkpoint` is optional — if omitted (or the file is missing), the
 checkpoint auto-downloads from the Hub into `~/.cache/cotracker3/`.
 
-Options: `--checkpoint` (autodownloads if missing), `--grid-size` (max 32), `--grid-query-frame`, `--max-dim 1280`, `--step 8`, `--device cuda:0`.
+Options: `--checkpoint` (autodownloads if missing), `--grid-size` (no cap; GPU memory scales with N²), `--grid-query-frame`, `--max-dim 1280`, `--step 8`, `--device cuda:0`.
 
 `--step` sets the online sliding-window stride: the model processes
 `window_len = 2*step` frames per call and advances by `step` (default 8 →

@@ -816,8 +816,9 @@ def build_parser() -> argparse.ArgumentParser:
         "--grid-size", type=int, default=16, metavar="N",
         help=(
             "NxN grid of keypoints over the query frame.  Number of points "
-            "= N*N.  Maximum 32 (1024 points).  Default: 16 (256 points). "
-            "Higher values give denser tracking but use more GPU memory."
+            "= N*N.  No cap (GPU memory scales with N*N).  Default: 16 "
+            "(256 points). Higher values give denser tracking but use more "
+            "GPU memory."
         ),
     )
     p_track.add_argument(

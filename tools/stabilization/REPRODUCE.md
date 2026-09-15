@@ -11,9 +11,11 @@ Required schema: tracks (T,N,2) float32 ORIGINAL-pixel coords, visibility
 
 - Find the backend: GET http://163.61.236.112/v1/announce ("online": true).
 - API usage: read COT3/llms.txt in this bucket.
-- NOTE: the MCP/backend clamps query grids to NxN<=32; a rectangular
-  fixed-density grid cannot be expressed through the API. Replicate the
-  canonical online loop instead - see task_cot3-dense16-track-*/scripts/
+- NOTE: the grid-size cap (NxN<=32) was REMOVED from the MCP/backend (any
+  square NxN grid is accepted now); a RECTANGULAR fixed-density grid still
+  cannot be expressed through the API (grid_size is square). For that,
+  replicate the canonical online loop instead - see
+  task_cot3-dense16-track-*/scripts/
   track_dense_amp.py in z81980440/agent_bucket (window_len=16, step=8,
   every frame tracked, longest side 1280 processing res, AMP fp16,
   coords mapped back to ORIGINAL pixels).

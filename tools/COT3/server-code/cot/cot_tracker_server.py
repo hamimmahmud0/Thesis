@@ -13,8 +13,9 @@ Endpoints:
 Guardrails:
   - Bounded task queue (COT_MAX_QUEUE); full queue -> HTTP 503.
   - Job TTL cleanup (COT_JOB_TTL) so the in-memory jobs dict cannot grow.
-  - Per-job caps: frames (COT_MAX_FRAMES), grid size (COT_MAX_GRID_SIZE),
-    total upload bytes (COT_MAX_TOTAL_UPLOAD).
+  - Per-job caps: frames (COT_MAX_FRAMES), total upload bytes
+    (COT_MAX_TOTAL_UPLOAD). Grid size is UNLOCKED (no default cap); set
+    COT_MAX_GRID_SIZE > 0 to enforce an operator ceiling.
   - Videos are resized down to at most COT_MAX_VIDEO_DIM on the longest side
     before tracking (bounded GPU memory); returned tracks are mapped back to
     the original video coordinates.
@@ -64,7 +65,9 @@ MAX_TOTAL_UPLOAD_BYTES = int(
 )
 JOB_TTL_SECONDS = int(os.environ.get("COT_JOB_TTL", str(30 * 60)))  # 30 min
 MAX_FRAMES = int(os.environ.get("COT_MAX_FRAMES", "600"))
-MAX_GRID_SIZE = int(os.environ.get("COT_MAX_GRID_SIZE", "32"))
+# Grid size is UNLOCKED: no default cap (any NxN grid is accepted). Set
+# COT_MAX_GRID_SIZE > 0 to re-enable an operator ceiling.
+MAX_GRID_SIZE = int(os.environ.get("COT_MAX_GRID_SIZE", "0"))
 MAX_VIDEO_DIM = int(os.environ.get("COT_MAX_VIDEO_DIM", "1280"))
 MIN_FRAMES = 2
 
@@ -165,6 +168,15 @@ IMAGE_SUFFIXES = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".tiff", ".tif"}
 VIDEO_SUFFIXES = {".mp4", ".mov", ".avi", ".mkv", ".webm", ".m4v"}
 
 
+def _clamp_grid_size(grid_size):
+    """Sanitize grid_size: >= 1; ceiling only if COT_MAX_GRID_SIZE > 0
+    (unlocked by default)."""
+    grid_size = max(1, int(grid_size))
+    if MAX_GRID_SIZE > 0:
+        grid_size = min(grid_size, MAX_GRID_SIZE)
+    return grid_size
+
+
 def _is_image(path):
     return Path(path).suffix.lower() in IMAGE_SUFFIXES
 
@@ -175,7 +187,7 @@ def _track_image(model, task, device):
     model's grid-query computation (get_points_on_a_grid) so the keypoint
     semantics match the video path exactly."""
     frame, orig_w, orig_h = read_image_bounded(task["video_path"])
-    grid_size = max(1, min(int(task["grid_size"]), MAX_GRID_SIZE))
+    grid_size = _clamp_grid_size(task["grid_size"])
     ish = model.interp_shape
     pts = get_points_on_a_grid(grid_size, ish)
     pts = pts[0].cpu().numpy()  # (N, 2) in interp coords
@@ -221,7 +233,7 @@ def run_tracking(model, task, device):
         return _track_image(model, task, device)
 
     video_path = task["video_path"]
-    grid_size = max(1, min(int(task["grid_size"]), MAX_GRID_SIZE))
+    grid_size = _clamp_grid_size(task["grid_size"])
     max_frames = int(task["max_frames"])
 
     # Probe the video once.
@@ -519,10 +531,12 @@ async def add_to_track_queue(
 ):
     if not video.filename and not local_path:
         raise HTTPException(status_code=400, detail="video file is required")
-    if not 1 <= grid_size <= MAX_GRID_SIZE:
+    if grid_size < 1:
+        raise HTTPException(status_code=400, detail="grid_size must be >= 1")
+    if MAX_GRID_SIZE > 0 and grid_size > MAX_GRID_SIZE:
         raise HTTPException(
             status_code=400,
-            detail=f"grid_size must be between 1 and {MAX_GRID_SIZE}",
+            detail=f"grid_size must be <= {MAX_GRID_SIZE} (COT_MAX_GRID_SIZE)",
         )
     if grid_query_frame < 0:
         raise HTTPException(status_code=400, detail="grid_query_frame must be >= 0")

@@ -67,7 +67,8 @@ def track_video(
     checkpoint : path to ``scaled_online.pth``.  If missing or None, it is
         auto-downloaded from the Hub (``facebook/cotracker3``) into the
         given path's parent, or into ``~/.cache/cotracker3/`` by default.
-    grid_size : NxN grid of query points (max 32).
+    grid_size : NxN grid of query points (no cap; GPU memory scales
+        with N*N).
     grid_query_frame : frame index the grid is sampled from (default 0).
     max_video_dim : resize longest side to this before tracking (GPU memory).
     step : online sliding-window stride in frames (default 8).  The CoTracker3
@@ -133,7 +134,8 @@ def track_video(
     model = model.to(torch_device).eval()
 
     # ---- Grid query points ----
-    grid_size = max(1, min(grid_size, 32))
+    # Grid size is UNLOCKED (no cap); GPU memory scales with grid_size^2.
+    grid_size = max(1, int(grid_size))
     grid_query_frame = max(0, min(grid_query_frame, total - 1))
     ish = model.interp_shape
 

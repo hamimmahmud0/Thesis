@@ -55,7 +55,9 @@ HF_CLI = shutil.which("hf") or "/usr/local/bin/hf"
 MAX_CONCURRENT = int(os.environ.get("COT_MCP_MAX_CONCURRENT", "1"))
 _concurrency_slots = threading.BoundedSemaphore(MAX_CONCURRENT)
 MAX_FRAMES = int(os.environ.get("COT_MCP_MAX_FRAMES", "600"))
-MAX_GRID_SIZE = int(os.environ.get("COT_MCP_MAX_GRID_SIZE", "32"))
+# Grid size is UNLOCKED: no default cap (any NxN grid is accepted). Set
+# COT_MCP_MAX_GRID_SIZE > 0 to re-enable an operator ceiling.
+MAX_GRID_SIZE = int(os.environ.get("COT_MCP_MAX_GRID_SIZE", "0"))
 POLL_TIMEOUT_S = int(os.environ.get("COT_MCP_POLL_TIMEOUT", "900"))
 
 
@@ -221,7 +223,9 @@ def _track_media_impl(
                 ),
             }
 
-        grid_size = max(1, min(int(grid_size), MAX_GRID_SIZE))
+        grid_size = max(1, int(grid_size))
+        if MAX_GRID_SIZE > 0:
+            grid_size = min(grid_size, MAX_GRID_SIZE)
         grid_query_frame = max(0, int(grid_query_frame))
         max_frames = int(max_frames)
         if max_frames != 0:
@@ -257,9 +261,8 @@ def register_tools(mcp):
                 source="hf". Examples:
                 hf://datasets/user/repo/videos/clip.mp4
                 hf://buckets/user/my-bucket/data.mp4
-            grid_size: NxN grid of keypoints over the query frame (clamped to 32).
-                grid_size=16 -> 256 keypoints, 1 per 16x16 grid cell on a 512x512
-                reference grid.
+            grid_size: NxN grid of keypoints over the query frame (no cap;
+                GPU memory scales with N*N). grid_size=16 -> 256 keypoints.
             grid_query_frame: frame index the grid is sampled from (default 0).
             max_frames: maximum number of frames to track. 0 (default) tracks
                 EVERY frame (no sampling); a positive value evenly samples that
@@ -273,10 +276,15 @@ def register_tools(mcp):
             Decode: np.frombuffer(zlib.decompress(base64.b64decode(data)),
                       dtype=np.float32).reshape(shape)
         """
-        if not 1 <= grid_size <= MAX_GRID_SIZE:
+        if grid_size < 1:
+            return {"is_error": True, "error": "grid_size must be >= 1"}
+        if MAX_GRID_SIZE > 0 and grid_size > MAX_GRID_SIZE:
             return {
                 "is_error": True,
-                "error": f"grid_size must be between 1 and {MAX_GRID_SIZE}",
+                "error": (
+                    f"grid_size must be <= {MAX_GRID_SIZE} "
+                    "(COT_MCP_MAX_GRID_SIZE)"
+                ),
             }
         if grid_query_frame < 0:
             return {"is_error": True, "error": "grid_query_frame must be >= 0"}
