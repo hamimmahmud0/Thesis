@@ -8,11 +8,20 @@ import sys
 import time
 from pathlib import Path
 from urllib.parse import urlparse, unquote
-from config import *
+
+
+
+
+
+
 
 # =============================================================================
 # Configuration
 # =============================================================================
+
+
+#<config_inject>
+
 
 VIDEO_FILE_NAMES = [
     unquote(os.path.basename(urlparse(url).path))
@@ -56,7 +65,7 @@ STAGES = [
                 f"--bucket '{BUCKET}' "
                 f"--token '{HF_TOKEN}' "
                 f"--step 1 "
-                f"--grid-size 256 "
+                f"--grid-size 128 "
                 f"--crf 18 "
                 f"--max-dim $(ffprobe -v error "
                 f"-select_streams v:0 "

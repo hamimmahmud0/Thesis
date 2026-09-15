@@ -1,7 +1,7 @@
 {
   "id": "hamimmahmud/stabilize-gpu",
   "title": "Stabilize GPU",
-  "code_file": "main.py",
+  "code_file": "push.py",
   "language": "python",
   "kernel_type": "script",
   "is_private": "true",

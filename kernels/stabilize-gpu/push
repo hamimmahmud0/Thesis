@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
 
+TMP_DIR="/tmp/stabilize-push-$(date +%Y%m%d-%H%M%S)"
+
+mkdir $TMP_DIR
+cp -a ./* $TMP_DIR
+cp config.yaml $TMP_DIR
+cd $TMP_DIR
+
 set -euo pipefail
 
 OUTPUT_FILE="${1:-config.py}"
@@ -8,24 +15,53 @@ echo "=== DRINF config setup ==="
 echo
 
 # -------------------------
+# Load config.yaml if present
+# -------------------------
+
+CONFIG_FILE="config.yaml"
+
+if [[ -f "$CONFIG_FILE" ]]; then
+    eval "$(python3 - "$CONFIG_FILE" <<'PY'
+import sys, yaml, shlex
+with open(sys.argv[1]) as f:
+    cfg = yaml.safe_load(f) or {}
+for key in ("HF_TOKEN", "HF_VIDEO_LINKS", "BUCKET", "KAGGLE_API_TOKEN"):
+    val = cfg.get(key)
+    if val is None:
+        continue
+    if isinstance(val, list):
+        val = ";".join(str(v) for v in val)
+    print(f"export {key}={shlex.quote(str(val))}")
+PY
+)"
+    echo "Loaded defaults from $CONFIG_FILE"
+    echo
+fi
+
+# -------------------------
 # Hugging Face video links
 # -------------------------
 
 declare -a LINKS=()
 
-echo "Enter Hugging Face video links."
-echo "Press ENTER on an empty line when finished."
-echo
+if [[ -n "${HF_VIDEO_LINKS:-}" ]]; then
+    IFS=';' read -ra LINKS <<< "$HF_VIDEO_LINKS"
+    echo "Loaded ${#LINKS[@]} video link(s) from $CONFIG_FILE"
+else
+    echo "Enter Hugging Face video links."
+    echo "Press ENTER on an empty line when finished."
+    echo
 
-while true; do
-    read -r -p "Video URL: " url
+    while true; do
+        read -r -p "Video URL: " url
 
-    if [[ -z "$url" ]]; then
-        break
-    fi
+        if [[ -z "$url" ]]; then
+            break
+        fi
 
-    LINKS+=("$url")
-done
+        LINKS+=("$url")
+    done
+fi
 
 if [[ ${#LINKS[@]} -eq 0 ]]; then
     echo "Error: At least one video URL is required."
@@ -38,18 +74,22 @@ echo
 # Hugging Face token
 # -------------------------
 
-TOKEN_FILE=".hf_token"
+if [[ -z "${HF_TOKEN:-}" ]]; then
+    TOKEN_FILE=".hf_token"
 
-if [[ -f "$TOKEN_FILE" ]]; then
-    HF_TOKEN=$(<"$TOKEN_FILE")
-    HF_TOKEN="${HF_TOKEN//$'\r'/}"
-    HF_TOKEN="${HF_TOKEN//$'\n'/}"
+    if [[ -f "$TOKEN_FILE" ]]; then
+        HF_TOKEN=$(<"$TOKEN_FILE")
+        HF_TOKEN="${HF_TOKEN//$'\r'/}"
+        HF_TOKEN="${HF_TOKEN//$'\n'/}"
 
-    if [[ -z "$HF_TOKEN" ]]; then
-        echo "Warning: $TOKEN_FILE exists but is empty."
-    else
-        echo "Loaded HF token from $TOKEN_FILE"
+        if [[ -z "$HF_TOKEN" ]]; then
+            echo "Warning: $TOKEN_FILE exists but is empty."
+        else
+            echo "Loaded HF token from $TOKEN_FILE"
+        fi
     fi
+else
+    echo "Loaded HF token from $CONFIG_FILE"
 fi
 
 while [[ -z "${HF_TOKEN:-}" ]]; do
@@ -67,7 +107,20 @@ echo
 # Optional bucket
 # -------------------------
 
-read -r -p "Bucket (optional, press ENTER to skip): " BUCKET
+HF_USERNAME=$(hf auth whoami | awk -F= '/^user=/{print $2}')
+
+if [[ -n "${BUCKET:-}" ]]; then
+    echo "Loaded bucket from $CONFIG_FILE"
+else
+    read -r -p "Bucket (optional, press ENTER to skip): " BUCKET
+fi
+
+if [[ -n "$BUCKET" ]]; then
+    if [[ "$BUCKET" != */* ]]; then
+        BUCKET="$HF_USERNAME/$BUCKET"
+        echo "Bucket: $BUCKET"
+    fi
+fi
 
 # -------------------------
 # Helper for Python quoting
@@ -121,14 +174,20 @@ else
 fi
 
 
+cat config.py main.py > push.py
 
+# -------------------------
+# Kaggle login
+# -------------------------
 
-
-#!/usr/bin/env bash
+if [[ -n "${KAGGLE_API_TOKEN:-}" ]]; then
+    export KAGGLE_API_TOKEN
+    echo "Logged in with KAGGLE_API_TOKEN"
+fi
 
 USERNAME=$(kaggle config view | awk -F': ' '/^- username:/ {print $2}')
 echo "$USERNAME"
 
-kaggle kernels delete $USERNAME/stabilize-gpu
+kaggle kernels delete $USERNAME/stabilize-gpu -y
 kaggle kernels push -p .
 kaggle kernels logs -f $USERNAME/stabilize-gpu
