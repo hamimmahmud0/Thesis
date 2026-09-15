@@ -1,0 +1,134 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+OUTPUT_FILE="${1:-config.py}"
+
+echo "=== DRINF config setup ==="
+echo
+
+# -------------------------
+# Hugging Face video links
+# -------------------------
+
+declare -a LINKS=()
+
+echo "Enter Hugging Face video links."
+echo "Press ENTER on an empty line when finished."
+echo
+
+while true; do
+    read -r -p "Video URL: " url
+
+    if [[ -z "$url" ]]; then
+        break
+    fi
+
+    LINKS+=("$url")
+done
+
+if [[ ${#LINKS[@]} -eq 0 ]]; then
+    echo "Error: At least one video URL is required."
+    exit 1
+fi
+
+echo
+
+# -------------------------
+# Hugging Face token
+# -------------------------
+
+TOKEN_FILE=".hf_token"
+
+if [[ -f "$TOKEN_FILE" ]]; then
+    HF_TOKEN=$(<"$TOKEN_FILE")
+    HF_TOKEN="${HF_TOKEN//$'\r'/}"
+    HF_TOKEN="${HF_TOKEN//$'\n'/}"
+
+    if [[ -z "$HF_TOKEN" ]]; then
+        echo "Warning: $TOKEN_FILE exists but is empty."
+    else
+        echo "Loaded HF token from $TOKEN_FILE"
+    fi
+fi
+
+while [[ -z "${HF_TOKEN:-}" ]]; do
+    read -r -s -p "HF token: " HF_TOKEN
+    echo
+
+    if [[ -z "$HF_TOKEN" ]]; then
+        echo "HF token cannot be empty."
+    fi
+done
+
+echo
+
+# -------------------------
+# Optional bucket
+# -------------------------
+
+read -r -p "Bucket (optional, press ENTER to skip): " BUCKET
+
+# -------------------------
+# Helper for Python quoting
+# -------------------------
+
+python_repr() {
+    python3 -c 'import sys; print(repr(sys.stdin.read()))'
+}
+
+# -------------------------
+# Write Python config
+# -------------------------
+
+{
+    echo "HF_VIDEO_LINKS = ["
+
+    for link in "${LINKS[@]}"; do
+        quoted_link="$(printf '%s' "$link" | python_repr)"
+        printf '    %s,\n' "$quoted_link"
+    done
+
+    echo "]"
+    echo
+
+    quoted_token="$(printf '%s' "$HF_TOKEN" | python_repr)"
+    printf 'HF_TOKEN = %s\n' "$quoted_token"
+
+    echo
+    echo "if not HF_TOKEN:"
+    echo "    exit()"
+
+    echo
+
+    if [[ -n "$BUCKET" ]]; then
+        quoted_bucket="$(printf '%s' "$BUCKET" | python_repr)"
+        printf 'BUCKET = %s\n' "$quoted_bucket"
+    else
+        echo "BUCKET = None"
+    fi
+
+} > "$OUTPUT_FILE"
+
+echo
+echo "Config written to: $OUTPUT_FILE"
+echo "Videos: ${#LINKS[@]}"
+
+if [[ -n "$BUCKET" ]]; then
+    echo "Bucket: $BUCKET"
+else
+    echo "Bucket: not set"
+fi
+
+
+
+
+
+#!/usr/bin/env bash
+
+USERNAME=$(kaggle config view | awk -F': ' '/^- username:/ {print $2}')
+echo "$USERNAME"
+
+kaggle kernels delete $USERNAME/stabilize-gpu
+kaggle kernels push -p .
+kaggle kernels logs -f $USERNAME/stabilize-gpu

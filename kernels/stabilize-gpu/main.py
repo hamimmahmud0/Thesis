@@ -8,21 +8,12 @@ import sys
 import time
 from pathlib import Path
 from urllib.parse import urlparse, unquote
+from config import *
 
 # =============================================================================
 # Configuration
 # =============================================================================
 
-HF_VIDEO_LINKS = [
-    'https://huggingface.co/datasets/hamimmahmud0/DRINF/resolve/main/Nadirs/Doyel%20Chattor/Sep%203%2C%202026/DJI_0403_merged.mp4',
-    'https://huggingface.co/datasets/hamimmahmud0/DRINF/resolve/main/Nadirs/Doyel%20Chattor/Sep%203%2C%202026/DJI_0406_merged.mp4'
-    ]
-
-
-HF_TOKEN = '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'
-if not HF_TOKEN:
-    exit()
-BUCKET = 'z81980440/DRINF_stabilized'
 VIDEO_FILE_NAMES = [
     unquote(os.path.basename(urlparse(url).path))
     for url in HF_VIDEO_LINKS
@@ -66,6 +57,7 @@ STAGES = [
                 f"--token '{HF_TOKEN}' "
                 f"--step 1 "
                 f"--grid-size 256 "
+                f"--crf 18 "
                 f"--max-dim $(ffprobe -v error "
                 f"-select_streams v:0 "
                 f"-show_entries stream=width "
