@@ -77,7 +77,7 @@ STAGES = [
                 f"--token '{HF_TOKEN}' "
                 f"--step 1 "
                 f"--device cuda:{i} "
-                f"--grid-size 128 "
+                f"--grid-size 64 "
                 f"--crf 18 "
                 f"--max-dim $(ffprobe -v error "
                 f"-select_streams v:0 "

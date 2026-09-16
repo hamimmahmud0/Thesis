@@ -10,7 +10,7 @@ from pathlib import Path
 from urllib.parse import urlparse, unquote
 
 
-
+os.chdir(os.path.expanduser("~"))
 
 
 
@@ -20,7 +20,6 @@ from urllib.parse import urlparse, unquote
 # =============================================================================
 
 
-HF_VIDEO_LINKS = CONFIG['HF_VIDEO_LINKS']
 HF_TOKEN = CONFIG["HF_TOKEN"]
 
 from huggingface_hub import whoami
@@ -29,15 +28,14 @@ from huggingface_hub import whoami
 
 user_info = whoami(token=HF_TOKEN)
 HF_USER = user_info["name"]
-BUCKET = f'{HF_USER}/{CONFIG["BUCKET"]}'
+SOURCE_BUCKET = f'{CONFIG["SOURCE_BUCKET"]}'
+DEST_BUCKET = f'{HF_USER}/{CONFIG["DEST_BUCKET"]}'
 
-print(f"Selected Bucket: {BUCKET}")
+print(f"Source Bucket: {SOURCE_BUCKET}")
+print(f"Destination Bucket: {SOURCE_BUCKET}")
 
 
-VIDEO_FILE_NAMES = [
-    unquote(os.path.basename(urlparse(url).path))
-    for url in HF_VIDEO_LINKS
-]
+
 
 #MAX_DIM = 3840 # 4k video
 
@@ -53,13 +51,13 @@ STAGES = [
     ],
 
     [
-        "Install stabilizer",
+        "Install sam",
         [
             [
                 "Stabilizer Setup",
                 "git clone https://github.com/hamimmahmud0/Thesis.git; "
                 "cd Thesis; "
-                "tools/stabilize/setup"
+                "tools/sam31/setup"
             ]
         ],
     ],
@@ -68,23 +66,9 @@ STAGES = [
         "Download and run",
         [
             [
-                f"cuda:{i}",
-                f"cd ~ && wget '{HF_VIDEO_LINKS[i]}' -O '{VIDEO_FILE_NAMES[i]}'; "
-                f"/root/miniconda3/envs/stabilize/bin/stabilize run ~/'{VIDEO_FILE_NAMES[i]}' "
-                f"--run '{VIDEO_FILE_NAMES[i]}' "
-                f"--frames 0 "
-                f"--bucket '{BUCKET}' "
-                f"--token '{HF_TOKEN}' "
-                f"--step 1 "
-                f"--device cuda:{i} "
-                f"--grid-size 128 "
-                f"--crf 18 "
-                f"--max-dim $(ffprobe -v error "
-                f"-select_streams v:0 "
-                f"-show_entries stream=width "
-                f"-of csv=p=0 '{VIDEO_FILE_NAMES[i]}')"
+                "SAM",
+                f"""mkdir working && cd working && hf sync hf://buckets/{CONFIG["SOURCE_BUCKET"]} .; sam31 run . -p "{'; '.join(CONFIG["PROMPTS"])}" --confidence {CONFIG["CONFIDENCE"]} --bucket {DEST_BUCKET} --copy-images --token {HF_TOKEN} --run {SOURCE_BUCKET.split('/')[-1]}"""
             ]
-            for i in range(min(len(HF_VIDEO_LINKS), 2))
         ],
     ],
 ]

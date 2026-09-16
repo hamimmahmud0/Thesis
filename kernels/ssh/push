@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+TMP_DIR="/tmp/stabilize-push-$(date +%Y%m%d-%H%M%S)"
+
+mkdir $TMP_DIR
+cp -a ./* $TMP_DIR
+cd $TMP_DIR
+
+if [[ -f config.py && -f main.py ]]; then
+    cat config.py main.py > push.py
+    echo "Built push.py from config.py + main.py"
+fi
+
+# -------------------------
+# Kaggle auth
+# -------------------------
+
+if [[ -f config.yaml ]]; then
+    eval "$(python3 - config.yaml <<'PY'
+import sys, yaml, shlex
+with open(sys.argv[1]) as f:
+    cfg = yaml.safe_load(f) or {}
+val = cfg.get("KAGGLE_API_TOKEN")
+if val:
+    print(f"export KAGGLE_API_TOKEN={shlex.quote(str(val))}")
+PY
+)"
+fi
+
+if [[ -n "${KAGGLE_API_TOKEN:-}" ]]; then
+    export KAGGLE_API_TOKEN
+    echo "Authenticating with KAGGLE_API_TOKEN"
+fi
+
+USERNAME=$(kaggle config view | awk -F': ' '/^- username:/ {print $2}')
+echo "kaggle user: $USERNAME"
+{
+    kaggle kernels delete $USERNAME/ssh-gpu -y 
+} || {
+    echo "Kernel delete failes"
+}   
+pip install pyyaml
+python3<<'PY' 
+import pprint
+import sys
+
+import yaml
+
+src = "config.yaml"
+dst = "push.py"
+script = "main.py"
+
+with open(src, "r", encoding="utf-8") as f:
+    data = yaml.safe_load(f)
+
+
+with open(script, "r", encoding="utf-8") as f:
+    main = f.read()
+
+
+with open(dst, "w", encoding="utf-8") as f:
+    f.write("# Auto-generated from YAML. Do not edit.\n\n")
+    f.write("CONFIG = ")
+    f.write(pprint.pformat(data, sort_dicts=False, width=100))
+    f.write("\n")
+    f.write(main)
+    f.close()
+
+PY
+
+
+kaggle kernels push -p . 
+kaggle kernels logs -f $USERNAME/ssh-gpu 
