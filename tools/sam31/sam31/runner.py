@@ -130,7 +130,7 @@ def run_pipeline(
     cp = resolve_checkpoint(checkpoint, token=token)
     device_ids = resolve_devices(devices)
 
-    run_dir = Path(out_dir) / run_name
+    run_dir = (Path(out_dir) / run_name).resolve()
     ann_dir = run_dir / "annotations"
     shard_dir = run_dir / "shards"
     images_out = run_dir / "images"

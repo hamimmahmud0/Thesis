@@ -22,7 +22,7 @@ def resolve_checkpoint(
         cp = Path(checkpoint).expanduser()
         if not cp.is_file():
             raise FileNotFoundError(f"Checkpoint not found: {cp}")
-        return cp
+        return cp.resolve()
 
     cp = CACHE_DIR / CHECKPOINT_FILENAME
     if cp.is_file():
