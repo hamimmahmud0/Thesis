@@ -1,0 +1,8 @@
+HF_TOKEN: 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
+KAGGLE_API_TOKEN: "KGAT_83fe29b3a7a9b648a84e02d3d16e1873"
+HF_VIDEO_LINKS:
+  - "https://huggingface.co/datasets/hamimmahmud0/DRINF/resolve/main/Nadirs/Doyel%20Chattor/Sep%203%2C%202026/DJI_0403_merged.mp4"
+  - "https://huggingface.co/datasets/hamimmahmud0/DRINF/resolve/main/Nadirs/Doyel%20Chattor/Sep%203%2C%202026/DJI_0406_merged.mp4"
+BUCKET: stab_2
+ID: "stabilize-gpu"
+TITLE: "Stabilize GPU"

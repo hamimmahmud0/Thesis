@@ -1,6 +1,6 @@
 {
-  "id": "hamimmahmud/stabilize-gpu",
-  "title": "Stabilize GPU",
+  "id": "hamimmahmud/ssh-gpu",
+  "title": "SSH GPU",
   "code_file": "push.py",
   "language": "python",
   "kernel_type": "script",

@@ -2,7 +2,21 @@
 
 set -euo pipefail
 
-TMP_DIR="/tmp/stabilize-push-$(date +%Y%m%d-%H%M%S)"
+KERNEL_ID=$(python3 <<'PY'
+import yaml
+
+with open("config.yaml", "r", encoding="utf-8") as f:
+    data = yaml.safe_load(f)
+
+print(data["ID"])
+PY
+)
+
+export KERNEL_ID
+
+echo "Kernel ID: $KERNEL_ID"
+
+TMP_DIR="/tmp/$KERNEL_ID-$(date +%Y%m%d-%H%M%S)"
 
 mkdir $TMP_DIR
 cp -a ./* $TMP_DIR
@@ -34,13 +48,9 @@ if [[ -n "${KAGGLE_API_TOKEN:-}" ]]; then
     echo "Authenticating with KAGGLE_API_TOKEN"
 fi
 
-USERNAME=$(kaggle config view | awk -F': ' '/^- username:/ {print $2}')
-echo "kaggle user: $USERNAME"
-{
-    kaggle kernels delete $USERNAME/stabilize-gpu -y 
-} || {
-    echo "Kernel delete failes"
-}   
+
+
+  
 pip install pyyaml
 python3<<'PY' 
 import pprint
@@ -71,5 +81,64 @@ with open(dst, "w", encoding="utf-8") as f:
 PY
 
 
+python3<<'PY'
+
+import requests
+import yaml
+
+
+src = "config.yaml"
+
+with open(src, "r", encoding="utf-8") as f:
+    data = yaml.safe_load(f)
+
+
+token = data["KAGGLE_API_TOKEN"]
+
+response = requests.post(
+    "https://www.kaggle.com/api/v1/oauth2/introspect",
+    json={"token": token},
+)
+
+response.raise_for_status()
+kdata = response.json()
+
+kaggle_username = kdata.get("username")
+
+
+import json
+config = {
+    "id": f"{kaggle_username}/{data['ID']}",
+    "title": f"{data['TITLE']}",
+    "code_file": "push.py",
+    "language": "python",
+    "kernel_type": "script",
+    "is_private": True,
+    "enable_gpu": True,
+    "enable_internet": True,
+    "machine_shape": "NvidiaTeslaT4",
+    "dataset_sources": [],
+    "competition_sources": [],
+    "kernel_sources": [],
+    "model_sources": []
+}
+
+with open('kernel-metadata.json','w') as f:
+    json.dump(config,f)
+
+
+PY
+
+USERNAME=$(kaggle config view | awk -F': ' '/^- username:/ {print $2}')
+echo "kaggle user: $USERNAME"
+
+
+#{
+#    kaggle kernels delete $USERNAME/$KERNEL_ID -y 
+#} || {
+#    echo "Kernel delete failes"
+#}
+
+
 kaggle kernels push -p . 
-kaggle kernels logs -f $USERNAME/stabilize-gpu 
+kaggle kernels logs -f $USERNAME/$KERNEL_ID 

@@ -8,7 +8,8 @@ import sys
 import time
 from pathlib import Path
 from urllib.parse import urlparse, unquote
-
+import requests
+import traceback
 
 os.chdir(os.path.expanduser("~"))
 
@@ -67,7 +68,7 @@ STAGES = [
         [
             [
                 "SAM",
-                f"""mkdir working && cd working && hf sync hf://buckets/{CONFIG["SOURCE_BUCKET"]} .; sam31 run . -p "{'; '.join(CONFIG["PROMPTS"])}" --confidence {CONFIG["CONFIDENCE"]} --bucket {DEST_BUCKET} --copy-images --token {HF_TOKEN} --run {SOURCE_BUCKET.split('/')[-1]}"""
+                f"""mkdir working && cd working && hf sync hf://buckets/{CONFIG["SOURCE_BUCKET"]} . && /root/miniconda3/envs/sam31/bin/sam31 run . -p "{'; '.join(CONFIG["PROMPTS"])}" --copy-images --confidence {CONFIG["CONFIDENCE"]} --batch-size {CONFIG["BATCH_SIZE"]} --bucket {DEST_BUCKET} --token {HF_TOKEN} --run {SOURCE_BUCKET.split('/')[-1]}"""
             ]
         ],
     ],
@@ -93,6 +94,26 @@ TERMINATION_TIMEOUT = 5
 # =============================================================================
 # Utility functions
 # =============================================================================
+
+def send_bot_message(MESSAGE):
+    if "BOT_TOKEN" in CONFIG:
+        url = f"https://api.telegram.org/bot{CONFIG["BOT_TOKEN"]}/sendMessage"
+
+        data = {
+            "chat_id": CONFIG["CHAT_ID"],
+            "text": MESSAGE
+        }
+
+        response = requests.post(url, data=data)
+
+        if response.status_code == 200:
+            print("Notification sent successfully!")
+        else:
+            print("Failed:", response.text)
+
+
+
+
 
 def sanitize_filename(name: str) -> str:
     """
@@ -241,6 +262,11 @@ def run_stage(stage_index, stage_name, commands):
         f"Launching {len(commands)} command(s) in parallel..."
     )
     print()
+
+    try:
+        send_bot_message(f"RUNNING stage: {stage_index}: {stage_name}")
+    except Exception:
+        pass
 
     stage_start_time = time.time()
 
@@ -746,6 +772,38 @@ def main():
     )
 
     print("=" * 90)
+
+    try:
+
+
+        if failed_stages:
+            summary += "\nStages containing failures:\n"
+
+            for (
+                stage_index,
+                stage_name,
+            ) in failed_stages:
+                summary += (
+                    f"  - Stage "
+                    f"{stage_index}: "
+                    f"{stage_name}\n"
+                )
+
+        summary += (
+            "\n"
+            "Logs are available at:\n"
+            f"  {LOG_DIR.resolve()}\n"
+            + "=" * 90
+            + "\n"
+        )
+
+        if not failed_stages:
+            summary += "All stages completed successfully.\n"
+
+        send_bot_message(summary)
+    except Exception:
+        print("Error in sending summary via bot")
+        traceback.print_exc()
 
     if failed_stages:
 

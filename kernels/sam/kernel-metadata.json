@@ -1,6 +1,6 @@
 {
-  "id": "hamimmahmud/stabilize-gpu",
-  "title": "Stabilize GPU",
+  "id": "hamimmahmud/sam",
+  "title": "Sam annotation",
   "code_file": "push.py",
   "language": "python",
   "kernel_type": "script",

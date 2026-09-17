@@ -37,7 +37,7 @@ fi
 USERNAME=$(kaggle config view | awk -F': ' '/^- username:/ {print $2}')
 echo "kaggle user: $USERNAME"
 {
-    kaggle kernels delete $USERNAME/stabilize-gpu -y 
+    kaggle kernels delete $USERNAME/ssh-gpu -y 
 } || {
     echo "Kernel delete failes"
 }   
@@ -72,4 +72,4 @@ PY
 
 
 kaggle kernels push -p . 
-kaggle kernels logs -f $USERNAME/stabilize-gpu 
+kaggle kernels logs -f $USERNAME/ssh-gpu 

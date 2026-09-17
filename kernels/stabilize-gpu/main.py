@@ -20,23 +20,12 @@ from urllib.parse import urlparse, unquote
 # =============================================================================
 
 
-HF_VIDEO_LINKS = CONFIG['HF_VIDEO_LINKS']
-HF_TOKEN = CONFIG["HF_TOKEN"]
-
-from huggingface_hub import whoami
-
-
-
-user_info = whoami(token=HF_TOKEN)
-HF_USER = user_info["name"]
-BUCKET = f'{HF_USER}/{CONFIG["BUCKET"]}'
-
-print(f"Selected Bucket: {BUCKET}")
+#<config_inject>
 
 
 VIDEO_FILE_NAMES = [
     unquote(os.path.basename(urlparse(url).path))
-    for url in HF_VIDEO_LINKS
+    for url in CONFIG["HF_VIDEO_LINKS"]
 ]
 
 #MAX_DIM = 3840 # 4k video
@@ -69,22 +58,21 @@ STAGES = [
         [
             [
                 f"cuda:{i}",
-                f"cd ~ && wget '{HF_VIDEO_LINKS[i]}' -O '{VIDEO_FILE_NAMES[i]}'; "
+                f"cd ~ && wget '{CONFIG["HF_VIDEO_LINKS"][i]}' -O '{VIDEO_FILE_NAMES[i]}'; "
                 f"/root/miniconda3/envs/stabilize/bin/stabilize run ~/'{VIDEO_FILE_NAMES[i]}' "
                 f"--run '{VIDEO_FILE_NAMES[i]}' "
                 f"--frames 0 "
-                f"--bucket '{BUCKET}' "
-                f"--token '{HF_TOKEN}' "
+                f"--bucket '{CONFIG["BUCKET"]}' "
+                f"--token '{CONFIG["HF_TOKEN"]}' "
                 f"--step 1 "
-                f"--device cuda:{i} "
-                f"--grid-size 64 "
-                f"--crf 18 "
-                f"--max-dim $(ffprobe -v error "
-                f"-select_streams v:0 "
-                f"-show_entries stream=width "
-                f"-of csv=p=0 '{VIDEO_FILE_NAMES[i]}')"
+                f"--grid-size 128 "
+                f"--crf 0 "
+                #f"--max-dim $(ffprobe -v error "
+                #f"-select_streams v:0 "
+                #f"-show_entries stream=width "
+                #f"-of csv=p=0 '{VIDEO_FILE_NAMES[i]}')"
             ]
-            for i in range(min(len(HF_VIDEO_LINKS), 2))
+            for i in range(min(len(CONFIG["HF_VIDEO_LINKS"]), 2))
         ],
     ],
 ]
@@ -425,14 +413,11 @@ def run_stage(stage_index, stage_name, commands):
                 if return_code == 0:
 
                     status = "SUCCESS"
-
                 else:
-
                     status = (
                         f"FAILED "
                         f"(exit={return_code})"
                     )
-
                 print(
                     f"[{status}] "
                     f"{job['name']} "

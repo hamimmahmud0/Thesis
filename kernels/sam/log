@@ -4,6 +4,18 @@
 # Kaggle auth
 # -------------------------
 
+
+KERNEL_ID=$(python3 <<'PY'
+import yaml
+
+with open("config.yaml", "r", encoding="utf-8") as f:
+    data = yaml.safe_load(f)
+
+print(data["ID"])
+PY
+)
+
+
 if [[ -f config.yaml ]]; then
     eval "$(python3 - config.yaml <<'PY'
 import sys, yaml, shlex
@@ -22,4 +34,4 @@ if [[ -n "${KAGGLE_API_TOKEN:-}" ]]; then
 fi
 
 USERNAME=$(kaggle config view | awk -F': ' '/^- username:/ {print $2}')
-kaggle kernels logs -f $USERNAME/stabilize-gpu 
+kaggle kernels logs -f $USERNAME/$KERNEL_ID 
