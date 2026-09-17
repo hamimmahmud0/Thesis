@@ -10,7 +10,9 @@ set -euo pipefail
 # ──── Configuration ───────────────────────────────────────────────────────────
 ENV_NAME="${ENV_NAME:-stabilize}"
 PYTHON_VERSION="${PYTHON_VERSION:-3.11}"
-CUDA_VERSION="${CUDA_VERSION:-12.4}"
+# NOTE: deliberately not named CUDA_VERSION -- many GPU containers export that
+# already (e.g. CUDA_VERSION=12.8.1), which would break the conda spec below.
+PYTORCH_CUDA_VERSION="${PYTORCH_CUDA_VERSION:-12.4}"
 MINICONDA_URL="https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh"
 MINICONDA_INSTALL_DIR="${MINICONDA_INSTALL_DIR:-$HOME/miniconda3}"
 COTRACKER_REPO="git+https://github.com/facebookresearch/co-tracker.git"
@@ -89,10 +91,14 @@ if [ -n "$TORCH_VER" ]; then
 elif [ "${SKIP_TORCH:-0}" = "1" ]; then
     warn "SKIP_TORCH=1 but torch is missing — continuing anyway"
 else
-    info "Installing PyTorch + CUDA $CUDA_VERSION via conda ..."
-    conda install -y -n "$ENV_NAME" \
-        pytorch torchvision "pytorch-cuda=$CUDA_VERSION" \
-        -c pytorch -c nvidia
+    info "Installing PyTorch + CUDA $PYTORCH_CUDA_VERSION via conda ..."
+    if ! conda install -y -n "$ENV_NAME" \
+        pytorch torchvision "pytorch-cuda=$PYTORCH_CUDA_VERSION" \
+        -c pytorch -c nvidia; then
+        warn "conda PyTorch install failed — falling back to pip wheels (cu124)"
+        pip install torch torchvision \
+            --index-url https://download.pytorch.org/whl/cu124
+    fi
 fi
 
 # ──── 4. Install Python requirements (incl. CoTracker3 from git) ─────────────
