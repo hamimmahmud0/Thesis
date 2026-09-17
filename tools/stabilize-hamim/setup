@@ -49,12 +49,7 @@ install_miniconda() {
     # Source the shell hook so conda is on PATH for this script invocation.
     # shellcheck disable=SC1091
 
-    # Init conda
-    "$MINICONDA_INSTALL_DIR/bin/conda" init
-    # source ~/.bashrc
-
-
-    # source "$MINICONDA_INSTALL_DIR/etc/profile.d/conda.sh"
+    source "$MINICONDA_INSTALL_DIR/etc/profile.d/conda.sh"
 
     info "Miniconda installed -> $MINICONDA_INSTALL_DIR"
     warn "Add this to your shell profile for future sessions:"
@@ -71,28 +66,37 @@ else
     CONDA_BIN="$MINICONDA_INSTALL_DIR/bin/conda"
 fi
 
+
+warn "Showing CONDA_BIN"
+warn "$CONDA_BIN"
+
+# Make `conda` function available in THIS shell.
+eval "$("$CONDA_BIN" shell.bash hook 2>/dev/null || true)"
+
+
+
 # Accept
-conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
-conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
+$CONDA_BIN tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
+$CONDA_BIN tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
 
 
-if conda env list | grep -qw "$ENV_NAME"; then
+if $CONDA_BIN env list | grep -qw "$ENV_NAME"; then
     info "conda env '$ENV_NAME' already exists — keeping as-is"
 else
     info "Creating conda env '$ENV_NAME' (python $PYTHON_VERSION) ..."
-    conda create -n "$ENV_NAME" "python=$PYTHON_VERSION" -y
+    $CONDA_BIN create -n "$ENV_NAME" "python=$PYTHON_VERSION" -y
 fi
 
 
-conda activate "$ENV_NAME"
-conda install -y -c conda-forge "mkl=2024.0.0"
+$CONDA_BIN activate "$ENV_NAME"
+$CONDA_BIN install -y -c conda-forge "mkl=2024.0.0"
 info "Activated: $(python --version) @ $(which python)"
 
 # ──── 3. Install PyTorch + CUDA via conda (idempotent) ───────────────────────
 TORCH_VER=$(python -c "import torch; print(torch.__version__)" 2>/dev/null || true)
 if [ -z "$TORCH_VER" ]; then
     info "Installing PyTorch + CUDA $CUDA_VERSION via conda ..."
-    conda install -y -n "$ENV_NAME" \
+    $CONDA_BIN install -y -n "$ENV_NAME" \
         pytorch \
         torchvision \
         "pytorch-cuda=$CUDA_VERSION" \
