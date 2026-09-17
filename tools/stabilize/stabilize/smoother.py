@@ -87,35 +87,51 @@ def anchor_transition_report(
 ) -> dict:
     """Check for translation / rotation / scale jumps at anchor boundaries.
 
-    A "jump" is a boundary frame whose per-frame increment is far above the
-    local median.  Returns the worst offenders plus a boolean flag.
+    A boundary is flagged only when its per-frame increment exceeds both the
+    surrounding local motion and a sensible absolute floor.  This avoids
+    false positives on footage whose camera simply moves faster near an
+    anchor (the anchor-relative construction is positionally continuous by
+    design).
     """
     anchor_frames = np.asarray(anchor_frames, dtype=np.int64)
-    boundaries = [int(b) for b in anchor_frames if 0 < int(b) < len(cumulative)]
+    T = len(cumulative)
+    boundaries = [int(b) for b in anchor_frames if 0 < int(b) < T]
     if not boundaries:
         return dict(boundaries=[], max_translation_jump_px=0.0,
                     max_rotation_jump_deg=0.0, max_scale_jump=0.0,
                     suspicious=False)
 
     trans, yaw, scale = _increments(cumulative)
-    med_t = float(np.median(trans[1:])) if len(trans) > 1 else 0.0
-    med_y = float(np.median(np.abs(yaw[1:]))) if len(yaw) > 1 else 0.0
-    med_s = float(np.median(np.abs(scale[1:] - 1.0))) if len(scale) > 1 else 0.0
+    half = 8
+    abs_t, abs_y, abs_s = 8.0, 1.0, 0.03
 
-    max_tj = max((abs(trans[b] - med_t) for b in boundaries), default=0.0)
-    max_yj = max((abs(yaw[b]) - med_y for b in boundaries), default=0.0)
-    max_sj = max((abs(scale[b] - 1.0) - med_s for b in boundaries), default=0.0)
+    max_tj = max_yj = max_sj = 0.0
+    suspicious = False
+    for b in boundaries:
+        lo, hi = max(1, b - half), min(T, b + half + 1)
+        local = [i for i in range(lo, hi) if i != b]
+        if not local:
+            continue
+        local_t = float(np.max(trans[local]))
+        local_y = float(np.max(np.abs(yaw[local])))
+        local_s = float(np.max(np.abs(scale[local] - 1.0)))
+
+        dj_t = max(0.0, trans[b] - max(abs_t, 2.0 * local_t))
+        dj_y = max(0.0, abs(yaw[b]) - max(abs_y, 2.0 * local_y))
+        dj_s = max(0.0, abs(scale[b] - 1.0) - max(abs_s, 2.0 * local_s))
+
+        max_tj = max(max_tj, dj_t)
+        max_yj = max(max_yj, dj_y)
+        max_sj = max(max_sj, dj_s)
+        if dj_t > 0 or dj_y > 0 or dj_s > 0:
+            suspicious = True
 
     result = dict(
         boundaries=boundaries,
         max_translation_jump_px=float(max_tj),
-        max_rotation_jump_deg=float(max(0.0, max_yj)),
-        max_scale_jump=float(max(0.0, max_sj)),
-        suspicious=bool(
-            max_tj > max(2.0, 5 * med_t)
-            or max_yj > max(0.5, 5 * med_y)
-            or max_sj > max(0.01, 5 * med_s)
-        ),
+        max_rotation_jump_deg=float(max_yj),
+        max_scale_jump=float(max_sj),
+        suspicious=bool(suspicious),
     )
     if info is not None:
         info.setdefault("transitions", result)
