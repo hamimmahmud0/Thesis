@@ -106,7 +106,45 @@ previous valid anchor-relative transform (identity if none), and are flagged
 |---|---|
 | `off` (default) | Track-lock to frame 0; no smoothing. |
 | `natural` | Remove high-frequency jitter; **preserve** legitimate slow pans (no detrend). |
-| `locked` | For tripod/static footage: additionally remove a robust (Theil-Sen) long-term translation ramp. |
+| `locked` | For tripod/static footage: additionally remove a robust low-order (default cubic) translation drift. |
+
+### Fresh-grid + bridge anchors
+
+A single query grid sampled on frame 0 degrades over long videos (occlusion,
+points leaving frame, accumulated tracker error, foreground motion, RANSAC
+rejection).  The default `fresh-grid` architecture instead gives **every
+anchor its own new CoTracker grid**:
+
+```
+Anchor A ──fresh grid A──▶ CoTracker segment A ──▶ frame -> A transforms
+                                                        │
+                                   surviving A points bridge A <-> B
+                                                        ▼
+Anchor B ──fresh grid B──▶ CoTracker segment B ──▶ frame -> B transforms
+```
+
+* **Bridge**: the old grid's tracks are used only to register the new anchor
+  (`B -> A`), estimated from **multiple overlap frames** and aggregated
+  robustly in (translation, rotation, log-scale) space.
+* **Global**: `G_B = G_A @ M_{B->A}` (same convention as the anchor-relative
+  estimator), so coordinates never reset.
+* **Overlap**: `anchor_overlap_seconds` (default 1.5 s) of shared coverage is
+  used for bridging and for smoothstep cross-fading of the transforms.
+* **Quality-triggered re-anchoring**: beyond the max interval, a new anchor is
+  created early when point survival, RANSAC inlier ratio/count, or *spatial
+  coverage* stays poor for `quality_failure_patience_frames`, subject to
+  `min_anchor_interval_seconds`.  Spatial coverage is the fraction of occupied
+  `4x4` image cells, so 100 points clustered in a corner cannot masquerade as
+  a well-conditioned population.
+* **Fallback**: if a bridge cannot be estimated, the new anchor is aligned to
+  the old segment's own prediction of it — continuity is preserved instead of
+  jumping, and the transition is flagged `degraded`.
+
+Per-segment tracks are persisted under `<output>_segments/`, metadata and
+per-anchor stats in `<output>.segments.json`, and the flat `motion.npz`
+carries per-frame `segment_id`, `anchor_frame`, `anchor_age_frames`,
+`num_query_points`, `num_visible_points`, `spatial_coverage`,
+`remaining_point_ratio`, `reanchor_requested`/`reanchor_reason`.
 
 Local outputs live at `./runs/DJI_0260/`. The bucket ends up with:
 

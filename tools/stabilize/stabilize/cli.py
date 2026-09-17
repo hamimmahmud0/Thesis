@@ -193,6 +193,15 @@ def _cmd_run(args: argparse.Namespace) -> None:
         use_smoothing=args.smooth,
         stabilization_mode=args.stabilization_mode,
         anchor_interval_seconds=args.anchor_interval_seconds,
+        min_anchor_interval_seconds=args.min_anchor_interval_seconds,
+        anchor_overlap_seconds=args.anchor_overlap_seconds,
+        min_remaining_point_ratio=args.min_remaining_point_ratio,
+        min_inlier_count=args.min_inlier_count,
+        min_spatial_coverage=args.min_spatial_coverage,
+        coverage_grid_rows=args.coverage_grid_rows,
+        coverage_grid_cols=args.coverage_grid_cols,
+        quality_failure_patience_frames=args.quality_failure_patience_frames,
+        fresh_grids=not args.no_fresh_grids,
         ransac_reproj_threshold=args.ransac_reproj_threshold,
         min_correspondences=args.min_correspondences,
         min_inlier_ratio=args.min_inlier_ratio,
@@ -341,6 +350,91 @@ def _cmd_estimate(args: argparse.Namespace) -> None:
             math.hypot(drift["absolute_dx"][-1], drift["absolute_dy"][-1])
         )
         print(f"Tracker drift (anchor 0, start->end): {net:.1f} px")
+
+
+def _cmd_fresh_grid(args: argparse.Namespace) -> None:
+    """Execute the ``fresh-grid`` subcommand (segmented tracking + estimate)."""
+    from .segments import (
+        SegmentConfig,
+        plan_segments,
+        save_segment_metadata,
+        segment_report,
+    )
+    from .tracker import make_segment_tracker
+    from .utils import open_video
+
+    from .motion import motion_summary, save_motion
+
+    from pathlib import Path
+
+    cap, n_vid, width, height, fps = open_video(args.video)
+    cap.release()
+
+    cfg = SegmentConfig(
+        anchor_interval_seconds=args.anchor_interval_seconds,
+        min_anchor_interval_seconds=args.min_anchor_interval_seconds,
+        anchor_overlap_seconds=args.anchor_overlap_seconds,
+        min_remaining_point_ratio=args.min_remaining_point_ratio,
+        min_inlier_ratio=args.min_inlier_ratio,
+        min_inlier_count=args.min_inlier_count,
+        min_spatial_coverage=args.min_spatial_coverage,
+        coverage_grid_rows=args.coverage_grid_rows,
+        coverage_grid_cols=args.coverage_grid_cols,
+        quality_failure_patience_frames=args.quality_failure_patience_frames,
+        ransac_reproj_threshold=args.ransac_reproj_threshold,
+        min_correspondences=args.min_correspondences,
+    )
+
+    segment_dir = Path(args.segment_dir) if args.segment_dir else (
+        Path(args.output).parent / (Path(args.output).name + "_segments")
+    )
+
+    print(
+        f"Video:  {n_vid} frames, {width}x{height} @ {fps:.3f} fps\n"
+        f"Fresh-grid: interval {args.anchor_interval_seconds}s "
+        f"(min {args.min_anchor_interval_seconds}s), overlap "
+        f"{args.anchor_overlap_seconds}s, grid {args.grid_size}x{args.grid_size}"
+    )
+
+    track_fn = make_segment_tracker(
+        args.video,
+        checkpoint=args.checkpoint,
+        grid_size=args.grid_size,
+        max_video_dim=args.max_dim,
+        step=args.step,
+        device=args.device,
+        segment_dir=segment_dir,
+    )
+    result = plan_segments(
+        track_fn, n_vid, width, height, fps, cfg, debug=args.debug,
+    )
+
+    save_motion(
+        result,
+        args.output,
+        video_width=width,
+        video_height=height,
+        fps=fps,
+        tracks_source=f"fresh-grid({len(result['segments'])} segments)",
+    )
+    save_segment_metadata(result, args.output)
+
+    print()
+    print("===== SUMMARY =====")
+    print(motion_summary(result))
+    print()
+    print("===== FRESH-GRID =====")
+    print(segment_report(result))
+    for st in result.get("anchor_stats", []):
+        print(
+            f"  anchor {st['anchor_frame']:6d} reason={st['reason']:<20s} "
+            f"age={st['age_frames']:4d} "
+            f"surviving={st['surviving_tracks']:4d}/{st['num_query_points']} "
+            f"inliers={st['ransac_inliers']:4d} "
+            f"cov={st['spatial_coverage']:.2f} "
+            f"bridge_inliers={st['bridge_inliers']:3d} "
+            f"degraded={st['bridge_degraded']}"
+        )
 
 
 def _cmd_smooth(args: argparse.Namespace) -> None:
@@ -768,10 +862,54 @@ def build_parser() -> argparse.ArgumentParser:
     p_run.add_argument(
         "--anchor-interval-seconds", type=float, default=10.0, metavar="SEC",
         help=(
-            "Spacing between stabilization anchors.  Each frame is fit "
+            "Maximum spacing between stabilization anchors.  Each frame is fit "
             "directly against its local anchor instead of chaining "
             "frame-to-frame transforms.  Typical 5-30.  Default: 10."
         ),
+    )
+    p_run.add_argument(
+        "--no-fresh-grids", action="store_true",
+        help=(
+            "Disable the fresh-grid architecture and use one persistent "
+            "CoTracker grid for the whole video (classic behaviour).  Fresh "
+            "grids are the default: every anchor gets a new query grid and "
+            "the previous grid bridges it into the global coordinate system."
+        ),
+    )
+    p_run.add_argument(
+        "--min-anchor-interval-seconds", type=float, default=2.0, metavar="SEC",
+        help="Minimum spacing between anchors (anti-churn).  Default: 2.",
+    )
+    p_run.add_argument(
+        "--anchor-overlap-seconds", type=float, default=1.5, metavar="SEC",
+        help=(
+            "Overlap between consecutive tracking segments, used for bridge "
+            "registration and transform cross-fading.  Default: 1.5."
+        ),
+    )
+    p_run.add_argument(
+        "--min-remaining-point-ratio", type=float, default=0.40, metavar="R",
+        help="Re-anchor when surviving points / grid points drops below R.  Default: 0.40.",
+    )
+    p_run.add_argument(
+        "--min-inlier-count", type=int, default=20, metavar="N",
+        help="Re-anchor when RANSAC inliers fall below N.  Default: 20.",
+    )
+    p_run.add_argument(
+        "--min-spatial-coverage", type=float, default=0.35, metavar="R",
+        help="Re-anchor when occupied image-cell fraction drops below R.  Default: 0.35.",
+    )
+    p_run.add_argument(
+        "--coverage-grid-rows", type=int, default=4, metavar="N",
+        help="Spatial-coverage grid rows.  Default: 4.",
+    )
+    p_run.add_argument(
+        "--coverage-grid-cols", type=int, default=4, metavar="N",
+        help="Spatial-coverage grid columns.  Default: 4.",
+    )
+    p_run.add_argument(
+        "--quality-failure-patience-frames", type=int, default=5, metavar="N",
+        help="Consecutive poor-quality frames required before re-anchoring.  Default: 5.",
     )
     p_run.add_argument(
         "--ransac-reproj-threshold", type=float, default=2.0, metavar="PX",
@@ -1089,6 +1227,69 @@ def build_parser() -> argparse.ArgumentParser:
         help="Print per-anchor diagnostics during estimation.",
     )
     p_est.set_defaults(func=_cmd_estimate)
+
+    # -----------------------------------------------------------------------
+    # fresh-grid (segmented tracking + estimate)
+    # -----------------------------------------------------------------------
+    p_fg = sub.add_parser(
+        "fresh-grid",
+        help="Segment-tracking estimate with a fresh CoTracker grid per anchor.",
+        description=(
+            "Runs an independent CoTracker session per tracking segment.  Every "
+            "anchor gets a brand-new query grid; the previous grid bridges the "
+            "new anchor into the global coordinate system through the overlap "
+            "region.  Anchors are created on a max interval or early when "
+            "tracking quality (point survival, inlier ratio, spatial coverage) "
+            "deteriorates."
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    p_fg.add_argument("video", help="Path to the source video file.")
+    p_fg.add_argument(
+        "-o", "--output", required=True, metavar="PREFIX",
+        help="Output base path; writes PREFIX.npz/.csv and PREFIX.segments.json.",
+    )
+    p_fg.add_argument("--checkpoint", default=None, metavar="scaled_online.pth",
+                      help="CoTracker3 checkpoint (auto-downloaded if missing).")
+    p_fg.add_argument("--grid-size", type=int, default=16, metavar="N",
+                      help="NxN fresh query grid per anchor.  Default: 16.")
+    p_fg.add_argument("--max-dim", type=int, default=1280, metavar="PX",
+                      help="Longest-side resize for tracking.  Default: 1280.")
+    p_fg.add_argument("--step", type=int, default=8, metavar="N",
+                      help="Online sliding-window stride (window_len = 2*step).  "
+                           "Default: 8; use 1 for per-frame stepping in tests.")
+    p_fg.add_argument("--device", default=None, metavar="DEVICE",
+                      help="torch device (cuda:0, cpu).  Default: auto.")
+    p_fg.add_argument("--segment-dir", default=None, metavar="DIR",
+                      help="Directory for per-segment tracks (default: "
+                           "<output>_segments/).")
+    p_fg.add_argument("--anchor-interval-seconds", type=float, default=10.0,
+                      metavar="SEC", help="Maximum anchor spacing.  Default: 10.")
+    p_fg.add_argument("--min-anchor-interval-seconds", type=float, default=2.0,
+                      metavar="SEC", help="Minimum anchor spacing.  Default: 2.")
+    p_fg.add_argument("--anchor-overlap-seconds", type=float, default=1.5,
+                      metavar="SEC", help="Segment overlap.  Default: 1.5.")
+    p_fg.add_argument("--min-remaining-point-ratio", type=float, default=0.40,
+                      metavar="R", help="Re-anchor below this survival ratio.")
+    p_fg.add_argument("--min-inlier-ratio", type=float, default=0.40, metavar="R",
+                      help="Re-anchor below this RANSAC inlier ratio.")
+    p_fg.add_argument("--min-inlier-count", type=int, default=20, metavar="N",
+                      help="Re-anchor below this inlier count.")
+    p_fg.add_argument("--min-spatial-coverage", type=float, default=0.35,
+                      metavar="R", help="Re-anchor below this cell coverage.")
+    p_fg.add_argument("--coverage-grid-rows", type=int, default=4, metavar="N",
+                      help="Coverage grid rows.  Default: 4.")
+    p_fg.add_argument("--coverage-grid-cols", type=int, default=4, metavar="N",
+                      help="Coverage grid columns.  Default: 4.")
+    p_fg.add_argument("--quality-failure-patience-frames", type=int, default=5,
+                      metavar="N", help="Consecutive bad frames before re-anchor.")
+    p_fg.add_argument("--ransac-reproj-threshold", type=float, default=2.0,
+                      metavar="PX", help="RANSAC reprojection threshold.  Default: 2.")
+    p_fg.add_argument("--min-correspondences", type=int, default=20, metavar="N",
+                      help="Minimum correspondences for a transform.  Default: 20.")
+    p_fg.add_argument("--debug", action="store_true",
+                      help="Print per-anchor diagnostics.")
+    p_fg.set_defaults(func=_cmd_fresh_grid)
 
     # -----------------------------------------------------------------------
     # smooth

@@ -57,6 +57,8 @@ def track_video(
     max_video_dim: int = 1280,
     step: int = 8,
     device: str | None = None,
+    start_frame: int = 0,
+    end_frame: int | None = None,
 ) -> dict:
     """Track keypoint trajectories through *video_path* using CoTracker3.
 
@@ -70,6 +72,8 @@ def track_video(
     grid_size : NxN grid of query points (no cap; GPU memory scales
         with N*N).
     grid_query_frame : frame index the grid is sampled from (default 0).
+        Interpreted as an *absolute* frame index; inside a tracked range
+        (``start_frame``..``end_frame``) it is converted to a local index.
     max_video_dim : resize longest side to this before tracking (GPU memory).
     step : online sliding-window stride in frames (default 8).  The CoTracker3
         online model processes ``window_len = 2 * step`` frames per call and
@@ -77,11 +81,15 @@ def track_video(
         overlap).  Smaller steps give more frequent, smaller passes (lower
         peak memory); larger steps use larger windows.
     device : torch device string, e.g. ``"cuda:0"``.  Auto-detected if None.
+    start_frame, end_frame : track only ``[start_frame, end_frame)``.  Used
+        by the fresh-grid segment planner to run one CoTracker session per
+        anchor.  ``end_frame=None`` means to the end of the video.
 
     Returns
     -------
     dict with keys: tracks, visibility, query_points, width, height, fps,
-    total_frames, processed_frames, grid_size, num_points.
+    total_frames, processed_frames, start_frame, end_frame, grid_size,
+    num_points.
     """
     import torch
     from cotracker.models.core.model_utils import get_points_on_a_grid
@@ -104,14 +112,23 @@ def track_video(
     probe = cv2.VideoCapture(str(video_path))
     if not probe.isOpened():
         raise SystemExit(f"Cannot open video: {video_path}")
-    total = int(probe.get(cv2.CAP_PROP_FRAME_COUNT))
+    total_video = int(probe.get(cv2.CAP_PROP_FRAME_COUNT))
     orig_w = int(probe.get(cv2.CAP_PROP_FRAME_WIDTH))
     orig_h = int(probe.get(cv2.CAP_PROP_FRAME_HEIGHT))
     fps = probe.get(cv2.CAP_PROP_FPS) or 30.0
     probe.release()
 
+    end = total_video if end_frame is None else min(int(end_frame), total_video)
+    start = max(0, min(int(start_frame), end - 1))
+    total = end - start
     if total < 2:
-        raise SystemExit(f"Video too short: {total} frame(s), need >= 2")
+        raise SystemExit(
+            f"Range [{start}, {end}) too short: {total} frame(s), need >= 2"
+        )
+
+    # Grid query frame as a LOCAL index inside [start, end).
+    local_query = int(grid_query_frame) - start
+    local_query = max(0, min(local_query, total - 1))
 
     # ---- Compute tracking resolution ----
     scale = min(1.0, max_video_dim / max(orig_w, orig_h))
@@ -136,7 +153,7 @@ def track_video(
     # ---- Grid query points ----
     # Grid size is UNLOCKED (no cap); GPU memory scales with grid_size^2.
     grid_size = max(16, int(grid_size))
-    grid_query_frame = max(0, min(grid_query_frame, total - 1))
+    grid_query_frame = local_query
     ish = model.interp_shape
 
     # ---- Streaming tracking loop ----
@@ -171,19 +188,24 @@ def track_video(
             return model(video_chunk, **kwargs)
 
     n_forwards = (total - 1) // STEP + 1
-    print(f"Tracking {total} frames at {tw}x{th} (grid {grid_size}x{grid_size}) ...")
+    print(
+        f"Tracking {total} frames [{start},{end}) at {tw}x{th} "
+        f"(grid {grid_size}x{grid_size}, query local {grid_query_frame}) ..."
+    )
     print(
         f"  {n_forwards} forward passes "
         f"(stride {STEP}, window {WINDOW_LEN})"
     )
     cap = cv2.VideoCapture(str(video_path))
+    if start > 0:
+        cap.set(cv2.CAP_PROP_POS_FRAMES, start)
     pbar = tqdm(
         total=n_forwards, desc="Tracking", unit="step",
         bar_format="{desc}: {percentage:3.1f}%|{bar}| {n_fmt}/{total_fmt} "
                    "[{elapsed}<{remaining}, {rate_fmt}]",
     )
     try:
-        while True:
+        while n < total:
             ok, frame_bgr = cap.read()
             if not ok:
                 break
@@ -236,6 +258,8 @@ def track_video(
         fps=round(float(fps), 3),
         total_frames=total,
         processed_frames=T,
+        start_frame=start,
+        end_frame=end,
         grid_size=grid_size,
         grid_query_frame=grid_query_frame,
         step=step,
@@ -261,7 +285,67 @@ def track_video(
         fps=fps,
         total_frames=total,
         processed_frames=T,
+        start_frame=start,
+        end_frame=end,
         grid_size=grid_size,
         step=step,
         num_points=tracks.shape[1],
     )
+
+
+def make_segment_tracker(
+    video_path: str | Path,
+    checkpoint: str | Path | None = None,
+    grid_size: int = 16,
+    max_video_dim: int = 1280,
+    step: int = 8,
+    device: str | None = None,
+    segment_dir: str | Path | None = None,
+):
+    """Return ``track_fn(anchor, end) -> TrackingSegment`` for the planner.
+
+    Each call runs an **independent** CoTracker online session over
+    ``[anchor, end)`` with a brand-new grid queried at ``anchor``.  Segment
+    tracks are written to ``segment_dir/segment_<anchor>.npz`` when a
+    directory is given, giving the persisted per-segment representation
+    required for long-video debugging.
+    """
+    import tempfile
+    from pathlib import Path as _Path
+
+    from .segments import make_segment
+
+    video_path = _Path(video_path)
+    if segment_dir is not None:
+        segment_dir = _Path(segment_dir)
+        segment_dir.mkdir(parents=True, exist_ok=True)
+    _tmp = None if segment_dir is not None else tempfile.mkdtemp(prefix="segs_")
+
+    def track_fn(anchor_frame: int, end_frame: int):
+        out_npz = _Path(segment_dir or _tmp) / f"segment_{int(anchor_frame):08d}.npz"
+        res = track_video(
+            video_path=video_path,
+            output_npz=out_npz,
+            checkpoint=checkpoint,
+            grid_size=grid_size,
+            grid_query_frame=int(anchor_frame),
+            max_video_dim=max_video_dim,
+            step=step,
+            device=device,
+            start_frame=int(anchor_frame),
+            end_frame=int(end_frame),
+        )
+        return make_segment(
+            segment_id=0,
+            anchor_frame=int(anchor_frame),
+            start_frame=int(res["start_frame"]),
+            end_frame=int(res["end_frame"]),
+            tracks=res["tracks"],
+            visibility=res["visibility"],
+            query_points=res["query_points"],
+            width=int(res["width"]),
+            height=int(res["height"]),
+            fps=float(res["fps"]),
+        )
+
+    return track_fn

@@ -307,6 +307,89 @@ def robust_polyfit(
     return np.asarray(c, dtype=np.float64)
 
 
+def smoothstep(x: float) -> float:
+    """Clamped smoothstep: 0 at x<=0, 1 at x>=1, C1-continuous in between."""
+    x = float(min(max(x, 0.0), 1.0))
+    return x * x * (3.0 - 2.0 * x)
+
+
+def spatial_coverage(
+    points: np.ndarray,
+    width: int,
+    height: int,
+    rows: int = 4,
+    cols: int = 4,
+) -> float:
+    """Fraction of image cells occupied by at least one point.
+
+    The frame is divided into ``rows x cols`` cells; a cell counts as covered
+    when it contains at least one point.  This is a cheap proxy for how well
+    the surviving correspondences constrain camera motion (100 points
+    clustered in one corner cover far fewer cells than 40 spread out).
+    """
+    pts = np.asarray(points, dtype=np.float64)
+    if pts.ndim != 2 or pts.shape[0] == 0 or width <= 0 or height <= 0:
+        return 0.0
+    pts = pts[np.isfinite(pts).all(axis=1)]
+    if pts.shape[0] == 0:
+        return 0.0
+    rows = max(1, int(rows))
+    cols = max(1, int(cols))
+    cx = np.clip((pts[:, 0] / float(width) * cols).astype(np.int64), 0, cols - 1)
+    cy = np.clip((pts[:, 1] / float(height) * rows).astype(np.int64), 0, rows - 1)
+    occupied = np.unique(cy * cols + cx).size
+    return float(occupied) / float(rows * cols)
+
+
+def transform_residual(
+    M: np.ndarray,
+    src: np.ndarray,
+    dst: np.ndarray,
+    mask: np.ndarray | None = None,
+) -> float:
+    """Median reprojection error (px) of an affine transform on correspondences."""
+    M = affine_2x3_to_3x3(M)
+    src = np.asarray(src, dtype=np.float64)
+    dst = np.asarray(dst, dtype=np.float64)
+    if src.shape[0] == 0:
+        return float("inf")
+    p = np.concatenate([src, np.ones((src.shape[0], 1))], axis=1)
+    proj = (M @ p.T).T[:, :2]
+    res = np.linalg.norm(proj - dst, axis=1)
+    if mask is not None and len(mask) == len(res):
+        res = res[np.asarray(mask, dtype=bool)]
+    return float(np.median(res)) if res.size else float("inf")
+
+
+def robust_median_similarity(mats: list[np.ndarray] | np.ndarray) -> np.ndarray | None:
+    """Robustly aggregate several similarity transforms.
+
+    Each transform is decomposed into ``(tx, ty, yaw, log_scale)`` and each
+    parameter is combined with a median (yaw via a circular median anchored
+    to the first estimate).  This never produces an invalid / unstable
+    affine matrix, unlike averaging raw matrix coefficients.
+    """
+    mats = [affine_2x3_to_3x3(M) for M in mats]
+    if not mats:
+        return None
+    tx = np.empty(len(mats))
+    ty = np.empty(len(mats))
+    yaw = np.empty(len(mats))
+    logs = np.empty(len(mats))
+    for i, M in enumerate(mats):
+        tx[i], ty[i], yaw[i], s = decompose_similarity(M)
+        logs[i] = np.log(max(s, 1e-9))
+    ref = yaw[0]
+    d_yaw = ((yaw - ref + 180.0) % 360.0) - 180.0
+    yaw_med = ref + float(np.median(d_yaw))
+    return similarity_matrix(
+        float(np.median(tx)),
+        float(np.median(ty)),
+        yaw_med,
+        float(np.exp(np.median(logs))),
+    )
+
+
 def smooth_decomposed_params(
     tx: np.ndarray,
     ty: np.ndarray,

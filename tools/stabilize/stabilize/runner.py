@@ -21,8 +21,11 @@ from pathlib import Path
 from . import hfio
 
 
-def _steps_desc(mode: str, skip_overlay: bool = False) -> str:
-    base = ["download", "track", "estimate", "drift"]
+def _steps_desc(mode: str, skip_overlay: bool = False, fresh: bool = False) -> str:
+    base = ["download"]
+    base.append("fresh-grid track+estimate" if fresh else "track")
+    if not fresh:
+        base += ["estimate", "drift"]
     if mode != "off":
         base.append(f"smooth[{mode}]")
     base += ["viz"]
@@ -55,6 +58,15 @@ def run_pipeline(
     use_smoothing: bool = False,
     stabilization_mode: str = "off",
     anchor_interval_seconds: float = 10.0,
+    min_anchor_interval_seconds: float = 2.0,
+    anchor_overlap_seconds: float = 1.5,
+    min_remaining_point_ratio: float = 0.40,
+    min_inlier_count: int = 20,
+    min_spatial_coverage: float = 0.35,
+    coverage_grid_rows: int = 4,
+    coverage_grid_cols: int = 4,
+    quality_failure_patience_frames: int = 5,
+    fresh_grids: bool = True,
     ransac_reproj_threshold: float = 2.0,
     min_correspondences: int = 20,
     min_inlier_ratio: float = 0.4,
@@ -141,86 +153,143 @@ def run_pipeline(
         done()
 
     # ------------------------------------------------------------------
-    # 2. Track
-    # ------------------------------------------------------------------
-    if checkpoint:
-        from .tracker import track_video
-
-        done = _tick("track")
-        tracks = run_dir / "tracks.npz"
-        print(f"[track] {video_path} (grid {grid_size}x{grid_size})")
-        track_video(
-            video_path=video_path,
-            output_npz=tracks,
-            checkpoint=checkpoint,
-            grid_size=grid_size,
-            grid_query_frame=grid_query_frame,
-            max_video_dim=max_video_dim,
-            step=step,
-            device=device,
-        )
-        done()
-    else:
-        tracks = Path(tracks_npz)
-        if not tracks.is_file():
-            raise SystemExit(f"Tracks file not found: {tracks}")
-        # Copy into the run dir so everything lives in one place.
-        run_tracks = run_dir / tracks.name
-        shutil.copy2(tracks, run_tracks)
-        tracks = run_tracks
-        print(f"[track] using pre-computed tracks {tracks.name}")
-
-    # ------------------------------------------------------------------
-    # 3. Estimate (anchor-relative, drift-free)
+    # 2+3. Track + estimate
+    #   fresh-grid mode: one independent CoTracker session per anchor
+    #   classic mode:    one persistent grid + anchor-relative estimate
     # ------------------------------------------------------------------
     from . import motion as motion_mod
 
-    done = _tick("estimate")
-    data = motion_mod.load_tracks(tracks)
-    width = data["width"] or 3840
-    height = data["height"] or 2160
-    fps = data["fps"] or 23.976
-
-    result = motion_mod.estimate_motion(
-        data["tracks"], data["visibility"], width, height,
-        anchor_interval_seconds=anchor_interval_seconds,
-        fps=fps,
-        ransac_reproj_threshold=ransac_reproj_threshold,
-        min_correspondences=min_correspondences,
-        min_inlier_ratio=min_inlier_ratio,
-        anchor_blend_frames=anchor_blend_frames,
-        debug=debug,
-    )
     motion_prefix = run_dir / "motion"
-    motion_mod.save_motion(
-        result,
-        motion_prefix,
-        video_width=width,
-        video_height=height,
-        fps=fps,
-        tracks_source=tracks.name,
-    )
-    done()
-    print(motion_mod.motion_summary(result))
-
-    # ---- Drift diagnostic: isolate tracker drift from integration drift ----
     drift_npz = None
-    if save_drift:
-        done = _tick("drift")
-        drift_res = motion_mod.drift_diagnostic(
-            data["tracks"], data["visibility"], anchor=0, width=width, height=height,
+    tracks = None
+    width = height = None
+    fps = None
+
+    use_fresh = fresh_grids and tracks_npz is None and checkpoint is not None
+
+    if use_fresh:
+        from .segments import (
+            SegmentConfig,
+            plan_segments,
+            save_segment_metadata,
+            segment_report,
         )
-        seg_res = motion_mod.segment_drift_diagnostic(
-            data["tracks"], data["visibility"], result["anchor_frames"],
-            width=width, height=height,
+        from .tracker import make_segment_tracker
+        from .utils import open_video
+
+        _, n_vid, width, height, fps = open_video(video_path)
+        cfg = SegmentConfig(
+            anchor_interval_seconds=anchor_interval_seconds,
+            min_anchor_interval_seconds=min_anchor_interval_seconds,
+            anchor_overlap_seconds=anchor_overlap_seconds,
+            min_remaining_point_ratio=min_remaining_point_ratio,
+            min_inlier_ratio=min_inlier_ratio,
+            min_inlier_count=min_inlier_count,
+            min_spatial_coverage=min_spatial_coverage,
+            coverage_grid_rows=coverage_grid_rows,
+            coverage_grid_cols=coverage_grid_cols,
+            quality_failure_patience_frames=quality_failure_patience_frames,
+            ransac_reproj_threshold=ransac_reproj_threshold,
+            min_correspondences=min_correspondences,
         )
-        drift_res["segment_absolute_dx"] = seg_res["absolute_dx"]
-        drift_res["segment_absolute_dy"] = seg_res["absolute_dy"]
-        drift_npz = run_dir / "motion_drift"
-        motion_mod.save_drift(
-            drift_res, drift_npz, fps=fps, anchor_frames=result["anchor_frames"],
+        segment_dir = run_dir / "segments"
+        print(
+            f"[track] fresh-grid segments: interval {anchor_interval_seconds}s "
+            f"(min {min_anchor_interval_seconds}s), overlap "
+            f"{anchor_overlap_seconds}s, grid {grid_size}x{grid_size}"
+        )
+        track_fn = make_segment_tracker(
+            video_path, checkpoint=checkpoint, grid_size=grid_size,
+            max_video_dim=max_video_dim, step=step, device=device,
+            segment_dir=segment_dir,
+        )
+        done = _tick("track+estimate")
+        result = plan_segments(track_fn, n_vid, width, height, fps, cfg, debug=debug)
+        done()
+        motion_mod.save_motion(
+            result, motion_prefix,
+            video_width=width, video_height=height, fps=fps,
+            tracks_source=f"fresh-grid({len(result['segments'])} segments)",
+        )
+        save_segment_metadata(result, motion_prefix)
+        print(motion_mod.motion_summary(result))
+        print(segment_report(result))
+        # Overlay needs a tracks file; use the first segment.
+        seg_files = sorted(segment_dir.glob("segment_*.npz"))
+        if seg_files:
+            tracks = seg_files[0]
+    else:
+        # ---- Classic persistent-grid tracking ----
+        if checkpoint:
+            from .tracker import track_video
+
+            done = _tick("track")
+            tracks = run_dir / "tracks.npz"
+            print(f"[track] {video_path} (grid {grid_size}x{grid_size})")
+            track_video(
+                video_path=video_path,
+                output_npz=tracks,
+                checkpoint=checkpoint,
+                grid_size=grid_size,
+                grid_query_frame=grid_query_frame,
+                max_video_dim=max_video_dim,
+                step=step,
+                device=device,
+            )
+            done()
+        else:
+            tracks = Path(tracks_npz)
+            if not tracks.is_file():
+                raise SystemExit(f"Tracks file not found: {tracks}")
+            # Copy into the run dir so everything lives in one place.
+            run_tracks = run_dir / tracks.name
+            shutil.copy2(tracks, run_tracks)
+            tracks = run_tracks
+            print(f"[track] using pre-computed tracks {tracks.name}")
+
+        done = _tick("estimate")
+        data = motion_mod.load_tracks(tracks)
+        width = data["width"] or 3840
+        height = data["height"] or 2160
+        fps = data["fps"] or 23.976
+
+        result = motion_mod.estimate_motion(
+            data["tracks"], data["visibility"], width, height,
+            anchor_interval_seconds=anchor_interval_seconds,
+            fps=fps,
+            ransac_reproj_threshold=ransac_reproj_threshold,
+            min_correspondences=min_correspondences,
+            min_inlier_ratio=min_inlier_ratio,
+            anchor_blend_frames=anchor_blend_frames,
+            debug=debug,
+        )
+        motion_mod.save_motion(
+            result, motion_prefix,
+            video_width=width, video_height=height, fps=fps,
+            tracks_source=tracks.name,
         )
         done()
+        print(motion_mod.motion_summary(result))
+
+        # ---- Drift diagnostic (single persistent grid only) ----
+        if save_drift:
+            done = _tick("drift")
+            drift_res = motion_mod.drift_diagnostic(
+                data["tracks"], data["visibility"], anchor=0,
+                width=width, height=height,
+            )
+            seg_res = motion_mod.segment_drift_diagnostic(
+                data["tracks"], data["visibility"], result["anchor_frames"],
+                width=width, height=height,
+            )
+            drift_res["segment_absolute_dx"] = seg_res["absolute_dx"]
+            drift_res["segment_absolute_dy"] = seg_res["absolute_dy"]
+            drift_npz = run_dir / "motion_drift"
+            motion_mod.save_drift(
+                drift_res, drift_npz, fps=fps,
+                anchor_frames=result["anchor_frames"],
+            )
+            done()
 
     # ------------------------------------------------------------------
     # 4. Smooth
@@ -284,7 +353,7 @@ def run_pipeline(
     # 6. Track overlay
     # ------------------------------------------------------------------
     overlay = None
-    if not skip_overlay:
+    if not skip_overlay and tracks is not None:
         done = _tick("overlay")
         overlay = run_dir / "tracks_overlay.mp4"
         viz_mod.overlay_tracks(
@@ -293,6 +362,8 @@ def run_pipeline(
             output_path=overlay,
         )
         done()
+    elif not skip_overlay:
+        print("[overlay] no single tracks file available — skipping overlay")
     else:
         print("[skip-overlay] skipping tracks-overlay video (--skip-overlay)")
 
@@ -363,12 +434,22 @@ def run_pipeline(
             "smoothing": mode != "off",
             "stabilization_mode": mode,
             "anchor_interval_seconds": anchor_interval_seconds,
+            "min_anchor_interval_seconds": min_anchor_interval_seconds,
+            "anchor_overlap_seconds": anchor_overlap_seconds,
+            "min_remaining_point_ratio": min_remaining_point_ratio,
+            "min_inlier_count": min_inlier_count,
+            "min_spatial_coverage": min_spatial_coverage,
+            "coverage_grid_rows": coverage_grid_rows,
+            "coverage_grid_cols": coverage_grid_cols,
+            "quality_failure_patience_frames": quality_failure_patience_frames,
+            "fresh_grids": use_fresh,
             "ransac_reproj_threshold": ransac_reproj_threshold,
             "min_correspondences": min_correspondences,
             "min_inlier_ratio": min_inlier_ratio,
             "anchor_blend_frames": anchor_blend_frames,
             "locked_poly_degree": locked_poly_degree,
             "motion_method": result.get("method", "anchor_relative"),
+            "segments": result.get("segment_overhead", {}),
             "overlay": not skip_overlay,
             "frames": n_frames,
             "crf": crf,
@@ -411,7 +492,7 @@ def run_pipeline(
 
     print("\n===== DONE =====")
     print(f"local run dir: {run_dir}")
-    print(f"pipeline:      {_steps_desc(mode, skip_overlay)}")
+    print(f"pipeline:      {_steps_desc(mode, skip_overlay, use_fresh)}")
     return summary
 
 

@@ -134,6 +134,8 @@ def estimate_affine(
         "num_inliers": 0,
         "inlier_ratio": 0.0,
         "valid": False,
+        "scale": 1.0,
+        "inlier_mask": None,
     }
 
     if n < min_correspondences:
@@ -162,8 +164,10 @@ def estimate_affine(
     n_inliers = int(inl.sum())
     info["num_inliers"] = n_inliers
     info["inlier_ratio"] = n_inliers / max(n, 1)
+    info["inlier_mask"] = inl.astype(bool).ravel()
 
     scale = float(np.hypot(M[0, 0], M[1, 0]))
+    info["scale"] = scale
     if scale < 1e-6:
         return None, info
 
@@ -821,8 +825,7 @@ def save_motion(
     meta["anchor_interval_seconds"] = float(result.get("anchor_interval_seconds", 0.0))
     meta["anchor_interval_frames"] = int(result.get("anchor_interval_frames", 1))
 
-    np.savez(
-        npz_path,
+    payload = dict(
         pairwise=result["pairwise"],
         cumulative=result["cumulative"],
         frame_to_global=result.get("frame_to_global", result["cumulative"]),
@@ -849,6 +852,26 @@ def save_motion(
         anchor_bridged=result.get("anchor_bridged", np.array([False])),
         meta=json.dumps(meta),
     )
+    # ---- Fresh-grid / segmented diagnostics (present only for that method) ----
+    for key in (
+        "segment_id", "anchor_frame", "anchor_age_frames", "num_query_points",
+        "num_visible_points", "spatial_coverage", "remaining_point_ratio",
+        "reanchor_requested", "reanchor_reason",
+    ):
+        if key in result:
+            val = result[key]
+            if isinstance(val, np.ndarray) and val.dtype.kind in ("U", "O"):
+                val = val.astype(str)
+            payload[key] = val
+    if result.get("anchor_reasons") is not None:
+        payload["anchor_reasons"] = np.asarray(
+            result["anchor_reasons"], dtype=object
+        )
+    payload["anchor_stats"] = json.dumps(result.get("anchor_stats", []))
+    payload["segments"] = json.dumps(result.get("segments", []))
+    payload["segment_overhead"] = json.dumps(result.get("segment_overhead", {}))
+
+    np.savez(npz_path, **payload)
 
     # ---- CSV: human-readable summary ----
     T = len(result["reliable"])
@@ -872,9 +895,13 @@ def save_motion(
         anchor_index = np.zeros(T, dtype=np.int64)
     anchor_frame_col = anchor_frames[np.clip(anchor_index, 0, len(anchor_frames) - 1)]
 
-    df = pd.DataFrame(dict(
+    cols = dict(
         frame=np.arange(T),
-        anchor_frame=anchor_frame_col,
+        anchor_frame=(
+            np.asarray(result["anchor_frame"])
+            if "anchor_frame" in result
+            else anchor_frame_col
+        ),
         dx=result["dx"],
         dy=result["dy"],
         d_yaw_deg=result["d_yaw_deg"],
@@ -893,7 +920,15 @@ def save_motion(
         cum_y=cum_y,
         cum_yaw_deg=cum_yaw,
         cum_log_scale=cum_log_scale,
-    ))
+    )
+    for key in (
+        "segment_id", "anchor_age_frames", "num_query_points",
+        "num_visible_points", "spatial_coverage", "remaining_point_ratio",
+        "reanchor_requested", "reanchor_reason",
+    ):
+        if key in result:
+            cols[key] = result[key]
+    df = pd.DataFrame(cols)
 
     with open(out.with_suffix(".csv"), "w") as f:
         if meta:
@@ -953,6 +988,23 @@ def load_motion(npz_path: str | Path) -> dict:
     else:
         result["meta"] = {}
     result["method"] = result["meta"].get("method", "legacy")
+
+    # Fresh-grid diagnostics (optional).
+    for key in (
+        "segment_id", "anchor_frame", "anchor_age_frames", "num_query_points",
+        "num_visible_points", "spatial_coverage", "remaining_point_ratio",
+        "reanchor_requested", "reanchor_reason",
+    ):
+        if key in d.files:
+            result[key] = d[key]
+    if "anchor_reasons" in d.files:
+        result["anchor_reasons"] = [str(x) for x in d["anchor_reasons"]]
+    for key in ("anchor_stats", "segments", "segment_overhead"):
+        if key in d.files:
+            try:
+                result[key] = json.loads(str(d[key]))
+            except Exception:
+                result[key] = [] if key != "segment_overhead" else {}
     return result
 
 
