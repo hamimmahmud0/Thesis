@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "stabilize"
+version = "0.1.0"
+description = "Nadir footage stabilizatio tool"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+    { name = "Hamim Mahmud" }
+]
+
+[project.scripts]
+stabilize = "stabilize.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools]
+package-dir = {"" = "src"}

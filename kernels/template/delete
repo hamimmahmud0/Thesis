@@ -34,4 +34,4 @@ if [[ -n "${KAGGLE_API_TOKEN:-}" ]]; then
 fi
 
 USERNAME=$(kaggle config view | awk -F': ' '/^- username:/ {print $2}')
-kaggle kernels logs -f $USERNAME/$KERNEL_ID 
+kaggle kernels delete $USERNAME/$KERNEL_ID -y

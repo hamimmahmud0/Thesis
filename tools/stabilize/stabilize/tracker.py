@@ -135,7 +135,7 @@ def track_video(
 
     # ---- Grid query points ----
     # Grid size is UNLOCKED (no cap); GPU memory scales with grid_size^2.
-    grid_size = max(1, int(grid_size))
+    grid_size = max(16, int(grid_size))
     grid_query_frame = max(0, min(grid_query_frame, total - 1))
     ish = model.interp_shape
 

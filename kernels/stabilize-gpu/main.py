@@ -19,10 +19,6 @@ from urllib.parse import urlparse, unquote
 # Configuration
 # =============================================================================
 
-
-#<config_inject>
-
-
 VIDEO_FILE_NAMES = [
     unquote(os.path.basename(urlparse(url).path))
     for url in CONFIG["HF_VIDEO_LINKS"]
@@ -65,7 +61,7 @@ STAGES = [
                 f"--bucket '{CONFIG["BUCKET"]}' "
                 f"--token '{CONFIG["HF_TOKEN"]}' "
                 f"--step 1 "
-                f"--grid-size 128 "
+                f"--grid-size 512 "
                 f"--crf 0 "
                 #f"--max-dim $(ffprobe -v error "
                 #f"-select_streams v:0 "

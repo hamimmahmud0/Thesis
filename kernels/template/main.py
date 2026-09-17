@@ -1,476 +1,818 @@
 #!/usr/bin/env python3
-# Auto-generated for TunnelMate (https://163.61.236.112/llms.txt)
-# Kaggle VM runs an SSH server + tunnelmate-agent. The agent dials OUT to the
-# broker, which relays traffic from a public port back to the SSH server.
-# Multiple concurrent SSH connections supported.
-#
-# After this script starts, connect from your machine:
-#   ssh -p <PUBLIC_PORT> notebook@163.61.236.112
-#   password: <SSH_PASSWORD>
-#
-# Stop the tunnel by creating the sentinel file: touch /tmp/shutdown_notebook
 
-import asyncio, importlib, json, os, pty, shutil, struct, subprocess, sys
-import termios, time, traceback, urllib.request
-from pathlib import Path
 import os
+import signal
+import subprocess
+import threading
+import sys
+import time
+from pathlib import Path
+from urllib.parse import urlparse, unquote
+import requests
+import traceback
 
-os.chdir(Path.home())
-
-
-def ensure_package(m, pkg=None):
-    try:
-        return importlib.import_module(m)
-    except ImportError:
-        subprocess.check_call([sys.executable, "-m", "pip", "install", pkg or m])
-        return importlib.import_module(m)
-
-
-# ── Runtime deps (installed on first use) ──
-ensure_package("aiohttp")
-asyncssh = ensure_package("asyncssh")
-
-# ── Configuration (edit me) ──
-SSH_USER = CONFIG["SSH_USER"]
-SSH_PASSWORD = CONFIG["SSH_PASSWORD"]
-SSH_HOST = CONFIG["SSH_HOST"]
-SSH_PORT = CONFIG["SSH_PORT"]
-
-TUNNELMATE_BROKER = CONFIG["TUNNELMATE_BROKER"]
-BROKER_HOST = CONFIG["BROKER_HOST"]
-BROKER_CONTROL_PORT = CONFIG["BROKER_CONTROL_PORT"]
-SCOPE = CONFIG["SCOPE"]
-PROTOCOL = CONFIG["PROTOCOL"]
-
-WORK_DIR = Path("/kaggle/working/.tunnelmate")
-if not WORK_DIR.exists():
-    WORK_DIR = Path.home() / ".tunnelmate"
-WORK_DIR.mkdir(parents=True, exist_ok=True)
-
-AGENT_BIN = WORK_DIR / "tunnelmate-agent"
-BROKER_CERT = WORK_DIR / "broker.crt"
-AGENT_CONF = WORK_DIR / "agent.conf"
-TUNNEL_STATE = WORK_DIR / "tunnel.json"     # saved secrets, reused on restart
-TUNNEL_VERSION = "0.1.0"
-SHUTDOWN_PATH = Path("/tmp/shutdown_notebook")
-SHUTDOWN_POLL_SECONDS = 2
+os.chdir(os.path.expanduser("~"))
 
 
-def _json_body(): return {"Content-Type": "application/json", "User-Agent": "kaggle-tunnelmate/0.1.0"}
 
 
-# ── SSH server (native multi-connection, same as before) ──
-
-class KaggleSSHServer(asyncssh.SSHServer):
-    def connection_made(self, conn):
-        peer = conn.get_extra_info("peername", ("?", 0))
-        print(f"[ssh] connection from {peer[0]}:{peer[1]}")
-
-    def begin_auth(self, _username):
-        return True
-
-    def password_auth_supported(self):
-        return True
-
-    def validate_password(self, username, password):
-        ok = username == SSH_USER and password == SSH_PASSWORD
-        print(f"[ssh] auth: user={username} -> {'OK' if ok else 'REJECTED'}")
-        return ok
-
-    def connection_lost(self, exc):
-        print(f"[ssh] client disconnected: {exc or 'clean'}")
+# =============================================================================
+# Configuration
+# =============================================================================
 
 
-async def handle_ssh_client(process):
-    env = os.environ.copy()
-    if getattr(process, "term_type", None):
-        env["TERM"] = process.term_type
-    ts = getattr(process, "term_size", None)
-    shell = shutil.which("bash") or env.get("SHELL") or "/bin/sh"
+HF_TOKEN = CONFIG["HF_TOKEN"]
 
-    def session_argv(command=None):
-        """Start every SSH session with the user's Bash configuration loaded."""
-        if os.path.basename(shell) == "bash":
-            argv = [shell, "--noprofile", "--rcfile", str(Path.home() / ".bashrc"), "-i"]
+from huggingface_hub import whoami
+
+
+
+user_info = whoami(token=HF_TOKEN)
+HF_USER = user_info["name"]
+SOURCE_BUCKET = f'{CONFIG["SOURCE_BUCKET"]}'
+DEST_BUCKET = f'{HF_USER}/{CONFIG["DEST_BUCKET"]}'
+
+print(f"Source Bucket: {SOURCE_BUCKET}")
+print(f"Destination Bucket: {SOURCE_BUCKET}")
+
+
+
+
+#MAX_DIM = 3840 # 4k video
+
+STAGES = [
+    [
+        "Prepare Environment",
+        [
+            [
+                "Install",
+                "cd ~; apt update; apt install -y btop nvtop wget git ffmpeg;"
+            ]
+        ],
+    ],
+
+    [
+        "Install sam",
+        [
+            [
+                "Stabilizer Setup",
+                "git clone https://github.com/hamimmahmud0/Thesis.git; "
+                "cd Thesis; "
+                "tools/sam31/setup"
+            ]
+        ],
+    ],
+
+    [
+        "Download and run",
+        [
+            [
+                "SAM",
+                f"""mkdir working && cd working && hf sync hf://buckets/{CONFIG["SOURCE_BUCKET"]} . && /root/miniconda3/envs/sam31/bin/sam31 run . -p "{'; '.join(CONFIG["PROMPTS"])}" --copy-images --confidence {CONFIG["CONFIDENCE"]} --batch-size {CONFIG["BATCH_SIZE"]} --bucket {DEST_BUCKET} --token {HF_TOKEN} --run {SOURCE_BUCKET.split('/')[-1]}"""
+            ]
+        ],
+    ],
+]
+
+
+# Directory where logs will be written
+LOG_DIR = Path("logs")
+
+
+# If True:
+#   if any command in a stage fails, later stages WILL NOT run.
+#
+# If False:
+#   later stages will still run even if something failed.
+STOP_ON_STAGE_FAILURE = True
+
+
+# How long to wait after SIGTERM before force-killing jobs
+TERMINATION_TIMEOUT = 5
+
+
+# =============================================================================
+# Utility functions
+# =============================================================================
+
+def send_bot_message(MESSAGE):
+    if "BOT_TOKEN" in CONFIG:
+        url = f"https://api.telegram.org/bot{CONFIG["BOT_TOKEN"]}/sendMessage"
+
+        data = {
+            "chat_id": CONFIG["CHAT_ID"],
+            "text": MESSAGE
+        }
+
+        response = requests.post(url, data=data)
+
+        if response.status_code == 200:
+            print("Notification sent successfully!")
         else:
-            argv = [shell, "-i"]
-        if command:
-            argv.extend(["-c", command])
-        return argv
+            print("Failed:", response.text)
 
-    def apply_pty_size(fd, size=None):
-        s = size or ts or (80, 24)
-        try:
-            w, h = int(s[0]), int(s[1])
-            import fcntl
-            fcntl.ioctl(fd, termios.TIOCSWINSZ, struct.pack("HHHH", h, w, 0, 0))
-        except Exception:
-            pass
 
-    def setup_child_pty(slave_fd):
-        try:
-            os.setsid()
-        except Exception:
-            pass
-        try:
-            import fcntl
-            fcntl.ioctl(slave_fd, termios.TIOCSCTTY, 0)
-        except Exception:
-            pass
 
-    if getattr(process, "term_type", None):
-        master_fd, slave_fd = pty.openpty()
-        apply_pty_size(slave_fd)
-        child = subprocess.Popen(
-            session_argv(process.command),
-            stdin=slave_fd, stdout=slave_fd, stderr=slave_fd,
-            env=env, close_fds=True,
-            preexec_fn=lambda: setup_child_pty(slave_fd),
-        )
-        os.close(slave_fd)
 
-        async def pump_ssh_to_pty():
-            try:
-                while True:
-                    try:
-                        chunk = await process.stdin.read(1024)
-                    except asyncssh.TerminalSizeChanged as exc:
-                        apply_pty_size(master_fd, exc.term_size)
-                        continue
-                    if not chunk:
-                        break
-                    if isinstance(chunk, str):
-                        chunk = chunk.encode("utf-8", errors="replace")
-                    await asyncio.to_thread(os.write, master_fd, chunk)
-            except Exception:
-                pass
 
-        async def pump_pty_to_ssh():
-            try:
-                while True:
-                    chunk = await asyncio.to_thread(os.read, master_fd, 65536)
-                    if not chunk:
-                        break
-                    process.stdout.write(chunk)
-                    await process.stdout.drain()
-            except Exception:
-                pass
+def sanitize_filename(name: str) -> str:
+    """
+    Convert a name into a safe filename.
+    """
 
-        t1 = asyncio.create_task(pump_ssh_to_pty())
-        t2 = asyncio.create_task(pump_pty_to_ssh())
-        try:
-            await asyncio.wait([t1, t2], return_when=asyncio.FIRST_COMPLETED)
-        finally:
-            for t in (t1, t2):
-                if not t.done():
-                    t.cancel()
-            if child.poll() is None:
-                child.terminate()
-                try:
-                    await asyncio.to_thread(child.wait)
-                except Exception:
-                    child.kill()
-            os.close(master_fd)
-        rc = child.returncode if child.returncode is not None else await asyncio.to_thread(child.wait)
-        process.exit(rc)
+    result = "".join(
+        c if c.isalnum() or c in "-_." else "_"
+        for c in name
+    )
+
+    return result.strip("_") or "job"
+
+
+def format_duration(seconds: float) -> str:
+
+    seconds = int(seconds)
+
+    hours, remainder = divmod(seconds, 3600)
+    minutes, seconds = divmod(remainder, 60)
+
+    if hours:
+        return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+
+    return f"{minutes:02d}:{seconds:02d}"
+
+
+def terminate_process(process):
+    """
+    Send SIGTERM to the entire process group.
+    """
+
+    if process.poll() is not None:
         return
 
-    child = subprocess.Popen(
-        session_argv(process.command),
-        stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-        env=env,
-    )
-    await process.redirect(stdin=child.stdin, stdout=child.stdout, stderr=child.stderr)
-    process.exit(await asyncio.to_thread(child.wait))
-
-
-async def start_ssh():
-    key_dir = WORK_DIR
-    key_path = key_dir / "ssh_host_key"
-    if not key_path.exists():
-        asyncssh.generate_private_key("ssh-rsa").write_private_key(str(key_path))
-    server = await asyncssh.create_server(
-        KaggleSSHServer, SSH_HOST, SSH_PORT,
-        server_host_keys=[str(key_path)],
-        process_factory=handle_ssh_client, encoding=None,
-    )
-    print(f"[ssh] SSH on {SSH_HOST}:{SSH_PORT}  user={SSH_USER}  pass={SSH_PASSWORD}")
-    return server
-
-
-# ── TunnelMate agent setup ──
-
-def download_agent():
-    import platform as _platform
-    machine = _platform.machine().lower()
-    arch = "aarch64" if any(t in machine for t in ("aarch64", "arm64")) else "x86_64"
-    url = f"{TUNNELMATE_BROKER}/v1/download/tunnelmate-{TUNNEL_VERSION}-linux-{arch}.tar.gz"
-    print(f"[tm] Downloading agent ({arch}) from {url}")
-    tar = WORK_DIR / "tunnelmate.tar.gz"
-    urllib.request.urlretrieve(url, tar)
-    subprocess.check_call(["tar", "xzf", str(tar), "-C", str(WORK_DIR)])
-    bin_path = WORK_DIR / f"tunnelmate-{TUNNEL_VERSION}-linux-{arch}" / "tunnelmate-agent"
-    bin_path.chmod(bin_path.stat().st_mode | 0o755)
-    tar.unlink(missing_ok=True)
-    print(f"[tm] Agent binary: {bin_path}")
-    return bin_path
-
-
-def fetch_broker_cert():
     try:
-        urllib.request.urlretrieve(f"{TUNNELMATE_BROKER}/v1/broker-certificate", BROKER_CERT)
-        print(f"[tm] Broker cert saved to {BROKER_CERT}")
-        return str(BROKER_CERT)
-    except urllib.error.HTTPError as exc:
-        if exc.code == 404:
-            print("[tm] Broker uses a publicly trusted cert; no ca_path needed")
-            return None
+        os.killpg(
+            os.getpgid(process.pid),
+            signal.SIGTERM,
+        )
+    except ProcessLookupError:
+        pass
+
+
+def kill_process(process):
+    """
+    Force-kill the entire process group.
+    """
+
+    if process.poll() is not None:
+        return
+
+    try:
+        os.killpg(
+            os.getpgid(process.pid),
+            signal.SIGKILL,
+        )
+    except ProcessLookupError:
+        pass
+
+
+def stop_all_jobs(jobs):
+    """
+    Gracefully terminate all currently running jobs,
+    then force kill remaining processes.
+    """
+
+    running_jobs = [
+        job
+        for job in jobs
+        if job["process"].poll() is None
+    ]
+
+    if not running_jobs:
+        return
+
+    print()
+    print("Stopping running jobs...")
+
+    # First try SIGTERM
+    for job in running_jobs:
+        terminate_process(job["process"])
+
+    deadline = time.time() + TERMINATION_TIMEOUT
+
+    while time.time() < deadline:
+
+        if all(
+            job["process"].poll() is not None
+            for job in running_jobs
+        ):
+            break
+
+        time.sleep(0.2)
+
+    # SIGKILL anything still alive
+    for job in running_jobs:
+
+        if job["process"].poll() is None:
+            kill_process(job["process"])
+
+
+# Lock console writes so output from parallel jobs does not corrupt each line.
+PRINT_LOCK = threading.Lock()
+
+
+def stream_process_output(process, job_name, log_file):
+    """
+    Stream a process output to both the terminal and its log file in real time.
+    Each terminal line is prefixed with the command/job name.
+    """
+    try:
+        for line in iter(process.stdout.readline, ""):
+            # Save raw command output to the log file.
+            log_file.write(line)
+            log_file.flush()
+
+            # Show the same output live in the terminal.
+            with PRINT_LOCK:
+                print(f"[{job_name}] {line}", end="", flush=True)
+    finally:
+        if process.stdout is not None:
+            process.stdout.close()
+
+
+# =============================================================================
+# Stage execution
+# =============================================================================
+
+def run_stage(stage_index, stage_name, commands):
+    """
+    Run every command in a stage concurrently.
+
+    Returns:
+        True  -> every command succeeded
+        False -> one or more commands failed
+    """
+
+    print()
+    print("=" * 90)
+    print(
+        f"STAGE {stage_index}: {stage_name}"
+    )
+    print("=" * 90)
+    print(
+        f"Launching {len(commands)} command(s) in parallel..."
+    )
+    print()
+
+    try:
+        send_bot_message(f"RUNNING stage: {stage_index}: {stage_name}")
+    except Exception:
+        pass
+
+    stage_start_time = time.time()
+
+    # -------------------------------------------------------------------------
+    # Stage log directory
+    # -------------------------------------------------------------------------
+
+    safe_stage_name = sanitize_filename(stage_name)
+
+    stage_log_dir = (
+        LOG_DIR
+        / f"stage_{stage_index:02d}_{safe_stage_name}"
+    )
+
+    stage_log_dir.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    jobs = []
+
+    # -------------------------------------------------------------------------
+    # Start every command
+    # -------------------------------------------------------------------------
+
+    for command_index, item in enumerate(
+        commands,
+        start=1,
+    ):
+
+        if len(item) != 2:
+            raise ValueError(
+                f"Invalid command in stage "
+                f"{stage_index}, command {command_index}.\n"
+                f"Expected:\n"
+                f"    ['command name', 'command']\n"
+                f"Got:\n"
+                f"    {item}"
+            )
+
+        name, command = item
+
+        safe_name = sanitize_filename(name)
+
+        log_path = (
+            stage_log_dir
+            / f"{command_index:02d}_{safe_name}.log"
+        )
+
+        log_file = open(
+            log_path,
+            "w",
+            buffering=1,
+            encoding="utf-8",
+        )
+
+        print(
+            f"[START] {name}"
+        )
+        print(
+            f"        PID:     pending"
+        )
+        print(
+            f"        Command: {command}"
+        )
+        print(
+            f"        Log:     {log_path}"
+        )
+        print()
+
+        # Important:
+        #
+        # Bash executes the entire command string.
+        #
+        # Therefore this works:
+        #
+        #   cd project;
+        #   source ~/.bashrc;
+        #   conda activate myenv;
+        #   python train.py
+        #
+        # Pipes, &&, ||, redirects, variables, etc.
+        # also work.
+        #
+        # start_new_session=True creates a new process
+        # group so Ctrl+C can terminate all children.
+        process = subprocess.Popen(
+            [
+                "bash",
+                "-lc",
+                command,
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            bufsize=1,
+            errors="replace",
+            start_new_session=True,
+            env={**os.environ, "PYTHONUNBUFFERED": "1"},
+        )
+
+        # Tee the process output to both terminal and log file in real time.
+        output_thread = threading.Thread(
+            target=stream_process_output,
+            args=(process, name, log_file),
+            daemon=True,
+        )
+        output_thread.start()
+
+        print(
+            f"        Started PID: {process.pid}"
+        )
+        print()
+
+        jobs.append(
+            {
+                "name": name,
+                "command": command,
+                "process": process,
+                "log_file": log_file,
+                "log_path": log_path,
+                "start_time": time.time(),
+                "reported": False,
+                "output_thread": output_thread,
+            }
+        )
+
+    print("-" * 90)
+    print(
+        f"Stage {stage_index}: all commands launched."
+    )
+    print(
+        "Waiting for all commands in this stage..."
+    )
+    print("-" * 90)
+
+    # -------------------------------------------------------------------------
+    # Wait for all jobs
+    # -------------------------------------------------------------------------
+
+    try:
+
+        while True:
+
+            all_finished = True
+
+            for job in jobs:
+
+                process = job["process"]
+
+                return_code = process.poll()
+
+                if return_code is None:
+
+                    all_finished = False
+                    continue
+
+                if job["reported"]:
+                    continue
+
+                elapsed = (
+                    time.time()
+                    - job["start_time"]
+                )
+
+                if return_code == 0:
+
+                    status = "SUCCESS"
+
+                else:
+
+                    status = (
+                        f"FAILED "
+                        f"(exit={return_code})"
+                    )
+
+                print(
+                    f"[{status}] "
+                    f"{job['name']} "
+                    f"[{format_duration(elapsed)}]"
+                )
+
+                job["reported"] = True
+
+            if all_finished:
+                break
+
+            time.sleep(0.5)
+
+    except KeyboardInterrupt:
+
+        print()
+        print(
+            "Ctrl+C received."
+        )
+
+        stop_all_jobs(jobs)
+
         raise
 
-
-def create_tunnel():
-    if TUNNEL_STATE.exists():
-        try:
-            state = json.loads(TUNNEL_STATE.read_text())
-            if state.get("scope") == SCOPE:
-                print(f"[tm] Reusing saved tunnel {state['tunnel_id']}")
-                return state
-        except Exception:
-            pass
-    req = urllib.request.Request(
-        f"{TUNNELMATE_BROKER}/v1/tunnels",
-        data=json.dumps({"scope": SCOPE, "protocol": PROTOCOL}).encode(),
-        headers=_json_body(), method="POST",
-    )
-    with urllib.request.urlopen(req, timeout=30) as r:
-        state = json.loads(r.read())
-    TUNNEL_STATE.write_text(json.dumps(state, indent=2))
-    TUNNEL_STATE.chmod(0o600)
-    print(f"[tm] Tunnel created: {state['tunnel_id']}")
-    print(f"[tm]   public_port={state.get('public_port')}  peer_address={state.get('peer_address')}")
-    return state
-
-
-def write_agent_conf(state, ca_path):
-    lines = [
-        f"agent.tunnel_id = {state['tunnel_id']}",
-        f"agent.agent_secret = {state['agent_secret']}",
-        f"agent.local_host = {SSH_HOST}",
-        f"agent.local_port = {SSH_PORT}",
-        f"agent.broker_host = {BROKER_HOST}",
-        f"agent.broker_port = {BROKER_CONTROL_PORT}",
-        f"agent.protocol = {PROTOCOL}",
-        f"agent.verify_ca = true",
-    ]
-    if ca_path:
-        lines.append(f"agent.ca_path = {ca_path}")
-    lines.append("agent.log_level = info")
-    AGENT_CONF.write_text("\n".join(lines) + "\n")
-    os.chmod(AGENT_CONF, 0o600)
-
-
-def tunnel_online(state):
-    req = urllib.request.Request(
-        f"{TUNNELMATE_BROKER}/v1/tunnels/{state['tunnel_id']}",
-        headers={"X-Tunnel-Management-Secret": state["management_secret"]},
-    )
-    with urllib.request.urlopen(req, timeout=15) as r:
-        info = json.loads(r.read())
-    return bool(info.get("online"))
-
-
-def renew_tunnel(state):
-    req = urllib.request.Request(
-        f"{TUNNELMATE_BROKER}/v1/tunnels/{state['tunnel_id']}/renew",
-        data=b"", method="POST",
-        headers={"X-Tunnel-Management-Secret": state["management_secret"]},
-    )
-    with urllib.request.urlopen(req, timeout=15) as r:
-        return json.loads(r.read())
-
-
-def delete_tunnel(state):
-    try:
-        req = urllib.request.Request(
-            f"{TUNNELMATE_BROKER}/v1/tunnels/{state['tunnel_id']}",
-            method="DELETE",
-            headers={"X-Tunnel-Management-Secret": state["management_secret"]},
-        )
-        urllib.request.urlopen(req, timeout=15)
-        TUNNEL_STATE.unlink(missing_ok=True)
-        print("[tm] Tunnel deleted")
-    except Exception as exc:
-        print(f"[tm] delete failed (lease will expire anyway): {exc}")
-
-
-async def start_agent(bin_path, state, ca_path):
-    if not AGENT_CONF.exists():
-        write_agent_conf(state, ca_path)
-    proc = await asyncio.create_subprocess_exec(
-        str(bin_path), "-c", str(AGENT_CONF),
-        stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.STDOUT,
-    )
-
-    async def drain():
-        while True:
-            line = await proc.stdout.readline()
-            if not line:
-                break
-            print(f"  {line.decode('utf-8', errors='replace')}", end="")
-
-    asyncio.create_task(drain())
-    return proc
-
-
-async def wait_online(state, timeout=60, shutdown_event=None):
-    deadline = time.monotonic() + timeout
-    while time.monotonic() < deadline:
-        if shutdown_event is not None and shutdown_event.is_set():
-            return False
-        try:
-            if await asyncio.to_thread(tunnel_online, state):
-                return True
-        except Exception as exc:
-            print(f"[tm] status check error: {exc}")
-        if shutdown_event is None:
-            await asyncio.sleep(3)
-        else:
-            try:
-                await asyncio.wait_for(shutdown_event.wait(), timeout=3)
-            except asyncio.TimeoutError:
-                pass
-    return False
-
-
-async def renew_loop(state):
-    while True:
-        await asyncio.sleep(12 * 3600)
-        try:
-            info = await asyncio.to_thread(renew_tunnel, state)
-            print(f"[tm] Lease renewed, expires_at={info.get('expires_at')}")
-        except Exception as exc:
-            print(f"[tm] Renew failed: {exc}")
-
-
-async def shutdown_watcher(shutdown_event):
-    """Set shutdown_event when the shutdown sentinel file appears."""
-    while not shutdown_event.is_set():
-        if SHUTDOWN_PATH.exists():
-            print(f"[watcher] Found {SHUTDOWN_PATH}; requesting shutdown ...")
-            shutdown_event.set()
-            return
-        await asyncio.sleep(SHUTDOWN_POLL_SECONDS)
-
-
-# ── Main ──
-
-async def main():
-    print("=" * 60)
-    print("  Kaggle SSH via TunnelMate")
-    print(f"  Broker: {TUNNELMATE_BROKER}  scope={SCOPE} protocol={PROTOCOL}")
-    print("=" * 60)
-
-    shutdown_event = asyncio.Event()
-    watcher_task = asyncio.create_task(shutdown_watcher(shutdown_event))
-    renew_task = None
-    ssh_server = None
-    proc = None
-    state = None
-    try:
-        ssh_server = await start_ssh()
-        print()
-
-        if shutdown_event.is_set():
-            return True
-
-        bin_path = download_agent()
-        ca_path = fetch_broker_cert()
-        print()
-
-        if shutdown_event.is_set():
-            return True
-
-        state = create_tunnel()
-        write_agent_conf(state, ca_path)
-        print()
-
-        proc = await start_agent(bin_path, state, ca_path)
-        print(f"[tm] Waiting for agent to register ...")
-        if not await wait_online(state, shutdown_event=shutdown_event):
-            if shutdown_event.is_set():
-                return True
-            raise RuntimeError("tunnel never came online; check agent output above")
-
-        public_port = state.get("public_port")
-        print()
-        print("[tm] ============ CONNECT FROM YOUR MACHINE ============")
-        print(f"[tm]   ssh -p {public_port} {SSH_USER}@{BROKER_HOST}")
-        print(f"[tm]   password: {SSH_PASSWORD}")
-        print(f"[tm]   (add -o StrictHostKeyChecking=no if the host key prompt annoys you)")
-        print("[tm] ====================================================")
-        print()
-        print("[tm] Instance running. Keep this script alive.")
-        renew_task = asyncio.create_task(renew_loop(state))
-
-        while not shutdown_event.is_set():
-            try:
-                await asyncio.wait_for(shutdown_event.wait(), timeout=15)
-            except asyncio.TimeoutError:
-                pass
-
-            if shutdown_event.is_set():
-                break
-
-            if proc.returncode is not None:
-                print(f"[tm] agent exited (rc={proc.returncode}); restarting ...")
-                await asyncio.sleep(3)
-                proc = await start_agent(bin_path, state, ca_path)
-                if not await wait_online(state, shutdown_event=shutdown_event):
-                    if shutdown_event.is_set():
-                        break
-                    print("[tm] WARNING: tunnel did not come back online")
-
-        return shutdown_event.is_set()
-    except asyncio.CancelledError:
-        return shutdown_event.is_set()
     finally:
-        print("[tm] Shutting down ...")
-        for task in (watcher_task, renew_task):
-            if task is not None and not task.done():
-                task.cancel()
-        for task in (watcher_task, renew_task):
-            if task is not None:
-                try:
-                    await task
-                except asyncio.CancelledError:
-                    pass
 
-        if ssh_server is not None:
-            ssh_server.close()
-            await ssh_server.wait_closed()
-            print("[ssh] SSH server closed")
+        for job in jobs:
 
-        if proc and proc.returncode is None:
-            proc.terminate()
+            # Ensure all remaining buffered output has been printed/logged
+            # before closing the log file.
             try:
-                await asyncio.wait_for(proc.wait(), timeout=5)
-            except asyncio.TimeoutError:
-                proc.kill()
-                await proc.wait()
-            print("[tm] Agent stopped")
+                job["output_thread"].join(timeout=2)
+            except Exception:
+                pass
 
-        if state is not None:
-            await asyncio.to_thread(delete_tunnel, state)
+            try:
+                job["log_file"].close()
+
+            except Exception:
+                pass
+
+    # -------------------------------------------------------------------------
+    # Stage summary
+    # -------------------------------------------------------------------------
+
+    successful = []
+    failed = []
+
+    for job in jobs:
+
+        return_code = (
+            job["process"].returncode
+        )
+
+        if return_code == 0:
+            successful.append(job)
+
+        else:
+            failed.append(job)
+
+    stage_elapsed = (
+        time.time()
+        - stage_start_time
+    )
+
+    print()
+    print("=" * 90)
+    print(
+        f"STAGE {stage_index} SUMMARY"
+    )
+    print("=" * 90)
+
+    for job in jobs:
+
+        return_code = (
+            job["process"].returncode
+        )
+
+        elapsed = (
+            time.time()
+            - job["start_time"]
+        )
+
+        if return_code == 0:
+
+            status = "SUCCESS"
+
+        else:
+
+            status = (
+                f"FAILED ({return_code})"
+            )
+
+        print(
+            f"{job['name']:<35}"
+            f"{status:<18}"
+            f"{format_duration(elapsed):<12}"
+            f"{job['log_path']}"
+        )
+
+    print("-" * 90)
+
+    print(
+        f"Successful : {len(successful)}"
+    )
+
+    print(
+        f"Failed     : {len(failed)}"
+    )
+
+    print(
+        f"Total      : {len(jobs)}"
+    )
+
+    print(
+        f"Stage time : "
+        f"{format_duration(stage_elapsed)}"
+    )
+
+    print("=" * 90)
+
+    return len(failed) == 0
+
+
+# =============================================================================
+# Main
+# =============================================================================
+
+def main():
+
+    LOG_DIR.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    if not STAGES:
+
+        print(
+            "No stages configured."
+        )
+
+        return
+
+    overall_start_time = time.time()
+
+    completed_stages = 0
+    failed_stages = []
+
+    print()
+    print("=" * 90)
+    print("PARALLEL STAGE COMMAND RUNNER")
+    print("=" * 90)
+
+    print(
+        f"Stages: {len(STAGES)}"
+    )
+
+    print(
+        f"Logs:   {LOG_DIR.resolve()}"
+    )
+
+    print(
+        f"Stop on stage failure: "
+        f"{STOP_ON_STAGE_FAILURE}"
+    )
+
+    print("=" * 90)
+
+    # -------------------------------------------------------------------------
+    # Stages run sequentially
+    # -------------------------------------------------------------------------
+
+    try:
+
+        for stage_index, stage in enumerate(
+            STAGES,
+            start=1,
+        ):
+
+            if len(stage) != 2:
+
+                raise ValueError(
+                    f"Invalid stage #{stage_index}.\n"
+                    f"Expected:\n"
+                    f"[\n"
+                    f"    'Stage Name',\n"
+                    f"    [commands...]\n"
+                    f"]"
+                )
+
+            stage_name, commands = stage
+
+            if not commands:
+
+                print(
+                    f"\n[SKIP] Stage "
+                    f"{stage_index}: "
+                    f"{stage_name} "
+                    f"contains no commands."
+                )
+
+                completed_stages += 1
+                continue
+
+            success = run_stage(
+                stage_index,
+                stage_name,
+                commands,
+            )
+
+            completed_stages += 1
+
+            if not success:
+
+                failed_stages.append(
+                    (
+                        stage_index,
+                        stage_name,
+                    )
+                )
+
+                if STOP_ON_STAGE_FAILURE:
+
+                    print()
+                    print(
+                        "A command failed in "
+                        f"Stage {stage_index}."
+                    )
+
+                    print(
+                        "STOP_ON_STAGE_FAILURE=True"
+                    )
+
+                    print(
+                        "Later stages will not run."
+                    )
+
+                    break
+
+            # Only reaches here once every command
+            # in this stage has finished.
+            if (
+                stage_index
+                < len(STAGES)
+            ):
+
+                print()
+                print(
+                    f"Stage {stage_index} finished."
+                )
+
+                print(
+                    "Starting next stage..."
+                )
+
+    except KeyboardInterrupt:
+
+        print()
+        print("=" * 90)
+        print(
+            "Execution interrupted by user."
+        )
+        print("=" * 90)
+
+        sys.exit(130)
+
+    # -------------------------------------------------------------------------
+    # Overall summary
+    # -------------------------------------------------------------------------
+
+    overall_elapsed = (
+        time.time()
+        - overall_start_time
+    )
+
+    print()
+    print()
+    print("=" * 90)
+    print("FINAL SUMMARY")
+    print("=" * 90)
+
+    print(
+        f"Configured stages : "
+        f"{len(STAGES)}"
+    )
+
+    print(
+        f"Executed stages   : "
+        f"{completed_stages}"
+    )
+
+    print(
+        f"Failed stages     : "
+        f"{len(failed_stages)}"
+    )
+
+    print(
+        f"Total runtime     : "
+        f"{format_duration(overall_elapsed)}"
+    )
+
+    if failed_stages:
+
+        print()
+        print(
+            "Stages containing failures:"
+        )
+
+        for (
+            stage_index,
+            stage_name,
+        ) in failed_stages:
+
+            print(
+                f"  - Stage "
+                f"{stage_index}: "
+                f"{stage_name}"
+            )
+
+    print()
+    print(
+        f"Logs are available at:"
+    )
+
+    print(
+        f"  {LOG_DIR.resolve()}"
+    )
+
+    print("=" * 90)
+
+    try:
+
+
+        if failed_stages:
+            summary += "\nStages containing failures:\n"
+
+            for (
+                stage_index,
+                stage_name,
+            ) in failed_stages:
+                summary += (
+                    f"  - Stage "
+                    f"{stage_index}: "
+                    f"{stage_name}\n"
+                )
+
+        summary += (
+            "\n"
+            "Logs are available at:\n"
+            f"  {LOG_DIR.resolve()}\n"
+            + "=" * 90
+            + "\n"
+        )
+
+        if not failed_stages:
+            summary += "All stages completed successfully.\n"
+
+        send_bot_message(summary)
+    except Exception:
+        print("Error in sending summary via bot")
+        traceback.print_exc()
+
+    if failed_stages:
+
+        sys.exit(1)
+
+    print(
+        "All stages completed successfully."
+    )
 
 
 if __name__ == "__main__":
-    try:
-        asyncio.run(main())
-    except KeyboardInterrupt:
-        pass
-    except Exception:
-        traceback.print_exc()
-        try:
-            asyncio.run(asyncio.to_thread(delete_tunnel, json.loads(TUNNEL_STATE.read_text())))
-        except Exception:
-            pass
+    main()
