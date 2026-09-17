@@ -33,6 +33,7 @@ from .utils import (
     eye3,
     invert_affine,
     robust_linear_fit,
+    robust_polyfit,
     similarity_matrix,
     smooth_decomposed_params,
 )
@@ -144,6 +145,7 @@ def smooth_motion(
     sigma: float = 10.0,
     interp_gap: int = 5,
     mode: str = "natural",
+    locked_poly_degree: int = 3,
 ) -> dict:
     """Smooth a camera path and save the result.
 
@@ -156,6 +158,9 @@ def smooth_motion(
         before smoothing; longer gaps hold the last reliable value.
     mode : ``"natural"`` (preserve slow pans) or ``"locked"`` (remove
         robust long-term translation drift).
+    locked_poly_degree : degree of the robust polynomial used to model the
+        long-term drift in ``locked`` mode.  1 = linear (classic drift),
+        3 (default) also removes gentle curved drift without oscillating.
 
     Returns
     -------
@@ -172,6 +177,7 @@ def smooth_motion(
     reliable = motion["reliable"]
     T = len(reliable)
     t_axis = np.arange(T, dtype=np.float64)
+    t_norm = t_axis / max(T - 1, 1)
 
     tx, ty, yaw_deg, log_scale = _decompose_cumulative(raw_cum)
 
@@ -179,20 +185,30 @@ def smooth_motion(
     drift = None
     if mode == "locked":
         rel = np.where(reliable)[0]
-        if len(rel) >= 2:
+        if len(rel) < 2:
+            rel = np.arange(T)
+        degree = max(0, int(locked_poly_degree))
+        if degree == 1:
             slope_x, intercept_x = robust_linear_fit(t_axis[rel], tx[rel])
             slope_y, intercept_y = robust_linear_fit(t_axis[rel], ty[rel])
+            trend_x = slope_x * t_axis + intercept_x
+            trend_y = slope_y * t_axis + intercept_y
         else:
-            slope_x = slope_y = 0.0
-            intercept_x = float(tx[0]) if T else 0.0
-            intercept_y = float(ty[0]) if T else 0.0
-        # Subtract only the ramp (slope * t); keep the intercept so the
-        # start position -- and therefore the framing -- is unchanged.
-        tx = tx - slope_x * t_axis
-        ty = ty - slope_y * t_axis
+            c_x = robust_polyfit(t_norm[rel], tx[rel], degree=degree)
+            c_y = robust_polyfit(t_norm[rel], ty[rel], degree=degree)
+            trend_x = np.polyval(c_x, t_norm)
+            trend_y = np.polyval(c_y, t_norm)
+        # Remove only the *change* (trend - trend[0]); keep the intercept so
+        # the start position -- and therefore the framing -- is unchanged.
+        tx = tx - (trend_x - trend_x[0])
+        ty = ty - (trend_y - trend_y[0])
         drift = dict(
-            slope_x=float(slope_x), slope_y=float(slope_y),
-            intercept_x=float(intercept_x), intercept_y=float(intercept_y),
+            degree=degree,
+            slope_x=float((trend_x[-1] - trend_x[0]) / max(T - 1, 1)),
+            slope_y=float((trend_y[-1] - trend_y[0]) / max(T - 1, 1)),
+            intercept_x=float(trend_x[0]), intercept_y=float(trend_y[0]),
+            removed_x=float(trend_x[-1] - trend_x[0]),
+            removed_y=float(trend_y[-1] - trend_y[0]),
         )
 
     # ---- Smooth ----

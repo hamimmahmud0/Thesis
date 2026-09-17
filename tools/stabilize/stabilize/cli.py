@@ -197,6 +197,7 @@ def _cmd_run(args: argparse.Namespace) -> None:
         min_correspondences=args.min_correspondences,
         min_inlier_ratio=args.min_inlier_ratio,
         anchor_blend_frames=args.anchor_blend_frames,
+        locked_poly_degree=args.locked_poly_degree,
         save_drift=not args.no_drift,
         debug=args.debug,
         n_frames=args.frames,
@@ -352,6 +353,7 @@ def _cmd_smooth(args: argparse.Namespace) -> None:
         sigma=args.sigma,
         interp_gap=args.interp_gap,
         mode=args.mode,
+        locked_poly_degree=args.locked_poly_degree,
     )
 
     tr = res.get("transitions", {})
@@ -795,6 +797,14 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     p_run.add_argument(
+        "--locked-poly-degree", type=int, default=3, metavar="D",
+        help=(
+            "Degree of the robust polynomial used to model long-term drift "
+            "in locked mode.  1 = linear, 3 (default) also removes gentle "
+            "curved drift without oscillating."
+        ),
+    )
+    p_run.add_argument(
         "--no-drift", action="store_true",
         help="Skip writing the CoTracker drift diagnostic (motion_drift.*).",
     )
@@ -1131,6 +1141,14 @@ def build_parser() -> argparse.ArgumentParser:
             "natural: preserve legitimate low-frequency pans (no detrend).  "
             "locked: robustly remove long-term translation drift (tripod / "
             "static-camera footage).  Default: natural."
+        ),
+    )
+    p_smooth.add_argument(
+        "--locked-poly-degree", type=int, default=3, metavar="D",
+        help=(
+            "Degree of the robust polynomial used to model long-term drift "
+            "in locked mode.  1 = linear, 3 (default) also removes gentle "
+            "curved drift without oscillating."
         ),
     )
     p_smooth.set_defaults(func=_cmd_smooth)

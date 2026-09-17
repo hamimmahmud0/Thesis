@@ -261,6 +261,52 @@ def robust_linear_fit(
     return float(slope), float(intercept)
 
 
+def robust_polyfit(
+    x: np.ndarray,
+    y: np.ndarray,
+    degree: int = 3,
+    iters: int = 20,
+    max_samples: int = 4000,
+) -> np.ndarray:
+    """Robust low-order polynomial fit via iteratively reweighted least squares.
+
+    Uses Tukey bisquare weights so that a minority of outlier frames cannot
+    drag the estimated long-term trend.  Suitable for extracting the
+    very-low-frequency drift of ``tx``/``ty`` in locked-camera mode.
+
+    Returns the coefficient vector in ``np.polyval`` order (highest first).
+    """
+    x = np.asarray(x, dtype=np.float64).ravel()
+    y = np.asarray(y, dtype=np.float64).ravel()
+    n = x.size
+    degree = max(0, int(degree))
+    if n <= degree + 1:
+        return np.zeros(degree + 1)
+
+    if n > max_samples:
+        sel = np.linspace(0, n - 1, max_samples).astype(np.int64)
+        xs, ys = x[sel], y[sel]
+    else:
+        xs, ys = x, y
+
+    try:
+        c = np.polyfit(xs, ys, degree)
+        for _ in range(max(0, int(iters))):
+            r = ys - np.polyval(c, xs)
+            s = 1.4826 * float(np.median(np.abs(r - np.median(r)))) + 1e-9
+            u = r / (4.685 * s)
+            w = np.where(np.abs(u) < 1.0, (1.0 - u * u) ** 2, 0.0)
+            if w.sum() <= degree + 1:
+                break
+            c = np.polyfit(xs, ys, degree, w=np.sqrt(w))
+    except (np.linalg.LinAlgError, ValueError):
+        return np.zeros(degree + 1)
+
+    if not np.isfinite(c).all():
+        return np.zeros(degree + 1)
+    return np.asarray(c, dtype=np.float64)
+
+
 def smooth_decomposed_params(
     tx: np.ndarray,
     ty: np.ndarray,

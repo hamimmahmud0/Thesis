@@ -59,6 +59,7 @@ def run_pipeline(
     min_correspondences: int = 20,
     min_inlier_ratio: float = 0.4,
     anchor_blend_frames: int = 0,
+    locked_poly_degree: int = 3,
     save_drift: bool = True,
     debug: bool = False,
     n_frames: int = 0,
@@ -246,6 +247,7 @@ def run_pipeline(
             sigma=sigma,
             interp_gap=interp_gap,
             mode=mode,
+            locked_poly_degree=locked_poly_degree,
         )
         tr = smooth_res.get("transitions", {})
         print(
@@ -365,6 +367,7 @@ def run_pipeline(
             "min_correspondences": min_correspondences,
             "min_inlier_ratio": min_inlier_ratio,
             "anchor_blend_frames": anchor_blend_frames,
+            "locked_poly_degree": locked_poly_degree,
             "motion_method": result.get("method", "anchor_relative"),
             "overlay": not skip_overlay,
             "frames": n_frames,

@@ -87,3 +87,19 @@ def test_robust_linear_fit_ignores_outliers():
     slope, intercept = robust_linear_fit(x, y)
     assert abs(slope - 0.01) < 0.005
     assert abs(intercept - 2.0) < 3.0
+
+
+def test_robust_polyfit_removes_cubic_drift():
+    from stabilize.utils import robust_polyfit
+
+    rng = np.random.default_rng(2)
+    x = np.linspace(0.0, 1.0, 800)
+    true = np.array([30.0, -18.0, 6.0, 1.0])  # cubic trend
+    y = np.polyval(true, x) + rng.normal(0.0, 0.2, size=x.size)
+    # Add outliers.
+    idx = rng.choice(x.size, size=40, replace=False)
+    y[idx] += 50.0
+
+    c = robust_polyfit(x, y, degree=3)
+    residual = y - np.polyval(c, x)
+    assert np.abs(residual).mean() < 1.0
