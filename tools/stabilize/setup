@@ -126,6 +126,9 @@ if command -v nvidia-smi >/dev/null 2>&1; then
         pip install --force-reinstall \
             "torch>=2.2,<2.7" "torchvision>=0.17,<0.30" \
             --index-url https://download.pytorch.org/whl/cu124
+        # The torch wheel install can bump numpy; restore the pinned version
+        # the rest of the pipeline is tested against.
+        pip install "numpy>=1.26,<2.0"
     fi
 fi
 
