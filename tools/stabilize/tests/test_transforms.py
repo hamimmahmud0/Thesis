@@ -101,5 +101,7 @@ def test_robust_polyfit_removes_cubic_drift():
     y[idx] += 50.0
 
     c = robust_polyfit(x, y, degree=3)
-    residual = y - np.polyval(c, x)
-    assert np.abs(residual).mean() < 1.0
+    # Robust fit ignores the outliers: median residual must be tiny and the
+    # recovered coefficients close to the true cubic.
+    assert np.median(np.abs(y - np.polyval(c, x))) < 0.5
+    assert np.allclose(c, true, atol=1.0)
