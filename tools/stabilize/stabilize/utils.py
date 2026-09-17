@@ -121,6 +121,146 @@ def decompose_similarity(M: np.ndarray) -> tuple[float, float, float, float]:
     return tx, ty, yaw_deg, scale
 
 
+# ---------------------------------------------------------------------------
+# Homogeneous affine matrix helpers
+# ---------------------------------------------------------------------------
+#
+# CONVENTION (used everywhere in this package):
+#
+#   A transform is a 3x3 homogeneous matrix ``M`` acting on column vectors
+#   ``p = [x, y, 1]^T`` so that ``p_dst = M @ p_src``.
+#
+#   ``M`` maps coordinates in the SOURCE frame to coordinates in the
+#   DESTINATION frame.  A matrix written ``M_{a->b}`` therefore maps frame
+#   ``a`` coordinates into frame ``b`` coordinates.
+#
+#   ``compose(A, B) == A @ B`` applies ``B`` first, then ``A``.  This is the
+#   standard matrix-product order: ``compose(M_{a->b}, M_{b->c})`` yields
+#   ``M_{a->c}``.
+
+
+def affine_2x3_to_3x3(M: np.ndarray) -> np.ndarray:
+    """Embed a 2x3 affine matrix into a 3x3 homogeneous matrix.
+
+    ``M`` maps source -> destination.  The returned 3x3 matrix performs the
+    same mapping and leaves the homogeneous coordinate unchanged.
+    """
+    M = np.asarray(M, dtype=np.float64)
+    if M.shape == (3, 3):
+        return M.copy()
+    if M.shape != (2, 3):
+        raise ValueError(f"expected 2x3 or 3x3 affine matrix, got {M.shape}")
+    out = np.eye(3, dtype=np.float64)
+    out[:2, :] = M
+    return out
+
+
+def affine_3x3_to_2x3(M: np.ndarray) -> np.ndarray:
+    """Strip a 3x3 homogeneous affine matrix down to its 2x3 block."""
+    M = np.asarray(M, dtype=np.float64)
+    if M.shape == (2, 3):
+        return M.copy()
+    if M.shape != (3, 3):
+        raise ValueError(f"expected 2x3 or 3x3 affine matrix, got {M.shape}")
+    return M[:2, :].copy()
+
+
+def compose(A: np.ndarray, B: np.ndarray) -> np.ndarray:
+    """Compose two affine transforms: ``compose(A, B) == A @ B``.
+
+    ``B`` is applied first, then ``A``.  Accepts 2x3 or 3x3 matrices and
+    always returns a 3x3 homogeneous matrix.  With the package convention,
+    ``compose(M_{a->b}, M_{b->c}) == M_{a->c}``.
+    """
+    return affine_2x3_to_3x3(A) @ affine_2x3_to_3x3(B)
+
+
+def invert_affine(M: np.ndarray) -> np.ndarray:
+    """Return the exact inverse of an affine transform as a 3x3 matrix.
+
+    For ``M_{a->b}`` the result is ``M_{b->a}``.
+    """
+    return np.linalg.inv(affine_2x3_to_3x3(M))
+
+
+def similarity_matrix_3x3(
+    tx: float, ty: float, yaw_deg: float, scale: float
+) -> np.ndarray:
+    """3x3 alias of :func:`similarity_matrix` (explicit homogeneous form)."""
+    return similarity_matrix(tx, ty, yaw_deg, scale)
+
+
+def blend_similarity(A: np.ndarray, B: np.ndarray, w: float) -> np.ndarray:
+    """Linearly blend two similarity transforms in parameter space.
+
+    ``w == 0`` returns ``A``; ``w == 1`` returns ``B``.  Blending is done on
+    ``(tx, ty, yaw_deg, log_scale)`` so the result stays a valid similarity
+    transform (a naive matrix average would not preserve that).
+    """
+    ta = decompose_similarity(A)
+    tb = decompose_similarity(B)
+    w = float(min(max(w, 0.0), 1.0))
+
+    # Interpolate the yaw along the shortest angular path.
+    d_yaw = ((tb[2] - ta[2] + 180.0) % 360.0) - 180.0
+    yaw = ta[2] + w * d_yaw
+
+    log_scale = (1.0 - w) * np.log(max(ta[3], 1e-9)) + w * np.log(max(tb[3], 1e-9))
+    return similarity_matrix(
+        (1.0 - w) * ta[0] + w * tb[0],
+        (1.0 - w) * ta[1] + w * tb[1],
+        yaw,
+        float(np.exp(log_scale)),
+    )
+
+
+def robust_linear_fit(
+    x: np.ndarray,
+    y: np.ndarray,
+    max_samples: int = 2000,
+    random_state: int = 0,
+) -> tuple[float, float]:
+    """Robust straight-line fit ``y = slope * x + intercept``.
+
+    Uses the Theil-Sen estimator (median of pairwise slopes) on an evenly
+    spaced subsample, which tolerates up to ~29% outliers without being
+    dragged like ordinary least squares.  Falls back to least squares if the
+    robust estimate is degenerate.
+
+    Returns ``(slope, intercept)``.
+    """
+    x = np.asarray(x, dtype=np.float64).ravel()
+    y = np.asarray(y, dtype=np.float64).ravel()
+    n = x.size
+    if n == 0:
+        return 0.0, 0.0
+    if n < 2:
+        return 0.0, float(y[0]) if n else 0.0
+
+    if n > max_samples:
+        sel = np.linspace(0, n - 1, max_samples).astype(np.int64)
+        xs, ys = x[sel], y[sel]
+    else:
+        xs, ys = x, y
+
+    # Pairwise slopes (Theil-Sen).  O(m^2) with m <= max_samples.
+    dx = xs[None, :] - xs[:, None]
+    dy = ys[None, :] - ys[:, None]
+    iu = np.triu_indices(xs.size, k=1)
+    denom = dx[iu]
+    num = dy[iu]
+    ok = np.abs(denom) > 1e-12
+    if ok.any():
+        slope = float(np.median(num[ok] / denom[ok]))
+        intercept = float(np.median(ys - slope * xs))
+        if np.isfinite(slope) and np.isfinite(intercept):
+            return slope, intercept
+
+    # Fallback: ordinary least squares.
+    slope, intercept = np.polyfit(x, y, 1)
+    return float(slope), float(intercept)
+
+
 def smooth_decomposed_params(
     tx: np.ndarray,
     ty: np.ndarray,

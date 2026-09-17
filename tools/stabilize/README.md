@@ -54,13 +54,59 @@ stabilize run \
 
 1. **download** — fetches the video into `./runs/DJI_0260/`
 2. **track** — CoTracker3 16×16 grid, writes `tracks.npz`
-3. **estimate** — RANSAC similarity per frame pair → `motion.npz` + `motion.csv`
-4. **smooth** — Gaussian σ=12, interpolates gaps ≤5 frames → `motion_smooth.npz`
-5. **viz** — trajectory diagnostics → `trajectory.png`
-6. **overlay** — tracked keypoints drawn on the source video → `tracks_overlay.mp4`
-7. **render** — FFmpeg H.264 (CRF 18, visually lossless), track-locked by default → `stabilized.mp4`
-8. **upload** — pushes everything to `hf://buckets/user/my-stabilized/DJI_0260/`
-9. **summary.json** — metadata, params, step timings
+3. **estimate** — anchor-relative RANSAC similarity → `motion.npz` + `motion.csv`
+4. **drift** — CoTracker drift diagnostic → `motion_drift.npz` + `.csv`
+5. **smooth** — Gaussian σ=12 with `--stabilization-mode` (skipped when `off`) → `motion_smooth.npz`
+6. **viz** — trajectory diagnostics → `trajectory.png`
+7. **overlay** — tracked keypoints drawn on the source video → `tracks_overlay.mp4`
+8. **render** — FFmpeg H.264 (CRF 18, visually lossless), track-locked by default → `stabilized.mp4`
+9. **upload** — pushes everything to `hf://buckets/user/my-stabilized/DJI_0260/`
+10. **summary.json** — metadata, params, step timings
+
+### Drift-free anchor-relative estimation
+
+The camera trajectory is **not** built by composing consecutive frame-to-frame
+transforms (`cumulative[t] = pairwise[t] @ cumulative[t-1]`).  That approach
+integrates the tiny error of every RANSAC fit and drifts over long videos
+(observed: ~150 px over 15 min).
+
+Instead, every frame is fit **directly** against a periodic anchor frame and
+placed into the global (frame-0) coordinate system in one step:
+
+```
+tracks ──visibility filter──▶ RANSAC similarity ──▶ frame -> local anchor
+                                                        │
+                                          anchor -> global (once per anchor)
+                                                        ▼
+                                          continuous global trajectory
+                                                        ▼
+                             smoothing ──▶ optional locked drift removal
+                                                        ▼
+                                          correction warp ──▶ render
+```
+
+Transform directions (3×3 homogeneous, `p_dst = M @ p_src`):
+
+| Matrix | Maps |
+|---|---|
+| `local[t]` | frame `t` → segment anchor `K` |
+| `anchor_global[i]` | anchor `K_i` → global frame 0 |
+| `frame_to_global[t]` | frame `t` → global frame 0 |
+| `cumulative[t]` | global frame 0 → frame `t` (renderer convention) |
+| `pairwise[t]` | frame `t-1` → frame `t` (diagnostics only) |
+
+Anchor-to-anchor errors therefore accumulate ~once per 10 s, never per frame.
+Frames with too few correspondences or a poor RANSAC fit fall back to the
+previous valid anchor-relative transform (identity if none), and are flagged
+`transform_valid=False` / `fallback_used=True` rather than crashing.
+
+### Stabilization modes
+
+| Mode | Behaviour |
+|---|---|
+| `off` (default) | Track-lock to frame 0; no smoothing. |
+| `natural` | Remove high-frequency jitter; **preserve** legitimate slow pans (no detrend). |
+| `locked` | For tripod/static footage: additionally remove a robust (Theil-Sen) long-term translation ramp. |
 
 Local outputs live at `./runs/DJI_0260/`. The bucket ends up with:
 
@@ -89,8 +135,16 @@ hf://buckets/user/my-stabilized/DJI_0260/
 | `--crop-height` | Fixed-crop output height (square if only width given) | auto black-border |
 | `--no-crop` | Stabilise the full source frame (WxH); black borders may appear | off |
 | `--crop-black-border` | Auto-detect the largest centred crop that removes the black borders from stabilisation | **on (default)** |
-| `--sigma` | Gaussian smoothing strength (frames), used with `--smooth` | 10 |
-| `--smooth` | Natural-motion mode: removes jitter, keeps slow drift | off (track-locked) |
+| `--sigma` | Gaussian smoothing strength (frames), used when mode != `off` | 10 |
+| `--smooth` | Deprecated alias for `--stabilization-mode natural` | off |
+| `--stabilization-mode` | `off` (default) / `natural` / `locked` | off |
+| `--anchor-interval-seconds` | Spacing between local anchors (5–30 typical) | 10 |
+| `--ransac-reproj-threshold` | RANSAC inlier threshold (px) | 2.0 |
+| `--min-correspondences` | Min usable points for a transform | 20 |
+| `--min-inlier-ratio` | Min inlier ratio to trust a transform | 0.4 |
+| `--anchor-blend-frames` | Cross-fade N frames after each anchor | 0 |
+| `--no-drift` | Skip the CoTracker drift diagnostic | off |
+| `--debug` | Print per-anchor estimation diagnostics | off |
 | `--frames` | Render only first N frames (0 = all) | 0 |
 | `--crf` | Output quality: x264 CRF, 0 = mathematically lossless | 18 (visually lossless) |
 | `--skip-upload` | Do everything locally, skip upload | off |
@@ -161,9 +215,22 @@ stabilize estimate tracks.npz -o motion
 
 Produces `motion.npz` (full-precision 3×3 matrices) and `motion.csv` (human-readable).
 
-Options: `--width 3840 --height 2160 --fps 23.976 --max-points 20000`.
+Options: `--width 3840 --height 2160 --fps 23.976 --max-points 20000`,
+`--anchor-interval-seconds 10`, `--ransac-reproj-threshold 2.0`,
+`--min-correspondences 20`, `--min-inlier-ratio 0.4`,
+`--anchor-blend-frames 0`, `--drift`, `--debug`.
+`--legacy` reproduces the old drifting frame-to-frame estimator for A/B
+comparison only.
 
-Convention: matrices are IMAGE-motion transforms. Camera translation = `-(tx, ty)`.
+Convention: stored matrices are IMAGE-motion transforms. Camera translation
+= `-(tx, ty)`.
+
+For a 15-minute comparison of old vs new drift::
+
+    stabilize estimate tracks.npz -o motion_new  --drift --debug
+    stabilize estimate tracks.npz -o motion_old  --legacy
+    # Compare net_translation in each SUMMARY block; the diagnostic
+    # motion_new_drift.csv isolates CoTracker drift from integration drift.
 
 ---
 

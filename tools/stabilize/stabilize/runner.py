@@ -21,10 +21,10 @@ from pathlib import Path
 from . import hfio
 
 
-def _steps_desc(use_smoothing: bool, skip_overlay: bool = False) -> str:
-    base = ["download", "track", "estimate"]
-    if use_smoothing:
-        base.append("smooth")
+def _steps_desc(mode: str, skip_overlay: bool = False) -> str:
+    base = ["download", "track", "estimate", "drift"]
+    if mode != "off":
+        base.append(f"smooth[{mode}]")
     base += ["viz"]
     if not skip_overlay:
         base.append("overlay")
@@ -53,6 +53,14 @@ def run_pipeline(
     sigma: float = 10.0,
     interp_gap: int = 5,
     use_smoothing: bool = False,
+    stabilization_mode: str = "off",
+    anchor_interval_seconds: float = 10.0,
+    ransac_reproj_threshold: float = 2.0,
+    min_correspondences: int = 20,
+    min_inlier_ratio: float = 0.4,
+    anchor_blend_frames: int = 0,
+    save_drift: bool = True,
+    debug: bool = False,
     n_frames: int = 0,
     crf: int = 18,
     skip_upload: bool = False,
@@ -162,7 +170,7 @@ def run_pipeline(
         print(f"[track] using pre-computed tracks {tracks.name}")
 
     # ------------------------------------------------------------------
-    # 3. Estimate
+    # 3. Estimate (anchor-relative, drift-free)
     # ------------------------------------------------------------------
     from . import motion as motion_mod
 
@@ -173,7 +181,14 @@ def run_pipeline(
     fps = data["fps"] or 23.976
 
     result = motion_mod.estimate_motion(
-        data["tracks"], data["visibility"], width, height
+        data["tracks"], data["visibility"], width, height,
+        anchor_interval_seconds=anchor_interval_seconds,
+        fps=fps,
+        ransac_reproj_threshold=ransac_reproj_threshold,
+        min_correspondences=min_correspondences,
+        min_inlier_ratio=min_inlier_ratio,
+        anchor_blend_frames=anchor_blend_frames,
+        debug=debug,
     )
     motion_prefix = run_dir / "motion"
     motion_mod.save_motion(
@@ -187,17 +202,68 @@ def run_pipeline(
     done()
     print(motion_mod.motion_summary(result))
 
+    # ---- Drift diagnostic: isolate tracker drift from integration drift ----
+    drift_npz = None
+    if save_drift:
+        done = _tick("drift")
+        drift_res = motion_mod.drift_diagnostic(
+            data["tracks"], data["visibility"], anchor=0, width=width, height=height,
+        )
+        seg_res = motion_mod.segment_drift_diagnostic(
+            data["tracks"], data["visibility"], result["anchor_frames"],
+            width=width, height=height,
+        )
+        drift_res["segment_absolute_dx"] = seg_res["absolute_dx"]
+        drift_res["segment_absolute_dy"] = seg_res["absolute_dy"]
+        drift_npz = run_dir / "motion_drift"
+        motion_mod.save_drift(
+            drift_res, drift_npz, fps=fps, anchor_frames=result["anchor_frames"],
+        )
+        done()
+
     # ------------------------------------------------------------------
     # 4. Smooth
     # ------------------------------------------------------------------
+    # ``off`` => track-locked (no smoothing).  The legacy ``use_smoothing``
+    # flag maps onto the ``natural`` mode for backward compatibility.
+    mode = str(stabilization_mode).lower().strip()
+    if use_smoothing and mode == "off":
+        mode = "natural"
+    if mode not in ("natural", "locked", "off"):
+        raise ValueError(
+            f"stabilization_mode must be natural|locked|off, got {mode!r}"
+        )
+
     smooth_npz = None
-    if use_smoothing:
+    if mode != "off":
         from .smoother import smooth_motion
 
         done = _tick("smooth")
         smooth_npz = run_dir / "motion_smooth.npz"
-        smooth_motion(motion_prefix.with_suffix(".npz"), smooth_npz, sigma=sigma)
+        smooth_res = smooth_motion(
+            motion_prefix.with_suffix(".npz"),
+            smooth_npz,
+            sigma=sigma,
+            interp_gap=interp_gap,
+            mode=mode,
+        )
+        tr = smooth_res.get("transitions", {})
+        print(
+            f"[smooth] mode={mode} boundary jumps: "
+            f"translation={tr.get('max_translation_jump_px', 0):.3f}px "
+            f"rotation={tr.get('max_rotation_jump_deg', 0):.3f}deg "
+            f"scale={tr.get('max_scale_jump', 0):.4f} "
+            f"suspicious={tr.get('suspicious', False)}"
+        )
+        st = smooth_res.get("stats_ref", {})
+        if st:
+            print(
+                f"[smooth] reference net translation={st['net_translation_px']:.2f}px "
+                f"max={st['max_translation_px']:.2f}px"
+            )
         done()
+    else:
+        print("[smooth] stabilization_mode=off -> track-locked (no smoothing)")
 
     # ------------------------------------------------------------------
     # 5. Visualisation
@@ -265,6 +331,8 @@ def run_pipeline(
         "tracks": str(tracks),
         "motion_npz": str(motion_prefix.with_suffix(".npz")),
         "motion_csv": str(motion_prefix.with_suffix(".csv")),
+        "drift_npz": str(drift_npz.with_suffix(".npz")) if drift_npz else None,
+        "drift_csv": str(drift_npz.with_suffix(".csv")) if drift_npz else None,
         "smooth_npz": str(smooth_npz) if smooth_npz else None,
         "trajectory_png": str(run_dir / "trajectory.png"),
         "tracks_overlay_mp4": str(overlay) if overlay else None,
@@ -289,8 +357,15 @@ def run_pipeline(
             ),
             "shift_x": shift_x,
             "shift_y": shift_y,
-            "sigma": sigma if use_smoothing else None,
-            "smoothing": use_smoothing,
+            "sigma": sigma if mode != "off" else None,
+            "smoothing": mode != "off",
+            "stabilization_mode": mode,
+            "anchor_interval_seconds": anchor_interval_seconds,
+            "ransac_reproj_threshold": ransac_reproj_threshold,
+            "min_correspondences": min_correspondences,
+            "min_inlier_ratio": min_inlier_ratio,
+            "anchor_blend_frames": anchor_blend_frames,
+            "motion_method": result.get("method", "anchor_relative"),
             "overlay": not skip_overlay,
             "frames": n_frames,
             "crf": crf,
@@ -333,7 +408,7 @@ def run_pipeline(
 
     print("\n===== DONE =====")
     print(f"local run dir: {run_dir}")
-    print(f"pipeline:      {_steps_desc(use_smoothing, skip_overlay)}")
+    print(f"pipeline:      {_steps_desc(mode, skip_overlay)}")
     return summary
 
 

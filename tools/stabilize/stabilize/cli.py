@@ -191,6 +191,14 @@ def _cmd_run(args: argparse.Namespace) -> None:
         sigma=args.sigma,
         interp_gap=args.interp_gap,
         use_smoothing=args.smooth,
+        stabilization_mode=args.stabilization_mode,
+        anchor_interval_seconds=args.anchor_interval_seconds,
+        ransac_reproj_threshold=args.ransac_reproj_threshold,
+        min_correspondences=args.min_correspondences,
+        min_inlier_ratio=args.min_inlier_ratio,
+        anchor_blend_frames=args.anchor_blend_frames,
+        save_drift=not args.no_drift,
+        debug=args.debug,
         n_frames=args.frames,
         crf=args.crf,
         skip_upload=args.skip_upload,
@@ -253,7 +261,13 @@ def _cmd_track(args: argparse.Namespace) -> None:
 
 def _cmd_estimate(args: argparse.Namespace) -> None:
     """Execute the ``estimate`` subcommand."""
-    from .motion import estimate_motion, save_motion, load_tracks
+    from .motion import (
+        estimate_motion,
+        estimate_motion_pairwise,
+        load_tracks,
+        save_drift,
+        save_motion,
+    )
 
     data = load_tracks(args.tracks)
     tracks = data["tracks"]
@@ -270,9 +284,29 @@ def _cmd_estimate(args: argparse.Namespace) -> None:
         print("T < 2: no frame pairs to estimate.")
         sys.exit(0)
 
-    result = estimate_motion(
-        tracks, visibility, width, height, max_points=args.max_points,
-    )
+    if args.legacy:
+        print("Estimator:  legacy frame-to-frame accumulation (drift-prone, A/B only)")
+        result = estimate_motion_pairwise(
+            tracks, visibility, width, height, max_points=args.max_points,
+        )
+    else:
+        print(
+            f"Estimator:  anchor-relative "
+            f"(interval {args.anchor_interval_seconds:g}s, "
+            f"min_corr {args.min_correspondences}, "
+            f"min_ratio {args.min_inlier_ratio})"
+        )
+        result = estimate_motion(
+            tracks, visibility, width, height,
+            max_points=args.max_points,
+            anchor_interval_seconds=args.anchor_interval_seconds,
+            fps=fps,
+            ransac_reproj_threshold=args.ransac_reproj_threshold,
+            min_correspondences=args.min_correspondences,
+            min_inlier_ratio=args.min_inlier_ratio,
+            anchor_blend_frames=args.anchor_blend_frames,
+            debug=args.debug,
+        )
 
     save_motion(
         result,
@@ -283,23 +317,56 @@ def _cmd_estimate(args: argparse.Namespace) -> None:
         tracks_source=str(args.tracks),
     )
 
-    from .motion import motion_summary
+    from .motion import drift_diagnostic, motion_summary, segment_drift_diagnostic
 
     print()
     print("===== SUMMARY =====")
     print(motion_summary(result))
+
+    if args.drift:
+        import math
+
+        drift = drift_diagnostic(tracks, visibility, anchor=0, width=width, height=height)
+        seg = segment_drift_diagnostic(
+            tracks, visibility, result["anchor_frames"], width=width, height=height,
+        )
+        drift["segment_absolute_dx"] = seg["absolute_dx"]
+        drift["segment_absolute_dy"] = seg["absolute_dy"]
+        save_drift(
+            drift, str(args.output) + "_drift",
+            fps=fps, anchor_frames=result["anchor_frames"],
+        )
+        net = float(
+            math.hypot(drift["absolute_dx"][-1], drift["absolute_dy"][-1])
+        )
+        print(f"Tracker drift (anchor 0, start->end): {net:.1f} px")
 
 
 def _cmd_smooth(args: argparse.Namespace) -> None:
     """Execute the ``smooth`` subcommand."""
     from .smoother import smooth_motion
 
-    smooth_motion(
+    res = smooth_motion(
         motion_npz=args.motion,
         output_npz=args.output,
         sigma=args.sigma,
         interp_gap=args.interp_gap,
+        mode=args.mode,
     )
+
+    tr = res.get("transitions", {})
+    print(
+        f"Anchor boundary jumps: translation={tr.get('max_translation_jump_px', 0):.3f}px "
+        f"rotation={tr.get('max_rotation_jump_deg', 0):.3f}deg "
+        f"scale={tr.get('max_scale_jump', 0):.4f} "
+        f"suspicious={tr.get('suspicious', False)}"
+    )
+    st = res.get("stats_ref", {})
+    if st:
+        print(
+            f"Stabilized reference: start={st['start']} end={st['end']} "
+            f"net={st['net_translation_px']:.2f}px max={st['max_translation_px']:.2f}px"
+        )
 
 
 def _cmd_plan(args: argparse.Namespace) -> None:
@@ -681,10 +748,59 @@ def build_parser() -> argparse.ArgumentParser:
     p_run.add_argument(
         "--smooth", action="store_true",
         help=(
-            "Enable camera-path smoothing (natural-motion mode): removes "
-            "jitter but preserves slow drift.  Default is track-locked "
-            "(fully stabilised, scene locked to the first frame)."
+            "Deprecated alias that enables natural-motion smoothing "
+            "(equivalent to --stabilization-mode natural).  Smoothing is "
+            "OFF by default; track-locked rendering is the default."
         ),
+    )
+    p_run.add_argument(
+        "--stabilization-mode", default="off",
+        choices=["natural", "locked", "off"], metavar="MODE",
+        help=(
+            "off (default): track-lock to frame 0 with no smoothing.  "
+            "natural: remove high-frequency jitter, preserve slow pans.  "
+            "locked: tripod/static footage -- additionally remove robust "
+            "long-term translation drift."
+        ),
+    )
+    p_run.add_argument(
+        "--anchor-interval-seconds", type=float, default=10.0, metavar="SEC",
+        help=(
+            "Spacing between stabilization anchors.  Each frame is fit "
+            "directly against its local anchor instead of chaining "
+            "frame-to-frame transforms.  Typical 5-30.  Default: 10."
+        ),
+    )
+    p_run.add_argument(
+        "--ransac-reproj-threshold", type=float, default=2.0, metavar="PX",
+        help="RANSAC inlier reprojection threshold in pixels.  Default: 2.0.",
+    )
+    p_run.add_argument(
+        "--min-correspondences", type=int, default=20, metavar="N",
+        help="Minimum usable correspondences for a transform.  Default: 20.",
+    )
+    p_run.add_argument(
+        "--min-inlier-ratio", type=float, default=0.4, metavar="R",
+        help=(
+            "Minimum inlier ratio (0-1) for a transform to be trusted; "
+            "below this the fallback logic is used.  Default: 0.4."
+        ),
+    )
+    p_run.add_argument(
+        "--anchor-blend-frames", type=int, default=0, metavar="N",
+        help=(
+            "Cross-fade the first N frames of each anchor segment with the "
+            "previous anchor to smooth velocity kinks at transitions.  "
+            "Position is already continuous at anchors.  Default: 0."
+        ),
+    )
+    p_run.add_argument(
+        "--no-drift", action="store_true",
+        help="Skip writing the CoTracker drift diagnostic (motion_drift.*).",
+    )
+    p_run.add_argument(
+        "--debug", action="store_true",
+        help="Print per-anchor estimation diagnostics during estimate.",
     )
     p_run.add_argument(
         "--frames", type=int, default=0, metavar="N",
@@ -862,19 +978,24 @@ def build_parser() -> argparse.ArgumentParser:
         "estimate",
         help="Estimate per-frame camera motion from tracked keypoints.",
         description=(
-            "For each consecutive frame pair, selects keypoints visible in "
-            "both frames, fits a similarity transform (4 DOF: translation, "
-            "yaw, uniform scale) using RANSAC, and composes exact 3x3 "
-            "homogeneous matrices.  Output is an .npz with pairwise and "
-            "cumulative transforms, plus a human-readable .csv summary."
+            "Estimates the camera trajectory from persistent CoTracker "
+            "correspondences.  Each frame is fit DIRECTLY against a local "
+            "anchor frame with RANSAC (4 DOF similarity: translation, yaw, "
+            "uniform scale), then placed into a global (frame-0) coordinate "
+            "system via one anchor->global composition.  Frame-to-frame "
+            "transforms are never integrated, so estimation error does not "
+            "accumulate over thousands of frames."
         ),
         epilog=(
-            "The estimation uses cv2.estimateAffinePartial2D with RANSAC\n"
-            "(threshold=2.0, maxIters=5000, confidence=0.999).  Pairs with\n"
-            "fewer than 8 usable correspondences are flagged unreliable.\n\n"
-            "Convention: IMAGE-motion M maps points from frame t-1 to t.\n"
-            "Camera motion is the inverse: camera_translation = -(tx, ty).\n"
-            "Cumulative[t] = pairwise[t] @ cumulative[t-1] (exact composition)."
+            "The estimation uses cv2.estimateAffinePartial2D with RANSAC.\n"
+            "Anchors default to every --anchor-interval-seconds (10 s).\n\n"
+            "Convention (column vectors, p_dst = M @ p_src):\n"
+            "  local[t]          maps frame t  -> segment anchor K\n"
+            "  anchor_global[i]  maps anchor K -> global frame 0\n"
+            "  frame_to_global   maps frame t  -> global frame 0\n"
+            "  cumulative[t]     maps global frame 0 -> frame t (renderer)\n"
+            "Use --legacy to reproduce the old drifting estimator for A/B\n"
+            "comparison, and --drift to write a tracker-drift diagnostic."
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -907,9 +1028,55 @@ def build_parser() -> argparse.ArgumentParser:
     p_est.add_argument(
         "--max-points", type=int, default=20000, metavar="N",
         help=(
-            "Maximum usable correspondences per frame pair for RANSAC.  "
+            "Maximum usable correspondences per transform for RANSAC.  "
             "Higher values are more accurate but slower.  Default: 20000."
         ),
+    )
+    p_est.add_argument(
+        "--anchor-interval-seconds", type=float, default=10.0, metavar="SEC",
+        help=(
+            "Spacing between stabilization anchors.  Every frame is fit "
+            "directly against its local anchor, so transform error does not "
+            "accumulate frame-to-frame.  Typical 5-30.  Default: 10."
+        ),
+    )
+    p_est.add_argument(
+        "--ransac-reproj-threshold", type=float, default=2.0, metavar="PX",
+        help="RANSAC inlier reprojection threshold in pixels.  Default: 2.0.",
+    )
+    p_est.add_argument(
+        "--min-correspondences", type=int, default=20, metavar="N",
+        help="Minimum usable correspondences to attempt a transform.  Default: 20.",
+    )
+    p_est.add_argument(
+        "--min-inlier-ratio", type=float, default=0.4, metavar="R",
+        help=(
+            "Minimum inlier ratio (0-1) for a transform to be trusted; "
+            "otherwise the fallback logic is used.  Default: 0.4."
+        ),
+    )
+    p_est.add_argument(
+        "--anchor-blend-frames", type=int, default=0, metavar="N",
+        help="Cross-fade N frames after each anchor to smooth velocity.  Default: 0.",
+    )
+    p_est.add_argument(
+        "--legacy", action="store_true",
+        help=(
+            "Use the deprecated frame-to-frame accumulation estimator.  "
+            "Kept only for A/B drift comparison; do not use in production."
+        ),
+    )
+    p_est.add_argument(
+        "--drift", action="store_true",
+        help=(
+            "Also write a tracker-drift diagnostic (PREFIX_drift.npz/.csv): "
+            "absolute point displacement relative to anchor 0 and to each "
+            "segment anchor."
+        ),
+    )
+    p_est.add_argument(
+        "--debug", action="store_true",
+        help="Print per-anchor diagnostics during estimation.",
     )
     p_est.set_defaults(func=_cmd_estimate)
 
@@ -920,11 +1087,12 @@ def build_parser() -> argparse.ArgumentParser:
         "smooth",
         help="Gaussian-smooth the estimated camera path.",
         description=(
-            "Decomposes the cumulative camera path into (translation, yaw, "
-            "log-scale), applies Gaussian smoothing with short-gap "
-            "interpolation, and reconstructs smoothed 3x3 transforms.  "
-            "Use the output with ``stabilize render --smooth`` for "
-            "smoother-looking stabilisation."
+            "Decomposes the measured global camera path into (translation, "
+            "yaw, log-scale), applies Gaussian smoothing with short-gap "
+            "interpolation, and reconstructs the smoothed reference "
+            "transforms.  In 'locked' mode a robust (Theil-Sen) long-term "
+            "translation ramp is also removed; in 'natural' mode slow pans "
+            "are preserved."
         ),
         epilog=(
             "Sigma controls the smoothing window size in frames.  Larger "
@@ -955,6 +1123,14 @@ def build_parser() -> argparse.ArgumentParser:
         help=(
             "Unreliable gaps shorter than N frames are linearly "
             "interpolated before smoothing.  Default: 5."
+        ),
+    )
+    p_smooth.add_argument(
+        "--mode", default="natural", choices=["natural", "locked"], metavar="MODE",
+        help=(
+            "natural: preserve legitimate low-frequency pans (no detrend).  "
+            "locked: robustly remove long-term translation drift (tripod / "
+            "static-camera footage).  Default: natural."
         ),
     )
     p_smooth.set_defaults(func=_cmd_smooth)
