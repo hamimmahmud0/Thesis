@@ -1,12 +1,12 @@
 ID: stabilize
 TITLE: "stabilize"
 HF_TOKEN: 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
-KAGGLE_API_TOKEN: "KGAT_da664232551f03ce8ed95a7634d93266"
+KAGGLE_API_TOKEN: ""
 SOURCE_BUCKET: hamimmahmud0/CVAT_frame_extraction/DJI_0266_merged
 DEST_BUCKET: SAM_COCO_v1
 CONFIDENCE: 0.25
 BATCH_SIZE: 8
-BOT_TOKEN: "8821793448:AAEwdlfh3gjJ7lSalyopWTjLHrvONitMetw"
+BOT_TOKEN: ""
 BOTUSER: "@Hamim_mahmud"
 
 
