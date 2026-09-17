@@ -52,10 +52,10 @@ def track_video(
     video_path: str | Path,
     output_npz: str | Path,
     checkpoint: str | Path | None = None,
-    grid_size: int = 16,
+    grid_size: int = 128,
     grid_query_frame: int = 0,
     max_video_dim: int = 1280,
-    step: int = 8,
+    step: int = 1,
     device: str | None = None,
     start_frame: int = 0,
     end_frame: int | None = None,
@@ -75,7 +75,7 @@ def track_video(
         Interpreted as an *absolute* frame index; inside a tracked range
         (``start_frame``..``end_frame``) it is converted to a local index.
     max_video_dim : resize longest side to this before tracking (GPU memory).
-    step : online sliding-window stride in frames (default 8).  The CoTracker3
+    step : online sliding-window stride in frames (default 1).  The CoTracker3
         online model processes ``window_len = 2 * step`` frames per call and
         advances by ``step``, so total compute is roughly constant (always 50%
         overlap).  Smaller steps give more frequent, smaller passes (lower
@@ -152,7 +152,7 @@ def track_video(
 
     # ---- Grid query points ----
     # Grid size is UNLOCKED (no cap); GPU memory scales with grid_size^2.
-    grid_size = max(16, int(grid_size))
+    grid_size = max(1, int(grid_size))
     grid_query_frame = local_query
     ish = model.interp_shape
 
@@ -296,9 +296,9 @@ def track_video(
 def make_segment_tracker(
     video_path: str | Path,
     checkpoint: str | Path | None = None,
-    grid_size: int = 16,
+    grid_size: int = 128,
     max_video_dim: int = 1280,
-    step: int = 8,
+    step: int = 1,
     device: str | None = None,
     segment_dir: str | Path | None = None,
 ):

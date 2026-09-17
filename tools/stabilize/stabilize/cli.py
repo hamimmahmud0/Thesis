@@ -772,19 +772,19 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     p_run.add_argument(
-        "--grid-size", type=int, default=16, metavar="N",
-        help="NxN keypoint grid (used with --checkpoint).  Default: 16.",
+        "--grid-size", type=int, default=128, metavar="N",
+        help="NxN keypoint grid (used with --checkpoint).  Default: 128.",
     )
     p_run.add_argument(
         "--grid-query-frame", type=int, default=0, metavar="F",
         help="Frame index for the keypoint grid.  Default: 0.",
     )
     p_run.add_argument(
-        "--step", type=int, default=8, metavar="N",
+        "--step", type=int, default=1, metavar="N",
         help=(
             "Online sliding-window stride in frames (window_len = 2*step).  "
             "Total compute is roughly constant (always 50%% overlap); smaller "
-            "steps give more frequent, smaller passes.  Default: 8 (window 16)."
+            "steps give more frequent, smaller passes.  Default: 1 (window 2)."
         ),
     )
     p_run.add_argument(
@@ -1077,10 +1077,10 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     p_track.add_argument(
-        "--grid-size", type=int, default=16, metavar="N",
+        "--grid-size", type=int, default=128, metavar="N",
         help=(
             "NxN grid of keypoints over the query frame.  Number of points "
-            "= N*N.  No cap (GPU memory scales with N*N).  Default: 16 "
+            "= N*N.  No cap (GPU memory scales with N*N).  Default: 128 "
             "(256 points). Higher values give denser tracking but use more "
             "GPU memory."
         ),
@@ -1101,13 +1101,13 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     p_track.add_argument(
-        "--step", type=int, default=8, metavar="N",
+        "--step", type=int, default=1, metavar="N",
         help=(
             "Online sliding-window stride in frames.  CoTracker3's online "
             "model processes window_len = 2*step frames per call and advances "
             "by step, so total compute is roughly constant (always 50%% "
             "overlap).  Smaller steps give more frequent, smaller passes "
-            "(lower peak memory).  Default: 8 (window 16)."
+            "(lower peak memory).  Default: 1 (window 2)."
         ),
     )
     p_track.add_argument(
@@ -1251,13 +1251,13 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_fg.add_argument("--checkpoint", default=None, metavar="scaled_online.pth",
                       help="CoTracker3 checkpoint (auto-downloaded if missing).")
-    p_fg.add_argument("--grid-size", type=int, default=16, metavar="N",
-                      help="NxN fresh query grid per anchor.  Default: 16.")
+    p_fg.add_argument("--grid-size", type=int, default=128, metavar="N",
+                      help="NxN fresh query grid per anchor.  Default: 128.")
     p_fg.add_argument("--max-dim", type=int, default=1280, metavar="PX",
                       help="Longest-side resize for tracking.  Default: 1280.")
-    p_fg.add_argument("--step", type=int, default=8, metavar="N",
+    p_fg.add_argument("--step", type=int, default=1, metavar="N",
                       help="Online sliding-window stride (window_len = 2*step).  "
-                           "Default: 8; use 1 for per-frame stepping in tests.")
+                           "Default: 1 (per-frame stepping).")
     p_fg.add_argument("--device", default=None, metavar="DEVICE",
                       help="torch device (cuda:0, cpu).  Default: auto.")
     p_fg.add_argument("--segment-dir", default=None, metavar="DIR",
