@@ -123,7 +123,7 @@ fi
 if command -v nvidia-smi >/dev/null 2>&1; then
     if ! python -c "import torch; raise SystemExit(0 if torch.cuda.is_available() else 1)" 2>/dev/null; then
         warn "torch has no CUDA support — installing CUDA wheels (cu124)"
-        pip install --force-reinstall --no-deps \
+        pip install --force-reinstall \
             "torch>=2.2,<2.7" "torchvision>=0.17,<0.30" \
             --index-url https://download.pytorch.org/whl/cu124
     fi
