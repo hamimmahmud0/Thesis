@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import os
 import signal
 import subprocess
@@ -53,7 +51,7 @@ STAGES = [
         [
             [
                 "APT",
-                "cd ~; apt update; apt install -y btop nvtop wget git ffmpeg;"
+                "cd ~; apt update; apt install -y wget git;"
             ]
         ],
     ],
@@ -71,7 +69,7 @@ STAGES = [
         [
             [
                 "SETUP",
-                "bash Thesis/tools/stabilize-hamim/setup"
+                "/root/Thesis/tools/stabilize-hamim/setup"
             ]
         ],
     ],
@@ -109,7 +107,6 @@ TERMINATION_TIMEOUT = 5
 # Telegram Bot
 # =============================================================================
 
-from __future__ import annotations
 
 import asyncio
 import functools
@@ -134,6 +131,11 @@ Handler = Callable[
     ["TelegramBot", Update, ContextTypes.DEFAULT_TYPE],
     Any,
 ]
+
+
+
+
+import requests
 
 
 class TelegramBot:
@@ -216,7 +218,7 @@ class TelegramBot:
 
     @staticmethod
     def _normalize_username(username: str) -> str:
-        return username.strip().lstrip("@").lower()
+        return username.strip().lstrip("@")
 
     def list_usernames(self) -> list[str]:
         """
@@ -973,7 +975,8 @@ class TelegramBot:
 
 if "BOT_TOKEN" in CONFIG:
     bot = TelegramBot(CONFIG["BOT_TOKEN"])
-    bot.set_user_to_reply_from_user_name(CONFIG["BOT_USER"])
+    bot.set_default_chat_id(CONFIG["BOT_CHAT_ID"])
+    bot.start()
 
 
 
@@ -983,7 +986,11 @@ if "BOT_TOKEN" in CONFIG:
 
 def send_bot_message(MESSAGE):
     if "BOT_TOKEN" in CONFIG:
-        bot.send_message(MESSAGE)
+        print("Sending Bot Message")   
+        try:
+            bot.send_message(MESSAGE)
+        except Exception:
+            traceback.print_exc()
 
 
 
@@ -1136,10 +1143,8 @@ def run_stage(stage_index, stage_name, commands):
     )
     print()
 
-    try:
-        send_bot_message(f"RUNNING stage: {stage_index}: {stage_name}")
-    except Exception:
-        pass
+    send_bot_message(f"RUNNING stage: {stage_index}: {stage_name}")
+
 
     stage_start_time = time.time()
 
@@ -1366,33 +1371,24 @@ def run_stage(stage_index, stage_name, commands):
 
     for job in jobs:
 
-        return_code = (
-            job["process"].returncode
-        )
+        return_code = job["process"].returncode
 
         if return_code == 0:
             successful.append(job)
-
         else:
             failed.append(job)
 
-    stage_elapsed = (
-        time.time()
-        - stage_start_time
-    )
+    stage_elapsed = time.time() - stage_start_time
 
-    print()
-    print("=" * 90)
-    print(
-        f"STAGE {stage_index} SUMMARY"
-    )
-    print("=" * 90)
+    summary_lines = []
+
+    summary_lines.append("=" * 90)
+    summary_lines.append(f"STAGE {stage_index} SUMMARY")
+    summary_lines.append("=" * 90)
 
     for job in jobs:
 
-        return_code = (
-            job["process"].returncode
-        )
+        return_code = job["process"].returncode
 
         elapsed = (
             time.time()
@@ -1400,45 +1396,42 @@ def run_stage(stage_index, stage_name, commands):
         )
 
         if return_code == 0:
-
             status = "SUCCESS"
-
         else:
+            status = f"FAILED ({return_code})"
 
-            status = (
-                f"FAILED ({return_code})"
-            )
-
-        print(
+        line = (
             f"{job['name']:<35}"
             f"{status:<18}"
             f"{format_duration(elapsed):<12}"
             f"{job['log_path']}"
         )
 
-    print("-" * 90)
+        summary_lines.append(line)
 
-    print(
+    summary_lines.append("-" * 90)
+    summary_lines.append(
         f"Successful : {len(successful)}"
     )
-
-    print(
+    summary_lines.append(
         f"Failed     : {len(failed)}"
     )
-
-    print(
+    summary_lines.append(
         f"Total      : {len(jobs)}"
     )
-
-    print(
-        f"Stage time : "
-        f"{format_duration(stage_elapsed)}"
+    summary_lines.append(
+        f"Stage time : {format_duration(stage_elapsed)}"
     )
+    summary_lines.append("=" * 90)
 
-    print("=" * 90)
+    summary = "\n".join(summary_lines)
+
+    print()
+    print(summary)
+
+    send_bot_message(summary)
 
     return len(failed) == 0
-
 
 # =============================================================================
 # Main
@@ -1666,6 +1659,7 @@ def main():
             summary += "All stages completed successfully.\n"
 
         send_bot_message(summary)
+        time.sleep(10)
     except Exception:
         print("Error in sending summary via bot")
         send_bot_message("Error in generating summary")

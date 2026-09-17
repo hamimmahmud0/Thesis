@@ -18,6 +18,7 @@ env/
 *.token
 .hf_token
 .huggingface/token
+config.yaml
 
 # --- Media (large files) ---
 *.mp4

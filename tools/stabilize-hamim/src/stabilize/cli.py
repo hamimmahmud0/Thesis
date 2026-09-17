@@ -3,20 +3,22 @@ import argparse
 
 def main():
     parser = argparse.ArgumentParser(
-        prog="mycli",
-        description="My awesome command line tool"
+        prog="stabilize",
+        description="Stabilize Drone footage for trajectory extraction"
     )
 
-    parser.add_argument("name", help="Your name")
+    parser.add_argument("input", help="input.mp4")
     parser.add_argument(
-        "--greeting",
-        default="Hello",
-        help="Greeting to use"
+        "--backbone",
+        default="cotracker",
+        help="Select on of this backbone: cotracker"
     )
 
     args = parser.parse_args()
 
-    print(f"{args.greeting}, {args.name}!")
+    if args.input == "cotracker":
+        import stabilize.cotracker as cotracker
+        
 
 
 if __name__ == "__main__":
