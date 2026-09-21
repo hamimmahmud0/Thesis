@@ -17,7 +17,6 @@ PY
 
 TEMP_DIR="$(mktemp -d /tmp/seg-kernel-XXXXXX)"
 trap 'rm -rf -- "$TEMP_DIR"' EXIT
-cp -a main.py bootstrap.py "$TEMP_DIR/"
 python3 -m pip wheel --no-deps --no-build-isolation --wheel-dir "$TEMP_DIR" "$PROJECT_ROOT/tools/seg"
 
 python3 - "$TEMP_DIR" <<'PY'
@@ -26,14 +25,16 @@ import os
 import sys
 from pathlib import Path
 from segpipe.config import load_config
-from segpipe.kaggle import KaggleTokenPool, _redacted_config
+from segpipe.kaggle import KaggleTokenPool, _redacted_config, build_embedded_kernel
 
 target = Path(sys.argv[1]); cfg = load_config(Path("config.yaml"))
 token = KaggleTokenPool(cfg.kaggle_tokens).select_available()
 username = KaggleTokenPool((token,))._identity(token)
 _redacted_config(cfg.path, target / "config.yaml")
+wheel = next(target.glob("segpipe-*.whl"))
+build_embedded_kernel(Path("bootstrap.py"), wheel, target / "config.yaml", target / "kernel.py")
 metadata = {"id": f"{username}/{cfg.kernel_id}", "title": cfg.title,
-    "code_file": "bootstrap.py", "language": "python", "kernel_type": "script",
+    "code_file": "kernel.py", "language": "python", "kernel_type": "script",
     "is_private": True, "enable_gpu": True, "enable_internet": True,
     "machine_shape": "NvidiaTeslaT4", "dataset_sources": [], "competition_sources": [],
     "kernel_sources": [], "model_sources": []}

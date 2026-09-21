@@ -1,5 +1,6 @@
 from __future__ import annotations
 import csv
+import base64
 import io
 import json
 import os
@@ -11,6 +12,15 @@ from pathlib import Path
 import urllib.request
 import yaml
 from .errors import PipelineError
+
+def build_embedded_kernel(bootstrap: Path, wheel: Path, config: Path, output: Path) -> None:
+    """Build the single code file retained by Kaggle script kernels."""
+    prefix = (
+        "# Auto-generated self-extracting Kaggle kernel.\n"
+        f"EMBEDDED_WHEEL_B64 = {base64.b64encode(wheel.read_bytes()).decode()!r}\n"
+        f"EMBEDDED_CONFIG_B64 = {base64.b64encode(config.read_bytes()).decode()!r}\n"
+    )
+    output.write_text(prefix + bootstrap.read_text(encoding="utf-8"), encoding="utf-8")
 
 class KaggleTokenPool:
     def __init__(self, tokens): self.tokens = tuple(tokens)
@@ -66,22 +76,21 @@ def _redacted_config(source: Path, destination: Path) -> None:
 def launch_successor(config, token: str) -> None:
     username = KaggleTokenPool((token,))._identity(token)
     source_dir = config.path.parent
-    tool_dir = source_dir / "tool"
-    if not tool_dir.exists(): tool_dir = Path(__file__).resolve().parents[1]
     with tempfile.TemporaryDirectory(prefix="seg-handoff-") as temporary:
         target = Path(temporary)
-        wheels = sorted(source_dir.glob("segpipe-*.whl"))
-        if wheels:
-            shutil.copy2(wheels[-1], target / wheels[-1].name)
+        embedded = source_dir / "kernel.py"
+        if embedded.exists():
+            shutil.copy2(embedded, target / "kernel.py")
         else:
-            result = subprocess.run(["python", "-m", "pip", "wheel", "--no-deps", "--no-build-isolation",
-                "--wheel-dir", str(target), str(tool_dir)], text=True, capture_output=True)
-            if result.returncode: raise PipelineError("handoff_failed", "Could not package segpipe wheel")
-        for filename in ("main.py", "bootstrap.py"):
-            shutil.copy2(source_dir / filename, target / filename)
-        _redacted_config(config.path, target / "config.yaml")
+            wheels = sorted(source_dir.glob("segpipe-*.whl"))
+            if wheels and (source_dir / "bootstrap.py").exists():
+                redacted = target / "config.yaml"
+                _redacted_config(config.path, redacted)
+                build_embedded_kernel(source_dir / "bootstrap.py", wheels[-1], redacted, target / "kernel.py")
+            else:
+                raise PipelineError("handoff_failed", "Self-contained kernel payload is unavailable")
         metadata = {"id": f"{username}/{config.kernel_id}", "title": config.title,
-            "code_file": "bootstrap.py", "language": "python", "kernel_type": "script",
+            "code_file": "kernel.py", "language": "python", "kernel_type": "script",
             "is_private": True, "enable_gpu": True, "enable_internet": True,
             "machine_shape": "NvidiaTeslaT4", "dataset_sources": [], "competition_sources": [],
             "kernel_sources": [], "model_sources": []}

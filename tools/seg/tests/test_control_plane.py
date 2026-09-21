@@ -145,7 +145,7 @@ def test_handoff_packages_redacted_config_and_private_metadata(monkeypatch, tmp_
         package = Path(args[-1])
         captured["config"] = (package / "config.yaml").read_text(encoding="utf-8")
         captured["metadata"] = json.loads((package / "kernel-metadata.json").read_text(encoding="utf-8"))
-        captured["wheel"] = (package / "segpipe-1.0.0-py3-none-any.whl").read_bytes()
+        captured["kernel"] = (package / "kernel.py").read_text(encoding="utf-8")
         captured["env_token"] = kwargs["env"]["KAGGLE_API_TOKEN"]
         return Result()
 
@@ -155,7 +155,9 @@ def test_handoff_packages_redacted_config_and_private_metadata(monkeypatch, tmp_
     assert captured["metadata"]["is_private"] is True
     assert captured["metadata"]["enable_gpu"] is True
     assert captured["metadata"]["machine_shape"] == "NvidiaTeslaT4"
-    assert captured["wheel"] == b"wheel"
+    assert secret not in captured["kernel"]
+    assert "EMBEDDED_WHEEL_B64" in captured["kernel"]
+    assert captured["metadata"]["code_file"] == "kernel.py"
     assert captured["env_token"] == "handoff-token"
     info = json.loads((config.work_dir / "artifacts" / "kernel.json").read_text(encoding="utf-8"))
     assert info["kernel"] == "safe-user/seg-test"
