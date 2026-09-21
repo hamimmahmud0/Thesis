@@ -1,22 +1,9 @@
 ID: stabilize
 TITLE: "stabilize"
-HF_TOKEN: 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
-KAGGLE_API_TOKEN: ""
-SOURCE_BUCKET: hamimmahmud0/CVAT_frame_extraction/DJI_0266_merged
-DEST_BUCKET: SAM_COCO_v1
-CONFIDENCE: 0.25
-BATCH_SIZE: 8
-BOT_TOKEN: ""
-BOTUSER: "@Hamim_mahmud"
-
-
-PROMPTS:
-  - Pedestrian
-  - Vehicle
-  - Car
-  - Bus
-  - Truck
-  - Motorcycle
-  - Bicycle
-  - Rickshaw
-
+HF_TOKEN: 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
+KAGGLE_API_TOKEN: KGAT_8dd27d0ca5eee0cd8112876b206455fb
+DEST_BUCKET: DRINF_stabilized
+BOT_TOKEN: "8821793448:AAEwdlfh3gjJ7lSalyopWTjLHrvONitMetw"
+CHAT_ID: "5962517274"
+CRF: 12
+VIDEO: "https://huggingface.co/datasets/hamimmahmud0/DRINF/resolve/main/Nadirs/Bakshi%20bazaar/1%20Aug%2C%202026/DJI_0103.MP4"

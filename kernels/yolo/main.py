@@ -29,14 +29,12 @@ from huggingface_hub import whoami
 
 user_info = whoami(token=HF_TOKEN)
 HF_USER = user_info["name"]
-SOURCE_BUCKET = f'{CONFIG["SOURCE_BUCKET"]}'
 DEST_BUCKET = f'{HF_USER}/{CONFIG["DEST_BUCKET"]}'
 
-print(f"Source Bucket: {SOURCE_BUCKET}")
-print(f"Destination Bucket: {SOURCE_BUCKET}")
+print(f"Destination Bucket: {DEST_BUCKET}")
 
-
-
+VIDEO_FILE_NAME = CONFIG["VIDEO"].split("/")[-1]
+RUN_NAME = VIDEO_FILE_NAME.split('.')[0]
 
 #MAX_DIM = 3840 # 4k video
 
@@ -46,38 +44,54 @@ STAGES = [
         [
             [
                 "Install",
-                "cd ~; apt update; apt install -y btop nvtop wget git ffmpeg;"
+                "cd ~; apt update; apt install -y btop nvtop wget git ffmpeg"
             ]
         ],
     ],
 
     [
-        "Install sam",
+        "Install lgstab",
         [
             [
-                "Stabilizer Setup",
-                "git clone https://github.com/hamimmahmud0/Thesis.git; "
-                "cd Thesis; "
-                "tools/sam31/setup"
+                "git",
+                "git clone https://github.com/hamimmahmud0/costab.git;"
+                "cd costab && pip install -e ."
             ]
         ],
     ],
 
     [
-        "Download and run",
+        "Download",
         [
             [
-                "SAM",
-                f"""mkdir working && cd working && hf sync hf://buckets/{CONFIG["SOURCE_BUCKET"]} . && /root/miniconda3/envs/sam31/bin/sam31 run . -p "{'; '.join(CONFIG["PROMPTS"])}" --copy-images --confidence {CONFIG["CONFIDENCE"]} --batch-size {CONFIG["BATCH_SIZE"]} --bucket {DEST_BUCKET} --token {HF_TOKEN} --run {SOURCE_BUCKET.split('/')[-1]}"""
+                "wget",
+                f"wget {CONFIG["VIDEO"]} -O {VIDEO_FILE_NAME}"
             ]
         ],
     ],
+    [
+        "run lgstab",
+        [
+            [
+                "lgstab",
+                f'lgstab -i {VIDEO_FILE_NAME} -r {RUN_NAME} --devices cuda:0 cuda:1 --crf {CONFIG["CRF"]}'
+            ]
+        ]
+    ],
+    [
+        "Save to bucket",
+        [
+            [
+                "hf",
+                f'export HF_TOKEN={HF_TOKEN} && hf buckets create {DEST_BUCKET} --exist-ok && hf buckets sync runs/. hf://buckets/{DEST_BUCKET}'
+            ]
+        ]
+    ]
 ]
 
 
 # Directory where logs will be written
 LOG_DIR = Path("logs")
-
 
 # If True:
 #   if any command in a stage fails, later stages WILL NOT run.
@@ -85,7 +99,6 @@ LOG_DIR = Path("logs")
 # If False:
 #   later stages will still run even if something failed.
 STOP_ON_STAGE_FAILURE = True
-
 
 # How long to wait after SIGTERM before force-killing jobs
 TERMINATION_TIMEOUT = 5
@@ -112,9 +125,6 @@ def send_bot_message(MESSAGE):
             print("Failed:", response.text)
 
 
-
-
-
 def sanitize_filename(name: str) -> str:
     """
     Convert a name into a safe filename.
@@ -124,7 +134,6 @@ def sanitize_filename(name: str) -> str:
         c if c.isalnum() or c in "-_." else "_"
         for c in name
     )
-
     return result.strip("_") or "job"
 
 

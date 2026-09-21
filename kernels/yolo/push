@@ -72,6 +72,7 @@ with open(script, "r", encoding="utf-8") as f:
 
 with open(dst, "w", encoding="utf-8") as f:
     f.write("# Auto-generated from YAML. Do not edit.\n\n")
+    f.write("from __future__ import annotations\n")
     f.write("CONFIG = ")
     f.write(pprint.pformat(data, sort_dicts=False, width=100))
     f.write("\n")
