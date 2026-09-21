@@ -19,10 +19,14 @@ try:
     EMBEDDED_WHEEL_B64
     EMBEDDED_WHEEL_NAME
     EMBEDDED_CONFIG_B64
+    EMBEDDED_SECRET_KEY
+    EMBEDDED_SECRETS
 except NameError:
     EMBEDDED_WHEEL_B64 = ""
     EMBEDDED_WHEEL_NAME = "segpipe-1.0.0-py3-none-any.whl"
     EMBEDDED_CONFIG_B64 = ""
+    EMBEDDED_SECRET_KEY = ""
+    EMBEDDED_SECRETS = ""
 
 def run(args): subprocess.run(args, check=True)
 def ensure_conda() -> str:
@@ -53,6 +57,9 @@ def main():
         config_path = PAYLOAD / "config.yaml"
         config_path.write_bytes(base64.b64decode(EMBEDDED_CONFIG_B64))
         shutil.copy2(Path(__file__), PAYLOAD / "kernel.py")
+    if EMBEDDED_SECRET_KEY and EMBEDDED_SECRETS:
+        os.environ["SEGPIPE_EMBEDDED_KEY"] = EMBEDDED_SECRET_KEY
+        os.environ["SEGPIPE_ENCRYPTED_SECRETS"] = EMBEDDED_SECRETS
     if not MARKER.exists():
         run([conda, "create", "-y", "-p", str(ENV), f"python={sys.version_info.major}.{sys.version_info.minor}", "pip"])
         wheels = [embedded_wheel] if embedded_wheel else sorted(ROOT.glob("segpipe-*.whl"))

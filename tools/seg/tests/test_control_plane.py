@@ -40,6 +40,21 @@ def test_config_resolves_secrets_without_exposing_repr(monkeypatch, tmp_path):
     rendered = repr(config)
     assert all(value not in rendered for value in secrets.values())
 
+def test_embedded_credentials_decrypt_only_at_runtime(monkeypatch, tmp_path):
+    from cryptography.fernet import Fernet
+    secret = "hf-not-plain-in-kernel"
+    key = Fernet.generate_key()
+    encrypted = Fernet(key).encrypt(json.dumps({"HF_TOKEN": secret}).encode())
+    monkeypatch.setenv("SEGPIPE_EMBEDDED_KEY", key.decode())
+    monkeypatch.setenv("SEGPIPE_ENCRYPTED_SECRETS", encrypted.decode())
+    try:
+        config = load_config(_config(tmp_path))
+        assert config.hf_token == secret
+        assert "SEGPIPE_EMBEDDED_KEY" not in __import__("os").environ
+        assert "SEGPIPE_ENCRYPTED_SECRETS" not in __import__("os").environ
+    finally:
+        __import__("os").environ.pop("HF_TOKEN", None)
+
 
 def test_config_rejects_scalar_kaggle_token_collection(tmp_path):
     with pytest.raises(ConfigError, match="must be a list"):

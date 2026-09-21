@@ -9,6 +9,7 @@ description = "Resumable multi-model segmentation training for Kaggle"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
+  "cryptography>=44",
   "huggingface_hub>=0.35",
   "kaggle>=1.7",
   "numpy>=1.26",

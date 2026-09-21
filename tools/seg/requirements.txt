@@ -1,4 +1,5 @@
 huggingface_hub>=0.35
+cryptography>=44
 kaggle>=1.7
 numpy>=1.26
 opencv-python-headless>=4.10

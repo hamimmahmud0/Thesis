@@ -13,13 +13,16 @@ import urllib.request
 import yaml
 from .errors import PipelineError
 
-def build_embedded_kernel(bootstrap: Path, wheel: Path, config: Path, output: Path) -> None:
+def build_embedded_kernel(bootstrap: Path, wheel: Path, config: Path, output: Path,
+                          secret_key: str = "", encrypted_secrets: str = "") -> None:
     """Build the single code file retained by Kaggle script kernels."""
     prefix = (
         "# Auto-generated self-extracting Kaggle kernel.\n"
         f"EMBEDDED_WHEEL_B64 = {base64.b64encode(wheel.read_bytes()).decode()!r}\n"
         f"EMBEDDED_WHEEL_NAME = {wheel.name!r}\n"
         f"EMBEDDED_CONFIG_B64 = {base64.b64encode(config.read_bytes()).decode()!r}\n"
+        f"EMBEDDED_SECRET_KEY = {secret_key!r}\n"
+        f"EMBEDDED_SECRETS = {encrypted_secrets!r}\n"
     )
     output.write_text(prefix + bootstrap.read_text(encoding="utf-8"), encoding="utf-8")
 

@@ -24,6 +24,7 @@ import json
 import os
 import sys
 from pathlib import Path
+from cryptography.fernet import Fernet
 from segpipe.config import load_config
 from segpipe.kaggle import KaggleTokenPool, _redacted_config, build_embedded_kernel
 
@@ -32,7 +33,13 @@ token = KaggleTokenPool(cfg.kaggle_tokens).select_available()
 username = KaggleTokenPool((token,))._identity(token)
 _redacted_config(cfg.path, target / "config.yaml")
 wheel = next(target.glob("segpipe-*.whl"))
-build_embedded_kernel(Path("bootstrap.py"), wheel, target / "config.yaml", target / "kernel.py")
+secret_values = {"HF_TOKEN": cfg.hf_token, "BOT_TOKEN": cfg.bot_token}
+secret_values.update({f"KAGGLE_TOKEN_{i}": value for i, value in enumerate(cfg.kaggle_tokens, 1)})
+secret_values = {name: value for name, value in secret_values.items() if value}
+secret_key = Fernet.generate_key()
+encrypted_secrets = Fernet(secret_key).encrypt(json.dumps(secret_values).encode())
+build_embedded_kernel(Path("bootstrap.py"), wheel, target / "config.yaml", target / "kernel.py",
+    secret_key.decode(), encrypted_secrets.decode())
 metadata = {"id": f"{username}/{cfg.kernel_id}", "title": cfg.title,
     "code_file": "kernel.py", "language": "python", "kernel_type": "script",
     "is_private": True, "enable_gpu": True, "enable_internet": True,

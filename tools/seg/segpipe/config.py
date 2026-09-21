@@ -1,5 +1,6 @@
 from __future__ import annotations
 import os
+import json
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -7,6 +8,22 @@ import yaml
 
 class ConfigError(ValueError): pass
 SUPPORTED = {"unet", "unet++", "deeplabv3", "deeplabv3++", "segformer"}
+
+def _load_embedded_secrets() -> None:
+    key = os.environ.pop("SEGPIPE_EMBEDDED_KEY", "")
+    encrypted = os.environ.pop("SEGPIPE_ENCRYPTED_SECRETS", "")
+    if not key and not encrypted: return
+    if not key or not encrypted: raise ConfigError("Encrypted credential bundle is incomplete")
+    try:
+        from cryptography.fernet import Fernet, InvalidToken
+        values = json.loads(Fernet(key.encode()).decrypt(encrypted.encode()).decode())
+    except Exception as exc:
+        raise ConfigError("Encrypted credential bundle could not be decrypted") from exc
+    if not isinstance(values, dict): raise ConfigError("Encrypted credential bundle is invalid")
+    allowed = {"HF_TOKEN", "BOT_TOKEN", "KAGGLE_API_TOKEN"}
+    for name, value in values.items():
+        if (name in allowed or name.startswith("KAGGLE_TOKEN_")) and isinstance(value, str) and value:
+            os.environ[name] = value
 
 def _secret(value: Any, env_name: str) -> str:
     if os.getenv(env_name): return os.environ[env_name]
@@ -55,6 +72,7 @@ def _parse_model(raw: str | dict[str, Any], defaults: dict[str, Any]) -> ModelCo
     return ModelConfig(name=name, extra=item, **known)
 
 def load_config(path: Path) -> PipelineConfig:
+    _load_embedded_secrets()
     path = path.resolve()
     try: raw = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
     except FileNotFoundError as exc: raise ConfigError(f"Config not found: {path}") from exc
