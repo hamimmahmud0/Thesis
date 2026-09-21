@@ -1,0 +1,10 @@
+huggingface_hub>=0.35
+kaggle>=1.7
+numpy>=1.26
+opencv-python-headless>=4.10
+Pillow>=10
+pycocotools>=2.0.10
+PyYAML>=6
+segmentation-models-pytorch>=0.5
+transformers>=4.55
+ultralytics>=8.3

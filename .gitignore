@@ -1,3 +1,6 @@
+# Agent
+AGENTS.md
+
 # --- Python ---
 __pycache__/
 *.py[cod]
@@ -43,9 +46,12 @@ tools/stabilize/*.egg-info/
 **/motion.npz
 **/motion_smooth.npz
 runs/
+kernels/seg/logs/
+kernels/seg/artifacts/
 
 # --- Notebooks ---
 .ipynb_checkpoints/
+.pytest_cache/
 
 # --- OS / editors ---
 .DS_Store

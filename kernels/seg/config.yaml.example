@@ -1,0 +1,46 @@
+id: segmentation-trainer-cleaned
+title: Segmentation Trainer Cleaned
+
+# Hugging Face dataset repository or Bucket containing COCO images + instances JSON.
+hf_source: https://huggingface.co/buckets/hamimmahmud0/SAM_COCO_v1_b1_cleaned
+# Private HF Bucket used for state, logs, and checkpoints.
+hf_bucket: hamimmahmud0/segmentation-training
+
+# Keep real values in environment variables or Kaggle Secrets.
+hf_token: env:HF_TOKEN
+kaggle_tokens:
+  - env:KAGGLE_TOKEN_1
+  - env:KAGGLE_TOKEN_2
+  - env:KAGGLE_TOKEN_3
+bot_token: env:BOT_TOKEN
+chat_id: ""
+
+models:
+  - name: yolo11n-seg
+    epochs: 100
+    batch: 16
+    image_size: 640
+  - name: unet
+  - name: unet++
+  - name: deeplabv3
+  - name: deeplabv3++
+  - name: segformer
+    checkpoint: nvidia/segformer-b0-finetuned-ade-512-512
+
+training_defaults:
+  epochs: 100
+  batch: 8
+  image_size: 512
+  learning_rate: 0.0001
+  encoder: resnet34
+  pretrained: imagenet
+  workers: 4
+  save_period: 1
+
+split: {train: 0.8, val: 0.1}
+seed: 42
+vm_budget_minutes: 690
+handoff_minutes: 20
+min_root_free_gb: 5
+min_work_free_gb: 3
+work_dir: /kaggle/working/segmentation

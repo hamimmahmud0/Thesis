@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")"
+PROJECT_ROOT="$(cd ../.. && pwd)"
+export PYTHONPATH="$PROJECT_ROOT/tools/seg${PYTHONPATH:+:$PYTHONPATH}"
+
+python3 - <<'PY'
+from pathlib import Path
+from segpipe.config import load_config
+cfg = load_config(Path("config.yaml"))
+if not cfg.hf_token:
+    raise SystemExit("HF_TOKEN/config hf_token is required")
+if not cfg.kaggle_tokens:
+    raise SystemExit("At least one KAGGLE_TOKEN_n or configured Kaggle token is required")
+print(f"Validated {len(cfg.models)} model configuration(s)")
+PY
+
+TEMP_DIR="$(mktemp -d /tmp/seg-kernel-XXXXXX)"
+trap 'rm -rf -- "$TEMP_DIR"' EXIT
+cp -a main.py bootstrap.py "$TEMP_DIR/"
+cp -a "$PROJECT_ROOT/tools/seg" "$TEMP_DIR/tool"
+
+python3 - "$TEMP_DIR" <<'PY'
+import json
+import os
+import sys
+from pathlib import Path
+from segpipe.config import load_config
+from segpipe.kaggle import KaggleTokenPool, _redacted_config
+
+target = Path(sys.argv[1]); cfg = load_config(Path("config.yaml"))
+token = KaggleTokenPool(cfg.kaggle_tokens).select_available()
+username = KaggleTokenPool((token,))._identity(token)
+_redacted_config(cfg.path, target / "config.yaml")
+metadata = {"id": f"{username}/{cfg.kernel_id}", "title": cfg.title,
+    "code_file": "bootstrap.py", "language": "python", "kernel_type": "script",
+    "is_private": True, "enable_gpu": True, "enable_internet": True,
+    "machine_shape": "NvidiaTeslaT4", "dataset_sources": [], "competition_sources": [],
+    "kernel_sources": [], "model_sources": []}
+(target / "kernel-metadata.json").write_text(json.dumps(metadata, indent=2))
+(target / ".selected-token").write_text(token)
+print(f"Prepared private kernel {metadata['id']}")
+PY
+
+KAGGLE_API_TOKEN="$(cat "$TEMP_DIR/.selected-token")"
+export KAGGLE_API_TOKEN
+rm -f -- "$TEMP_DIR/.selected-token"
+kaggle kernels push -p "$TEMP_DIR"
+echo "Kernel submitted. No API token was written to kernel source or metadata."
