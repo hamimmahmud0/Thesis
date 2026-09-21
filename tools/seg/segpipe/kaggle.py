@@ -18,6 +18,7 @@ def build_embedded_kernel(bootstrap: Path, wheel: Path, config: Path, output: Pa
     prefix = (
         "# Auto-generated self-extracting Kaggle kernel.\n"
         f"EMBEDDED_WHEEL_B64 = {base64.b64encode(wheel.read_bytes()).decode()!r}\n"
+        f"EMBEDDED_WHEEL_NAME = {wheel.name!r}\n"
         f"EMBEDDED_CONFIG_B64 = {base64.b64encode(config.read_bytes()).decode()!r}\n"
     )
     output.write_text(prefix + bootstrap.read_text(encoding="utf-8"), encoding="utf-8")

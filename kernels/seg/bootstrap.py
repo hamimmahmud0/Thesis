@@ -17,9 +17,11 @@ CONDA_ROOT = Path("/kaggle/working/miniforge3")
 PAYLOAD = Path("/kaggle/working/seg-payload")
 try:
     EMBEDDED_WHEEL_B64
+    EMBEDDED_WHEEL_NAME
     EMBEDDED_CONFIG_B64
 except NameError:
     EMBEDDED_WHEEL_B64 = ""
+    EMBEDDED_WHEEL_NAME = "segpipe-1.0.0-py3-none-any.whl"
     EMBEDDED_CONFIG_B64 = ""
 
 def run(args): subprocess.run(args, check=True)
@@ -46,7 +48,7 @@ def main():
     embedded_wheel = None
     if EMBEDDED_WHEEL_B64:
         PAYLOAD.mkdir(parents=True, exist_ok=True)
-        embedded_wheel = PAYLOAD / "segpipe.whl"
+        embedded_wheel = PAYLOAD / Path(EMBEDDED_WHEEL_NAME).name
         embedded_wheel.write_bytes(base64.b64decode(EMBEDDED_WHEEL_B64))
         config_path = PAYLOAD / "config.yaml"
         config_path.write_bytes(base64.b64decode(EMBEDDED_CONFIG_B64))

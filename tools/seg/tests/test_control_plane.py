@@ -157,6 +157,7 @@ def test_handoff_packages_redacted_config_and_private_metadata(monkeypatch, tmp_
     assert captured["metadata"]["machine_shape"] == "NvidiaTeslaT4"
     assert secret not in captured["kernel"]
     assert "EMBEDDED_WHEEL_B64" in captured["kernel"]
+    assert "segpipe-1.0.0-py3-none-any.whl" in captured["kernel"]
     assert captured["metadata"]["code_file"] == "kernel.py"
     assert captured["env_token"] == "handoff-token"
     info = json.loads((config.work_dir / "artifacts" / "kernel.json").read_text(encoding="utf-8"))
