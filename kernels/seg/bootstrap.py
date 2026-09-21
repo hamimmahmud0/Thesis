@@ -36,7 +36,11 @@ def main():
     conda = ensure_conda()
     if not MARKER.exists():
         run([conda, "create", "-y", "-p", str(ENV), f"python={sys.version_info.major}.{sys.version_info.minor}", "pip"])
-        run([conda, "run", "-p", str(ENV), "python", "-m", "pip", "install", str(TOOL)])
+        wheels = sorted(ROOT.glob("segpipe-*.whl"))
+        package = wheels[-1] if wheels else TOOL
+        if not package.exists():
+            raise SystemExit("segpipe wheel/source missing from Kaggle payload")
+        run([conda, "run", "-p", str(ENV), "python", "-m", "pip", "install", str(package)])
         MARKER.touch()
     os.execv(conda, [conda, "run", "--no-capture-output", "-p", str(ENV), "python", str(ROOT / "main.py"), "--config", str(ROOT / "config.yaml")])
 if __name__ == "__main__": main()

@@ -69,7 +69,14 @@ def launch_successor(config, token: str) -> None:
     tool_dir = source_dir / "tool"
     if not tool_dir.exists(): tool_dir = Path(__file__).resolve().parents[1]
     with tempfile.TemporaryDirectory(prefix="seg-handoff-") as temporary:
-        target = Path(temporary); shutil.copytree(tool_dir, target / "tool")
+        target = Path(temporary)
+        wheels = sorted(source_dir.glob("segpipe-*.whl"))
+        if wheels:
+            shutil.copy2(wheels[-1], target / wheels[-1].name)
+        else:
+            result = subprocess.run(["python", "-m", "pip", "wheel", "--no-deps", "--no-build-isolation",
+                "--wheel-dir", str(target), str(tool_dir)], text=True, capture_output=True)
+            if result.returncode: raise PipelineError("handoff_failed", "Could not package segpipe wheel")
         for filename in ("main.py", "bootstrap.py"):
             shutil.copy2(source_dir / filename, target / filename)
         _redacted_config(config.path, target / "config.yaml")

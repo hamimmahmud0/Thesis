@@ -18,7 +18,7 @@ PY
 TEMP_DIR="$(mktemp -d /tmp/seg-kernel-XXXXXX)"
 trap 'rm -rf -- "$TEMP_DIR"' EXIT
 cp -a main.py bootstrap.py "$TEMP_DIR/"
-cp -a "$PROJECT_ROOT/tools/seg" "$TEMP_DIR/tool"
+python3 -m pip wheel --no-deps --no-build-isolation --wheel-dir "$TEMP_DIR" "$PROJECT_ROOT/tools/seg"
 
 python3 - "$TEMP_DIR" <<'PY'
 import json
