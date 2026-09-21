@@ -16,10 +16,12 @@ bot_token: env:BOT_TOKEN
 chat_id: ""
 
 models:
-  - name: yolo11n-seg
+  - name: yolo11m-seg
     epochs: 100
-    batch: 16
-    image_size: 640
+    batch: 2
+    image_size: 3840
+    amp: true
+    rect: true
   - name: unet
   - name: unet++
   - name: deeplabv3
