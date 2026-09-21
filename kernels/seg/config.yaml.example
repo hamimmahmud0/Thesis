@@ -22,12 +22,50 @@ models:
     image_size: 3840
     amp: true
     rect: true
-  - name: unet
-  - name: unet++
-  - name: deeplabv3
-  - name: deeplabv3++
-  - name: segformer
-    checkpoint: nvidia/segformer-b0-finetuned-ade-512-512
+- name: unet
+  epochs: 100
+  batch: 2
+  image_size: 1024
+  learning_rate: 0.0001
+  encoder: resnet34
+  pretrained: imagenet
+  workers: 4
+  save_period: 1
+- name: unet++
+  epochs: 100
+  batch: 1
+  image_size: 1024
+  learning_rate: 0.0001
+  encoder: resnet34
+  pretrained: imagenet
+  workers: 4
+  save_period: 1
+- name: deeplabv3
+  epochs: 100
+  batch: 1
+  image_size: 1024
+  learning_rate: 0.0001
+  encoder: resnet50
+  pretrained: imagenet
+  workers: 4
+  save_period: 1
+- name: deeplabv3++
+  epochs: 100
+  batch: 1
+  image_size: 1024
+  learning_rate: 0.0001
+  encoder: resnet50
+  pretrained: imagenet
+  workers: 4
+  save_period: 1
+- name: segformer
+  epochs: 100
+  batch: 1
+  image_size: 1024
+  learning_rate: 0.00006
+  workers: 4
+  save_period: 1
+  checkpoint: nvidia/segformer-b2-finetuned-ade-512-512
 
 training_defaults:
   epochs: 100
