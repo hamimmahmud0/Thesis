@@ -102,6 +102,25 @@ Annotations carry the standard COCO fields (`bbox` XYWH, `area`,
 
 Exit code is non-zero if any image failed.
 
+### Tiled high-resolution wrapper
+
+`sam31_tiled.py` keeps each model input at SAM's native 1008×1008 size,
+merges overlapping tiles back into the source-image coordinate space, and
+removes cross-category duplicate masks:
+
+```bash
+python sam31_tiled.py frames/clip \
+    --run clip-v1 \
+    -p "pedestrian; vehicle; car; bus" \
+    --iou-threshold 0.85 \
+    --non-vehicle-class "pedestrian; dog; cat"
+```
+
+For masks whose IoU reaches `--iou-threshold`, the higher-scoring instance is
+kept. A generic `vehicle` instance is always removed in favor of an overlapping
+vehicle subclass. Names listed by `--non-vehicle-class` are excluded from the
+vehicle-subclass rule; matching is case-insensitive.
+
 ---
 
 ## Other utilities

@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import shutil
 import subprocess
 import sys
@@ -221,6 +222,28 @@ def parse_args() -> argparse.Namespace:
         help="Intersection/smaller-area threshold for merging duplicates.",
     )
     parser.add_argument(
+        "--iou-threshold",
+        type=float,
+        default=0.85,
+        metavar="F",
+        help=(
+            "Mask IoU threshold for removing duplicate final instances across "
+            "categories. The highest-scoring instance is kept, except a generic "
+            "'vehicle' always loses to an overlapping vehicle subclass. "
+            "Default: 0.85."
+        ),
+    )
+    parser.add_argument(
+        "--non-vehicle-class",
+        default="pedestrian; dog; cat",
+        metavar="NAMES",
+        help=(
+            "Semicolon- or pipe-separated category names that are not vehicle "
+            "subclasses. Matching is case-insensitive. "
+            "Default: 'pedestrian; dog; cat'."
+        ),
+    )
+    parser.add_argument(
         "--keep-workdir",
         action="store_true",
         help="Keep generated tiles and raw tile-level SAM output after success.",
@@ -242,6 +265,8 @@ def parse_args() -> argparse.Namespace:
         parser.error("--merge-iou must be between 0 and 1")
     if not (0.0 <= args.merge_containment <= 1.0):
         parser.error("--merge-containment must be between 0 and 1")
+    if not (0.0 <= args.iou_threshold <= 1.0):
+        parser.error("--iou-threshold must be between 0 and 1")
 
     return args
 
@@ -557,6 +582,80 @@ def deduplicate_instances(
     return kept
 
 
+def parse_category_names(value: str) -> set[str]:
+    """Return normalized category names from a semicolon/pipe-separated value."""
+    return {
+        part.strip().casefold()
+        for part in re.split(r"[;|]", value)
+        if part.strip()
+    }
+
+
+def suppress_cross_category_duplicates(
+    instances: list[Instance],
+    categories: dict[int, str],
+    iou_threshold: float,
+    non_vehicle_categories: set[str],
+) -> tuple[list[Instance], int, int]:
+    """Suppress highly overlapping final instances across categories.
+
+    Generic ``vehicle`` masks are removed when they overlap a vehicle subclass,
+    even when the generic mask has the higher score. All remaining overlaps use
+    greedy score-based mask NMS, so only the highest-confidence instance remains.
+    """
+    if len(instances) < 2:
+        return instances, 0, 0
+
+    names = {
+        category_id: name.strip().casefold()
+        for category_id, name in categories.items()
+    }
+    generic_vehicle_ids = {
+        category_id for category_id, name in names.items() if name == "vehicle"
+    }
+    vehicle_subclass_ids = {
+        category_id
+        for category_id, name in names.items()
+        if name and name != "vehicle" and name not in non_vehicle_categories
+    }
+
+    removed_generic: set[int] = set()
+    for generic_index, generic in enumerate(instances):
+        if generic.category_id not in generic_vehicle_ids:
+            continue
+        for other_index, other in enumerate(instances):
+            if other_index == generic_index:
+                continue
+            if other.category_id not in vehicle_subclass_ids:
+                continue
+            iou, _ = overlap_metrics(generic, other)
+            if iou >= iou_threshold:
+                removed_generic.add(generic_index)
+                break
+
+    candidates = [
+        instance
+        for index, instance in enumerate(instances)
+        if index not in removed_generic
+    ]
+    candidates.sort(key=lambda item: item.score, reverse=True)
+
+    kept: list[Instance] = []
+    score_suppressed = 0
+    for candidate in candidates:
+        duplicate = False
+        for previous in kept:
+            iou, _ = overlap_metrics(candidate, previous)
+            if iou >= iou_threshold:
+                duplicate = True
+                score_suppressed += 1
+                break
+        if not duplicate:
+            kept.append(candidate)
+
+    return kept, len(removed_generic), score_suppressed
+
+
 def encode_full_rle(instance: Instance, height: int, width: int) -> dict:
     require_pycocotools()
     full_mask = np.zeros((height, width), dtype=np.uint8)
@@ -621,7 +720,15 @@ def write_final_dataset(
     final_annotations: list[dict] = []
     annotation_id = 1
     total_before = 0
+    total_after_tile_merge = 0
     total_after = 0
+    total_generic_vehicle_removed = 0
+    total_score_suppressed = 0
+    categories = {
+        int(category["id"]): str(category.get("name", ""))
+        for category in raw_coco.get("categories", [])
+    }
+    non_vehicle_categories = parse_category_names(args.non_vehicle_class)
 
     for original in originals:
         source = Path(original["source"])
@@ -649,6 +756,18 @@ def write_final_dataset(
             args.merge_iou,
             args.merge_containment,
         )
+        after_tile_merge = len(instances)
+        total_after_tile_merge += after_tile_merge
+        instances, generic_removed, score_suppressed = (
+            suppress_cross_category_duplicates(
+                instances,
+                categories,
+                args.iou_threshold,
+                non_vehicle_categories,
+            )
+        )
+        total_generic_vehicle_removed += generic_removed
+        total_score_suppressed += score_suppressed
         after = len(instances)
         total_after += after
 
@@ -670,7 +789,8 @@ def write_final_dataset(
 
         print(
             f"[merge] {original['relative']}: "
-            f"{before} tile instances -> {after} final instances"
+            f"{before} tile instances -> {after_tile_merge} merged -> "
+            f"{after} deduplicated"
         )
 
     output = {
@@ -682,6 +802,8 @@ def write_final_dataset(
             "tile_overlap": args.tile_overlap,
             "merge_iou": args.merge_iou,
             "merge_containment": args.merge_containment,
+            "iou_threshold": args.iou_threshold,
+            "non_vehicle_class": sorted(non_vehicle_categories),
         },
         "images": final_images,
         "annotations": final_annotations,
@@ -694,7 +816,10 @@ def write_final_dataset(
     summary = {
         "images": len(final_images),
         "annotations_before_merge": total_before,
+        "annotations_after_tile_merge": total_after_tile_merge,
         "annotations": total_after,
+        "generic_vehicle_removed": total_generic_vehicle_removed,
+        "score_suppressed": total_score_suppressed,
         "dataset": str(instances_path),
         "sam_input_size": SAM_SIZE,
         "requested_input_size": args.input_size,
@@ -710,7 +835,10 @@ def write_final_dataset(
     print("\n===== TILED ANNOTATION SUMMARY =====")
     print(f"images:       {len(final_images)}")
     print(f"tile masks:   {total_before}")
+    print(f"tile-merged:  {total_after_tile_merge}")
     print(f"final masks:  {total_after}")
+    print(f"vehicle drop: {total_generic_vehicle_removed}")
+    print(f"score drop:   {total_score_suppressed}")
     print(f"dataset:      {instances_path}")
     if args.copy_images:
         print(f"images dir:   {images_dir}")
