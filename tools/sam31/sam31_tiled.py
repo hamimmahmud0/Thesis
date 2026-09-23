@@ -398,7 +398,9 @@ def run_sam31(
     raw_out_parent: Path,
 ) -> Path:
     command = [
-        "sam31",
+        sys.executable,
+        "-m",
+        "sam31.cli",
         "run",
         str(tile_dir),
     ]

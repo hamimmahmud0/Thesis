@@ -31,6 +31,9 @@ user_info = whoami(token=HF_TOKEN)
 HF_USER = user_info["name"]
 SOURCE_BUCKET = f'{CONFIG["SOURCE_BUCKET"]}'
 DEST_BUCKET = f'{HF_USER}/{CONFIG["DEST_BUCKET"]}'
+IOU_THRESHOLD = CONFIG.get("IOU_THRESHOLD", 0.85)
+NON_VEHICLE_CLASS = CONFIG.get("NON_VEHICLE_CLASS", "pedestrian; dog; cat")
+INPUT_SIZE = CONFIG.get("INPUT_SIZE", 1008)
 
 print(f"Source Bucket: {SOURCE_BUCKET}")
 print(f"Destination Bucket: {SOURCE_BUCKET}")
@@ -68,7 +71,11 @@ STAGES = [
         [
             [
                 "SAM",
-                f"""mkdir working && cd working && hf sync hf://buckets/{CONFIG["SOURCE_BUCKET"]} . && /root/miniconda3/envs/sam31/bin/sam31 run . -p "{'; '.join(CONFIG["PROMPTS"])}" --copy-images --confidence {CONFIG["CONFIDENCE"]} --batch-size {CONFIG["BATCH_SIZE"]} --bucket {DEST_BUCKET} --token {HF_TOKEN} --run {SOURCE_BUCKET.split('/')[-1]}"""
+                f"""mkdir working && cd working && export PATH="/root/miniconda3/envs/sam31/bin:$PATH" && hf sync hf://buckets/{CONFIG["SOURCE_BUCKET"]} . && /root/miniconda3/envs/sam31/bin/python /root/Thesis/tools/sam31/sam31_tiled.py . -p "{'; '.join(CONFIG["PROMPTS"])}" --copy-images --confidence {CONFIG["CONFIDENCE"]} --batch-size {CONFIG["BATCH_SIZE"]} --input-size {INPUT_SIZE} --iou-threshold {IOU_THRESHOLD} --non-vehicle-class "{NON_VEHICLE_CLASS}" --bucket {DEST_BUCKET} --token {HF_TOKEN} --run {SOURCE_BUCKET.split('/')[-1]}"""
+            ],
+            [
+                "HELP",
+                "/root/miniconda3/envs/sam31/bin/python /root/Thesis/tools/sam31/sam31_tiled.py -h"
             ]
         ],
     ],

@@ -1,7 +1,10 @@
 import importlib.util
 import sys
+import tempfile
 import unittest
+from argparse import Namespace
 from pathlib import Path
+from unittest import mock
 
 import numpy as np
 
@@ -69,6 +72,43 @@ class CrossCategoryDeduplicationTests(unittest.TestCase):
             sam31_tiled.parse_category_names(" Pedestrian;DOG | cat "),
             {"pedestrian", "dog", "cat"},
         )
+
+
+class Sam31InvocationTests(unittest.TestCase):
+    def test_inner_cli_uses_the_current_python_environment(self):
+        args = Namespace(
+            prompts=["car"],
+            prompts_file=None,
+            confidence=0.5,
+            batch_size=1,
+            devices="all",
+            checkpoint=None,
+            token=None,
+            resume=False,
+        )
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            tile_dir = root / "tiles"
+            tile_dir.mkdir()
+            raw_out = root / "output"
+
+            def complete_run(command, check):
+                self.assertTrue(check)
+                coco = raw_out / "tiles" / "annotations" / "instances.json"
+                coco.parent.mkdir(parents=True)
+                coco.write_text("{}", encoding="utf-8")
+
+            with mock.patch.object(
+                sam31_tiled.subprocess,
+                "run",
+                side_effect=complete_run,
+            ) as run:
+                result = sam31_tiled.run_sam31(args, tile_dir, raw_out)
+
+            command = run.call_args.args[0]
+            self.assertEqual(command[:4], [sys.executable, "-m", "sam31.cli", "run"])
+            self.assertEqual(result, raw_out / "tiles" / "annotations" / "instances.json")
 
 
 if __name__ == "__main__":
