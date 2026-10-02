@@ -211,6 +211,7 @@ python review.py --max-per-class 200          # stop each class after 200 accept
 python review.py --min-score 0.5 --min-size 24   # skip weak / tiny detections
 python review.py --class-order Rickshaw Car   # review these classes first
 python review.py --only-flagged               # come back to what you flagged
+python review.py --history                    # start in history mode: recheck / edit earlier decisions
 python review.py --export-only                # rebuild the crops from saved decisions
 ```
 
@@ -227,11 +228,40 @@ python review.py --export-only                # rebuild the crops from saved dec
 | `S` | **Skip** for now; it comes back next session |
 | `U` / `Backspace` | **Undo** the last decision |
 | `Tab` / `Shift+Tab` | Jump to the **next / previous class** that still has objects to label |
+| `H` | Toggle **history mode** (see [History](#history-recheck-and-edit-earlier-decisions)) |
+| `Left` / `Right` | *(history mode)* go to the **older / newer** decision |
 | `N` | **New class**: type a name, `Enter` to create it and apply it to this object, `Esc` to cancel |
 | `Q` / `Esc` | Save and quit |
 
-Command keys `c x s u q n f` are never used as class shortcuts. Class shortcuts are digits first, then letters,
+Command keys `c x s u q n f h` are never used as class shortcuts. Class shortcuts are digits first, then letters,
 then `Shift`+letters, so more than 10 classes is fine.
+
+### History: recheck and edit earlier decisions
+
+Made a mistake a few objects ago? Press **`H`** to open history mode (the top bar turns purple). It lists every
+object you have already decided, **newest first when you enter**, and shows its current decision at the top right
+(`confirmed Car`, `changed to Bus`, `rejected`, `flagged`).
+
+| Key | In history mode |
+|---|---|
+| `Left` / `Right` | Step to the older / newer decision (`Home` = oldest, `End` = newest) |
+| `Space` / `Enter` / `C` | Set it back to the **predicted** class |
+| class key | **Change** it to that class |
+| `X` / `Delete` | **Reject** it |
+| `F` | **Flag** it |
+| `N` | Create a new class and apply it |
+| `H` | Back to the review queue where you left off |
+| `Q` / `Esc` | Save and quit |
+
+- An edit **overwrites the saved decision in place** and you stay on the same object, so you can see the new
+  status and keep stepping back. It is saved immediately, like every other decision.
+- `S`, `U` and `Tab` do nothing in history mode (there is nothing to skip, and an edit replaces a decision, so
+  there is no undo).
+- `--max-per-class` is respected: an object can keep its own class, but you cannot move it into a full class.
+- When the queue runs out (or is already empty) the tool opens history mode instead of closing, so you get a last
+  look before quitting. Start in it directly with `python review.py --history`.
+- The crops are rebuilt from the saved decisions when you quit, so edits made here are reflected in
+  `cls_dataset/` (an object you moved from `Car` to `Bus` is moved to the `Bus` folder).
 
 **Reject vs `no_vehicle` vs flag**
 
@@ -263,7 +293,7 @@ classes:
 - A class with no matching COCO category (`no_vehicle`, `Leguna`, `CNG`, ...) is *label-only*: you can assign it,
   but nothing is queued for it.
 - COCO categories **not listed** are ignored completely (for example `Vehicle` is not annotated).
-- `key` is optional (auto-assigned if missing) and must be one character, not one of `c x s u q n f`.
+- `key` is optional (auto-assigned if missing) and must be one character, not one of `c x s u q n f h`.
 - Use another file with `--classes other.yaml`.
 
 Classes created at run time with `N` are stored in `<out>/classes.json` and come back automatically on the next
@@ -319,6 +349,7 @@ cls_dataset_flagged/               # <out>_flagged, kept OUTSIDE the dataset on 
 | `--min-score X` | `0` | Skip detections with a lower score |
 | `--min-size PX` | `0` | Skip boxes whose shorter side is below `PX` |
 | `--pad PX` | `8` | Extra pixels around the box in exported crops |
+| `--history` | off | Start in history mode (recheck / edit earlier decisions) |
 | `--only-flagged` | off | Re-review only the objects flagged earlier; a new decision replaces the flag |
 | `--export-only` | off | Rebuild the crops from `decisions.json` and exit (no window) |
 

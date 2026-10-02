@@ -4,10 +4,10 @@
 # - A class whose name matches a category in the COCO file is reviewed as a
 #   *predicted* class: its detections are queued, one class at a time.
 #   COCO categories NOT listed here (e.g. Vehicle) are ignored entirely.
-# - A class with no matching COCO category (e.g. no_vehicle) is label-only:
+# - A class with no matching COCO category (e.g. not_an_object) is label-only:
 #   you can assign it, but no detections are queued for it.
 # - key: the shortcut. Single character; omit it to auto-assign.
-#   Avoid c x s u q n (command keys).
+#   Avoid c x s u q n f h (command keys).
 # - Classes added at run time with N are stored in <out>/classes.json.
 classes:
   - {name: Pedestrian, key: "1"}

@@ -9,6 +9,8 @@ Keys
   S                   skip for now (decide later)
   F                   flag for later inspection (several objects in one box, bad box, ...)
   Tab / Shift+Tab     jump to next / previous class
+  H                   toggle HISTORY: browse decided objects (<- older, -> newer) and fix them
+                      with the same keys (confirm / class key / X / F / N)
   Q / Esc             save and quit
 
 Decisions are saved to <out>/decisions.json after every key press, so you can
@@ -20,6 +22,7 @@ Usage:
   python review.py --min-score 0.5 --min-size 24
   python review.py --max-per-class 200   # at most 200 accepted per class
   python review.py --classes my_classes.yaml   # other default classes (see classes.yaml)
+  python review.py --history             # start in history mode to recheck earlier decisions
   python review.py --export-only
 """
 import argparse
@@ -34,7 +37,7 @@ import numpy as np
 WIN = "review"
 PANEL = 720          # size of each of the two panels (px); shrunk to fit the screen in main()
 # class shortcuts: digits, then letters (minus the command keys), then Shift+letters
-RESERVED = "cxsuqnf"   # command keys, never used as class shortcuts
+RESERVED = "cxsuqnfh"   # command keys, never used as class shortcuts
 KEY_POOL = "1234567890" + "".join(c for c in "abcdefghijklmnopqrstuvwxyz" if c not in RESERVED) + "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 NEW_ID = 1000        # ids for classes added during annotation start here
 PAD = 0.25           # context padding around bbox for the crop panel
@@ -78,6 +81,7 @@ def parse_args():
                    help="review predicted classes in this order (default: category order in the COCO file)")
     p.add_argument("--only-flagged", action="store_true",
                    help="re-review just the objects flagged earlier with F (new decisions replace the flag)")
+    p.add_argument("--history", action="store_true", help="start in history mode (recheck / edit earlier decisions)")
     p.add_argument("--export-only", action="store_true")
     p.add_argument("--pad", type=int, default=8, help="extra pixels around bbox in exported crops")
     return p.parse_args()
@@ -155,7 +159,7 @@ def wrap(d, items, font, width):
     return lines + [line]
 
 
-def compose(img, ann, cats, keys, cur, cls_prog, total, n_done, counts=None, cap=0, msg="", prompt=None):
+def compose(img, ann, cats, keys, cur, cls_prog, total, n_done, counts=None, cap=0, msg="", prompt=None, hist=None):
     """Image panels plus Ubuntu-font text, as a PIL image."""
     from PIL import Image, ImageDraw
     panels = Image.fromarray(cv2.cvtColor(render(img, ann), cv2.COLOR_BGR2RGB))
@@ -169,18 +173,25 @@ def compose(img, ann, cats, keys, cur, cls_prog, total, n_done, counts=None, cap
     canvas = Image.new("RGB", (W, top_h + panels.height + bot_h), (0, 0, 0))
     canvas.paste(panels, (0, top_h))
     d = ImageDraw.Draw(canvas)
+    if hist:
+        d.rectangle([0, 0, W, top_h - 1], fill=(52, 28, 92))
     bw, bh = ann["bbox"][2:]
     name = cats[ann["category_id"]]
     d.text((16, 8), name, font=big, fill=(255, 255, 255))
     x = 16 + d.textlength(f"{name}   ", font=big)
     d.text((x, 14), f"score {ann.get('score', 0):.2f}  ·  {int(bw)}×{int(bh)} px", font=mid, fill=(200, 200, 200))
     if cur:
-        txt = {"reject": "rejected", "flag": "flagged"}.get(cur["action"]) or f"{cur['action']} → {cur['class']}"
+        txt = {"reject": "rejected", "flag": "flagged"}.get(cur["action"]) or \
+            f"{'confirmed' if cur['action'] == 'confirm' else 'changed to'} {cur['class']}"
         d.text((W - 16 - d.textlength(txt, font=mid), 14), txt, font=mid, fill=(255, 190, 80))
-    d.text((16, 58), f"{name} {cls_prog[0]} / {cls_prog[1]}    all {n_done} / {total}    {ann['file']}", font=tiny, fill=(150, 150, 150))
+    if hist:
+        d.text((16, 58), f"HISTORY {hist[0]} / {hist[1]}  (1 = oldest)    {ann['file']}", font=tiny, fill=(215, 190, 255))
+        hint = "LEFT / RIGHT  older / newer    H  back to queue    SPACE  confirm    X  reject    F  flag    N  new class    Q  quit"
+    else:
+        d.text((16, 58), f"{name} {cls_prog[0]} / {cls_prog[1]}    all {n_done} / {total}    {ann['file']}", font=tiny, fill=(150, 150, 150))
+        hint = "SPACE/ENTER  confirm    X  reject    F  flag    S  skip    U  undo    TAB  next class    N  new class    H  history    Q  quit"
     y = top_h + panels.height + 10
-    d.text((16, y), "SPACE/ENTER  confirm    X  reject    F  flag    S  skip    U  undo    TAB  next class    N  new class    Q  quit",
-           font=small, fill=(90, 255, 120))
+    d.text((16, y), hint, font=small, fill=(90, 255, 120))
     y += 40
     d.text((16, y), "Class:", font=small, fill=(255, 200, 100))
     for ln in cls_lines:
@@ -300,7 +311,8 @@ def main():
         return d is not None and d["action"] == "flag" if args.only_flagged else d is None
 
     pending = [i for i, a in enumerate(anns) if is_open(a)]
-    if not pending:
+    ann_idx = {str(a["id"]): i for i, a in enumerate(anns)}
+    if not pending and not any(k in ann_idx for k in dec):
         print("nothing left to review")
         export(args, data, cats, dec)
         return
@@ -311,7 +323,7 @@ def main():
     skipped = set()
     history = []  # annotation ids in order of decision, for undo
     cache = {"file": None, "img": None}
-    st = {"pos": 0, "cur": None, "msg": "", "prompt": None}
+    st = {"pos": 0, "cur": None, "msg": "", "prompt": None, "hist": None}  # st["hist"]: annotation id shown in history mode
     cap = args.max_per_class
 
     def counts():
@@ -350,7 +362,38 @@ def main():
         save_state(out, dec)
         root.destroy()
 
+    def hist_ids():  # decided objects, oldest first
+        return [k for k in dec if k in ann_idx]
+
+    def enter_history(aid=None, msg=""):
+        ids = hist_ids()
+        if not ids:
+            st["msg"] = "no decisions yet"
+            return False
+        st["hist"] = aid if aid in ann_idx and aid in dec else ids[-1]
+        st["msg"] = msg
+        return True
+
+    def show_history():
+        ids = hist_ids()
+        if st["hist"] not in dec or st["hist"] not in ann_idx:
+            st["hist"] = ids[-1] if ids else None
+        if st["hist"] is None:
+            show()
+            return
+        i = ann_idx[st["hist"]]
+        st["cur"] = i
+        a = anns[i]
+        photo = ImageTk.PhotoImage(compose(get_img(a["file"]), a, cats, keys, dec.get(st["hist"]), None, len(anns), len(dec),
+                                           counts(), cap, st["msg"], st["prompt"], (ids.index(st["hist"]) + 1, len(ids))))
+        st["msg"] = ""
+        label.configure(image=photo)
+        label.image = photo
+
     def show():
+        if st["hist"] is not None:
+            show_history()
+            return
         c = counts()
 
         def todo(p):
@@ -360,7 +403,10 @@ def main():
         # next open item at/after pos, wrapping to the start (classes may have been left half-done via Tab)
         pos = next((p for p in list(range(st["pos"], len(pending))) + list(range(0, st["pos"])) if todo(p)), None)
         if pos is None:
-            finish()
+            if enter_history(msg="queue finished: history mode, Q to quit"):
+                show_history()
+            else:
+                finish()
             return
         st["pos"] = pos
         i = pending[pos]
@@ -373,6 +419,13 @@ def main():
 
     def decide(d):
         aid = str(anns[st["cur"]]["id"])
+        if st["hist"] is not None:  # editing an earlier decision: overwrite in place, stay on this object
+            history[:] = [h for h in history if h[0] != aid]  # keep the undo stack consistent
+            dec[aid] = d
+            save_state(out, dec)
+            st["msg"] = ""
+            show()
+            return
         history.append((aid, dec.get(aid)))
         dec[aid] = d
         save_state(out, dec)
@@ -381,7 +434,9 @@ def main():
 
     def accept(name):
         a = anns[st["cur"]]
-        if full(name, counts()):
+        own = dec.get(str(a["id"]), {})
+        own = own.get("class") if own.get("action") in ("confirm", "change") else None
+        if name != own and full(name, counts()):
             st["msg"] = f"{name} is full"
             show()
             return
@@ -438,6 +493,28 @@ def main():
             return
         a = anns[st["cur"]]
         by_key = {k: n for n, k in keys.items()}
+        if ks == "h":
+            if st["hist"] is not None:  # back to the queue
+                st["hist"] = None
+            elif not enter_history(str(a["id"]) if str(a["id"]) in dec else None):
+                pass
+            show()
+            return
+        if st["hist"] is not None:
+            if ks in ("Left", "Right", "Home", "End"):
+                ids = hist_ids()
+                k = ids.index(st["hist"])
+                k = {"Left": k - 1, "Right": k + 1, "Home": 0, "End": len(ids) - 1}[ks]
+                if 0 <= k < len(ids):
+                    st["hist"] = ids[k]
+                else:
+                    st["msg"] = "oldest decision" if k < 0 else "newest decision"
+                show()
+                return
+            if ks in ("Tab", "ISO_Left_Tab", "Shift_Tab", "s", "u", "BackSpace"):
+                st["msg"] = "not available in history"
+                show()
+                return
         if ks in ("space", "Return", "KP_Enter", "c"):
             decide({"action": "confirm", "class": cats[a["category_id"]]})
         elif ks == "Tab":
@@ -470,6 +547,8 @@ def main():
 
     root.bind("<Key>", on_key)
     root.protocol("WM_DELETE_WINDOW", finish)
+    if args.history or not pending:
+        enter_history(msg="" if args.history else "queue is empty: history mode, Q to quit")
     show()
     try:
         root.mainloop()
