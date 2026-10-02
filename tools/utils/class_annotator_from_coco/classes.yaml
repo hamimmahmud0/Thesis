@@ -1,0 +1,27 @@
+# Default classes for review.py.
+#
+# - Order here is the review order and the order shown in the footer.
+# - A class whose name matches a category in the COCO file is reviewed as a
+#   *predicted* class: its detections are queued, one class at a time.
+#   COCO categories NOT listed here (e.g. Vehicle) are ignored entirely.
+# - A class with no matching COCO category (e.g. no_vehicle) is label-only:
+#   you can assign it, but no detections are queued for it.
+# - key: the shortcut. Single character; omit it to auto-assign.
+#   Avoid c x s u q n (command keys).
+# - Classes added at run time with N are stored in <out>/classes.json.
+classes:
+  - {name: Pedestrian, key: "1"}
+  - {name: Car,        key: "2"}
+  - {name: Bus,        key: "3"}
+  - {name: Truck,      key: "4"}
+  - {name: Motorcycle, key: "5"}
+  - {name: Bicycle,    key: "6"}
+  - {name: Rickshaw,   key: "7"}
+  - {name: Leguna,     key: "8"}
+  - {name: CNG,        key: "9"}
+  - {name: Van,        key: "a"}
+  - {name: Cyclevan,   key: "b"}
+  - {name: not_an_object, key: "0"}   # false detections kept as a negative class
+  - {name: Nosimon,    key: "/"}
+  - {name: Korimon,    key: "."}
+  - {name: Pushcart,   key: ","}

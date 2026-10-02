@@ -1,0 +1,13 @@
+# Python 3.10+. Tested with Python 3.13.
+#
+# Tkinter (the review window) is NOT a pip package. On Ubuntu/Debian:
+#   sudo apt install python3-tk
+# If you use conda's Python it is already included.
+#
+# Install opencv-python-headless (not opencv-python): the tool draws its own window
+# with Tkinter, and having both OpenCV wheels installed breaks `import cv2`.
+numpy>=1.26
+opencv-python-headless>=4.8
+Pillow>=10.0
+PyYAML>=6.0
+huggingface_hub>=1.26   # provides the `hf` CLI; only needed to download the dataset
