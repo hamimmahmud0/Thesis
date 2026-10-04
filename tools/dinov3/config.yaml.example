@@ -1,0 +1,9 @@
+hf:
+  token: hf_xxx
+  bucket: <hf-username>/dinov3-sync
+ssh:
+  host: 165.99.219.95
+  port: 20017
+  user: notebook
+  password: changeme
+  remote_dir: /root/dinov3

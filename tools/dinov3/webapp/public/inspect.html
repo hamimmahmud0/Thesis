@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rickshaw vs Motorcycle — results</title>
+<style>
+:root{--bg:#111;--card:#1c1c1c;--fg:#eee;--mut:#9a9a9a;--acc:#ffeb3b;--ok:#43a047;--bad:#e53935;--line:#333}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:14px system-ui,sans-serif}
+a{color:var(--acc)}h2{margin:0 0 6px;font-size:15px}
+.wrap{padding:12px;max-width:1500px;margin:0 auto}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+label{display:flex;flex-direction:column;gap:2px;color:var(--mut);font-size:12px}
+select,input,button{font:inherit;border-radius:6px;border:1px solid #444;background:#222;color:var(--fg);padding:5px 8px}
+input[type=number]{width:80px}button{cursor:pointer}
+table{border-collapse:collapse}td,th{border:1px solid var(--line);padding:4px 8px;text-align:center}
+th{color:var(--mut);font-weight:500}.mut{color:var(--mut)}
+.cm td.diag{background:#1b3a1f}.cm td.off{background:#3a1b1b}
+#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:10px}
+.c{background:var(--card);border:2px solid var(--line);border-radius:8px;padding:4px;cursor:pointer;display:flex;flex-direction:column;gap:3px}
+.c.okk{border-color:#2e5e32}.c.err{border-color:var(--bad)}
+.c .im{height:120px;display:flex;align-items:center;justify-content:center;background:#000;border-radius:5px;overflow:hidden}
+.c img{max-width:100%;max-height:100%}
+.c .t{font-size:11px;line-height:1.35}.tag{display:inline-block;padding:0 5px;border-radius:4px;font-size:11px}
+.R{background:#6a1b9a}.M{background:#00695c}
+#pager{display:flex;gap:8px;align-items:center;margin-top:10px}
+#modal{position:fixed;inset:0;background:#000d;display:none;align-items:center;justify-content:center;z-index:9;padding:16px}
+#modal .box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;max-width:560px;width:100%;max-height:92vh;overflow:auto}
+#modal img{width:100%;max-height:50vh;object-fit:contain;background:#000;border-radius:6px}
+.bar{height:8px;background:#333;border-radius:4px;overflow:hidden;margin:2px 0 6px}.bar i{display:block;height:100%;background:var(--acc)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:10px;margin-bottom:10px}
+</style></head><body><div class="wrap">
+<div class="row" style="justify-content:space-between;margin-bottom:8px">
+ <h2 style="font-size:18px">Rickshaw vs Motorcycle — logistic regression results</h2>
+ <a href="/">← drop selector</a>
+</div>
+<div class="grid2">
+ <div class="panel"><h2>Filtered subset: confusion matrices</h2><div id="cms"></div></div>
+ <div class="panel"><h2>Accuracy by detection score (filtered subset)</h2><div id="byscore"></div></div>
+ <div class="panel"><h2>Accuracy by box area (filtered subset)</h2><div id="byarea"></div></div>
+</div>
+<div class="panel">
+ <div class="row">
+  <label>Set<select id="set"><option value="random">random 1000/class</option><option value="curated">curated (92R+100M)</option></select></label>
+  <label>True class<select id="cat"><option value="">both</option><option>Rickshaw</option><option>Motorcycle</option></select></label>
+  <label>Model<select id="model"><option value="old">old (40 crops)</option><option value="new">new (curated)</option></select></label>
+  <label>Outcome<select id="out"><option value="">all</option><option value="ok">correct</option><option value="err">wrong</option></select></label>
+  <label>Predicted<select id="pred"><option value="">any</option><option>Rickshaw</option><option>Motorcycle</option></select></label>
+  <label>Score ≥<input id="smin" type="number" step="0.05" min="0" max="1" value="0"></label>
+  <label>Score ≤<input id="smax" type="number" step="0.05" min="0" max="1" value="1"></label>
+  <label>Area ≥ px²<input id="amin" type="number" step="100" value="0"></label>
+  <label>Area ≤ px²<input id="amax" type="number" step="100" value="100000"></label>
+  <label>Sort<select id="sort"><option value="conf">most confident wrong first</option><option value="pm">P(motorcycle) high→low</option><option value="pr">P(motorcycle) low→high</option><option value="score">score high→low</option><option value="area">area small→large</option></select></label>
+  <span class="mut" id="n"></span>
+ </div>
+</div>
+<div id="grid"></div><div id="pager"></div>
+</div>
+<div id="modal"><div class="box" id="mbox"></div></div>
+<script>
+const $=s=>document.querySelector(s), PER=60, CL=["Rickshaw","Motorcycle"];
+let DATA=[],view=[],page=0;
+const pm=(d,m)=>m=="old"?d.p_old:d.p_new;
+const predOf=(d,m)=>pm(d,m)>=.5?"Motorcycle":"Rickshaw";
+const area=d=>d.w*d.h;
+function filt(){
+ const f={set:$("#set").value,cat:$("#cat").value,m:$("#model").value,out:$("#out").value,pred:$("#pred").value,
+  smin:+$("#smin").value,smax:+$("#smax").value,amin:+$("#amin").value,amax:+$("#amax").value};
+ view=DATA.filter(d=>d.set==f.set&&(!f.cat||d.cat==f.cat)&&d.score>=f.smin&&d.score<=f.smax&&area(d)>=f.amin&&area(d)<=f.amax&&
+  (!f.pred||predOf(d,f.m)==f.pred)&&(!f.out||((predOf(d,f.m)==d.cat)==(f.out=="ok"))));
+ const s=$("#sort").value,m=f.m;
+ const wrong=d=>predOf(d,m)!=d.cat?1:0, conf=d=>Math.abs(pm(d,m)-.5);
+ view.sort((a,b)=>s=="conf"?(wrong(b)-wrong(a))||(conf(b)-conf(a)):s=="pm"?pm(b,m)-pm(a,m):s=="pr"?pm(a,m)-pm(b,m):s=="score"?b.score-a.score:area(a)-area(b));
+ page=0;stats(f);draw()}
+function acc(rows,m){return rows.length?rows.filter(d=>predOf(d,m)==d.cat).length/rows.length:NaN}
+function cmHtml(rows,m,name){
+ const c=[[0,0],[0,0]];rows.forEach(d=>c[CL.indexOf(d.cat)][CL.indexOf(predOf(d,m))]++);
+ const tot=r=>c[r][0]+c[r][1]||1;
+ return `<div style="margin-bottom:8px"><b>${name}</b> <span class="mut">acc ${(acc(rows,m)*100).toFixed(1)}%</span><table class="cm"><tr><th></th><th>pred Rickshaw</th><th>pred Motorcycle</th></tr>`+
+ [0,1].map(r=>`<tr><th>true ${CL[r]}</th>`+[0,1].map(k=>`<td class="${r==k?"diag":"off"}">${c[r][k]} <span class="mut">(${(c[r][k]/tot(r)*100).toFixed(0)}%)</span></td>`).join("")+"</tr>").join("")+"</table></div>"}
+function binTable(rows,edges,label){
+ let h=`<table><tr><th>${label}</th><th>n (R/M)</th><th>old acc</th><th>new acc</th></tr>`;
+ for(let i=0;i<edges.length-1;i++){const [a,b]=[edges[i],edges[i+1]],r=rows.filter(d=>label=="score"?d.score>=a&&d.score<b:area(d)>=a&&area(d)<b);
+  if(!r.length)continue;h+=`<tr><td>${label=="score"?a.toFixed(2)+"–"+b.toFixed(2):a+"–"+b}</td><td>${r.length} (${r.filter(d=>d.cat=="Rickshaw").length}/${r.filter(d=>d.cat=="Motorcycle").length})</td><td>${(acc(r,"old")*100).toFixed(0)}%</td><td>${(acc(r,"new")*100).toFixed(0)}%</td></tr>`}
+ return h+"</table>"}
+function stats(f){
+ const base=DATA.filter(d=>d.set==f.set&&(!f.cat||d.cat==f.cat)&&d.score>=f.smin&&d.score<=f.smax&&area(d)>=f.amin&&area(d)<=f.amax);
+ $("#cms").innerHTML=cmHtml(base,"old","old model (trained on 40 crops)")+cmHtml(base,"new","new model (trained on curated)")+(f.set=="curated"?'<div class="mut">new model is evaluated on its own training data here</div>':"");
+ $("#byscore").innerHTML=binTable(base,[0,.5,.6,.7,.8,.85,.9,1.01],"score");
+ const A=base.map(area).sort((a,b)=>a-b);const q=[0,.25,.5,.75,1].map(p=>Math.round(A[Math.min(A.length-1,Math.floor(p*A.length))]||0));q[4]+=1;
+ $("#byarea").innerHTML=A.length?binTable(base,q,"area"):""}
+function draw(){
+ $("#n").textContent=`${view.length} objects · acc(${$("#model").value}) ${(acc(view,$("#model").value)*100||0).toFixed(1)}%`;
+ const m=$("#model").value,g=$("#grid");g.textContent="";
+ view.slice(page*PER,(page+1)*PER).forEach(d=>{
+  const ok=predOf(d,m)==d.cat,p=pm(d,m),e=document.createElement("div");e.className="c "+(ok?"okk":"err");
+  e.innerHTML=`<div class="im"><img loading="lazy" src="/inspect/thumbs/${d.set[0]}_${d.id}.jpg"></div>
+  <div class="t"><span class="tag ${d.cat[0]}">${d.cat}</span> ${ok?"✔":"✘ → "+predOf(d,m)}<br>P(M)=${p.toFixed(2)} · score ${d.score}<br><span class="mut">${d.w}×${d.h}px</span></div>`;
+  e.onclick=()=>show(d);g.appendChild(e)});
+ const pages=Math.max(1,Math.ceil(view.length/PER));
+ $("#pager").innerHTML=`<button id="pv">‹ prev</button><span>page ${page+1} / ${pages}</span><button id="nx">next ›</button>`;
+ $("#pv").onclick=()=>{if(page>0){page--;draw();scrollTo(0,0)}};$("#nx").onclick=()=>{if(page<pages-1){page++;draw();scrollTo(0,0)}}}
+function show(d){
+ const row=(n,p)=>`<div>${n}: P(Motorcycle) ${p.toFixed(3)} → <b>${p>=.5?"Motorcycle":"Rickshaw"}</b> ${(p>=.5?"Motorcycle":"Rickshaw")==d.cat?"✔":"✘"}</div><div class="bar"><i style="width:${p*100}%"></i></div>`;
+ $("#mbox").innerHTML=`<img src="/inspect/thumbs/${d.set[0]}_${d.id}.jpg" style="image-rendering:auto"><h2 style="margin-top:8px">${d.id} <span class="tag ${d.cat[0]}">${d.cat}</span></h2>
+ ${row("old model",d.p_old)}${row("new model",d.p_new)}
+ <div class="mut">detection score ${d.score} · box ${d.w}×${d.h}px (${area(d)} px²)<br>frame ${d.file}<br>bbox [x,y,w,h] ${JSON.stringify(d.bbox)}${d.set=="curated"?"<br>curated set: new model saw this during training":""}</div>
+ <div style="margin-top:10px"><button onclick="$('#modal').style.display='none'">Close</button></div>`;
+ $("#modal").style.display="flex"}
+$("#modal").onclick=e=>{if(e.target.id=="modal")e.target.style.display="none"};
+["set","cat","model","out","pred","smin","smax","amin","amax","sort"].forEach(i=>$("#"+i).addEventListener("change",filt));
+fetch("/inspect/data.json").then(r=>r.json()).then(j=>{DATA=j;filt()});
+</script></body></html>

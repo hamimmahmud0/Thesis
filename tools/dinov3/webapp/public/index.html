@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Select objects to drop</title>
+<style>
+:root{--bg:#111;--card:#1c1c1c;--fg:#eee;--mut:#999;--acc:#ffeb3b;--bad:#e53935}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:14px system-ui,sans-serif}
+header{position:sticky;top:0;z-index:5;background:#000d;backdrop-filter:blur(6px);padding:10px 12px;border-bottom:1px solid #333}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button,input{font:inherit;border-radius:6px;border:1px solid #444;background:#222;color:var(--fg);padding:6px 10px}
+button{cursor:pointer}button.on{background:var(--acc);color:#000;border-color:var(--acc)}
+button.go{background:#2e7d32;border-color:#2e7d32;font-weight:600}button:disabled{opacity:.5}
+input{width:230px}.sp{flex:1}.mut{color:var(--mut)}
+#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;padding:12px}
+.c{position:relative;background:var(--card);border:2px solid transparent;border-radius:8px;cursor:pointer;aspect-ratio:1;display:flex;align-items:center;justify-content:center;overflow:hidden;user-select:none}
+.c img{max-width:100%;max-height:100%;image-rendering:auto}
+.c .id{position:absolute;top:0;left:0;background:#000;color:var(--acc);font-weight:700;padding:1px 6px;border-bottom-right-radius:6px}
+.c .sc{position:absolute;bottom:2px;left:4px;font-size:11px;text-shadow:0 0 3px #000}
+.c .z{position:absolute;top:2px;right:2px;background:#000a;border:0;padding:0 6px;font-size:15px}
+.c.drop{border-color:var(--bad)}.c.drop img{opacity:.25}
+.c.drop::after{content:"✕";position:absolute;color:var(--bad);font-size:60px;font-weight:700}
+#modal{position:fixed;inset:0;background:#000d;display:none;align-items:center;justify-content:center;flex-direction:column;z-index:9;gap:10px;padding:16px;text-align:center}
+#modal img{max-width:92vw;max-height:70vh;image-rendering:auto;background:#222}
+#toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#333;padding:10px 16px;border-radius:8px;display:none;z-index:10}
+</style></head><body>
+<header>
+ <div class="row">
+  <button id="tR" class="on">Rickshaw</button><button id="tM">Motorcycle</button>
+  <button id="fAll" class="on">All</button><button id="fDrop">Dropped only</button>
+  <span class="sp"></span>
+  <span id="count" class="mut"></span>
+ </div>
+ <div class="row" style="margin-top:8px">
+  <input id="ids" placeholder="Type IDs: R007 R031 M012">
+  <button id="add">Add</button><button id="clear">Clear all</button>
+  <span class="sp"></span>
+  <input id="code" placeholder="access code (if asked)" style="width:150px;display:none">
+  <button id="submit" class="go">Submit drop list</button>
+ </div>
+</header>
+<div id="grid"></div>
+<div id="modal"><img id="mimg"><div id="mcap"></div><div class="row"><button id="mtog">Toggle drop</button><button id="mclose">Close</button></div></div>
+<div id="toast"></div>
+<script>
+const $=s=>document.querySelector(s);
+let items=[],cat="R",only=false,drop=new Set(),cur=null;
+try{drop=new Set(JSON.parse(localStorage.getItem("drop")||"[]"))}catch{}
+const save=()=>{try{localStorage.setItem("drop",JSON.stringify([...drop]))}catch{}};
+const toast=t=>{const e=$("#toast");e.textContent=t;e.style.display="block";clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display="none",3500)};
+function counts(){const r=[...drop].filter(i=>i[0]=="R").length,m=drop.size-r;
+ $("#count").textContent=`Rickshaw: drop ${r} / keep ${100-r}  ·  Motorcycle: drop ${m} / keep ${100-m}`}
+function toggle(id){drop.has(id)?drop.delete(id):drop.add(id);save();render()}
+function render(){
+ const g=$("#grid");g.textContent="";
+ for(const it of items){ if(it.id[0]!=cat||(only&&!drop.has(it.id)))continue;
+  const d=document.createElement("div");d.className="c"+(drop.has(it.id)?" drop":"");
+  d.innerHTML=`<img loading="lazy" src="crops/${it.id}.png" alt="${it.id}"><span class="id">${it.id}</span><span class="sc">${it.score}</span><button class="z" title="enlarge">⤢</button>`;
+  d.onclick=e=>{if(e.target.classList.contains("z")){e.stopPropagation();openM(it)}else toggle(it.id)};
+  g.appendChild(d)}
+ $("#tR").classList.toggle("on",cat=="R");$("#tM").classList.toggle("on",cat=="M");
+ $("#fAll").classList.toggle("on",!only);$("#fDrop").classList.toggle("on",only);counts()}
+function openM(it){cur=it;$("#mimg").src=`crops/${it.id}.png`;$("#mcap").textContent=`${it.id} · ${it.cat} · score ${it.score} · ${it.file}`;$("#modal").style.display="flex"}
+$("#mclose").onclick=()=>$("#modal").style.display="none";
+$("#mtog").onclick=()=>{toggle(cur.id);$("#modal").style.display="none"};
+$("#tR").onclick=()=>{cat="R";render()};$("#tM").onclick=()=>{cat="M";render()};
+$("#fAll").onclick=()=>{only=false;render()};$("#fDrop").onclick=()=>{only=true;render()};
+$("#add").onclick=()=>{const ids=($("#ids").value.toUpperCase().match(/[RM]\d{1,3}/g)||[]).map(s=>s[0]+s.slice(1).padStart(3,"0"));
+ const ok=ids.filter(i=>items.some(x=>x.id==i));ok.forEach(i=>drop.add(i));save();$("#ids").value="";render();toast(`Added ${ok.length} of ${ids.length}`)};
+$("#clear").onclick=()=>{if(confirm("Clear all drops?")){drop.clear();save();render()}};
+$("#submit").onclick=async()=>{
+ if(!confirm(`Submit ${drop.size} object(s) to drop?`))return;
+ const b=$("#submit");b.disabled=true;
+ try{const r=await fetch("/api/submit",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({dropped:[...drop],code:$("#code").value})});
+  const j=await r.json();
+  if(r.ok)toast(`Submitted ${j.dropped} drops ✔ (sent to Telegram)`);
+  else{if(r.status==403)$("#code").style.display="";toast("Failed: "+(j.error||r.status))}
+ }catch(e){toast("Network error")}b.disabled=false};
+fetch("selection.json").then(r=>r.json()).then(j=>{items=j;render()});
+</script></body></html>

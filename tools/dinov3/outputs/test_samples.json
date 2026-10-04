@@ -1,0 +1,262 @@
+[
+ {
+  "ann_id": 11266,
+  "file": "DJI_0103_frame_0021.png",
+  "cat": "Motorcycle",
+  "score": 0.9126,
+  "tag": "test_Motorcycle_00",
+  "bbox": [
+   1253,
+   638,
+   110,
+   33
+  ]
+ },
+ {
+  "ann_id": 5474,
+  "file": "DJI_0102_frame_0036.png",
+  "cat": "Motorcycle",
+  "score": 0.9097,
+  "tag": "test_Motorcycle_01",
+  "bbox": [
+   358,
+   1299,
+   100,
+   39
+  ]
+ },
+ {
+  "ann_id": 12618,
+  "file": "DJI_0103_frame_0028.png",
+  "cat": "Motorcycle",
+  "score": 0.9077,
+  "tag": "test_Motorcycle_02",
+  "bbox": [
+   2007,
+   1290,
+   76,
+   47
+  ]
+ },
+ {
+  "ann_id": 10020,
+  "file": "DJI_0103_frame_0014.png",
+  "cat": "Motorcycle",
+  "score": 0.9082,
+  "tag": "test_Motorcycle_03",
+  "bbox": [
+   2061,
+   1408,
+   76,
+   46
+  ]
+ },
+ {
+  "ann_id": 3192,
+  "file": "DJI_0102_frame_0019.png",
+  "cat": "Motorcycle",
+  "score": 0.9082,
+  "tag": "test_Motorcycle_04",
+  "bbox": [
+   376,
+   1366,
+   95,
+   66
+  ]
+ },
+ {
+  "ann_id": 2740,
+  "file": "DJI_0102_frame_0016.png",
+  "cat": "Motorcycle",
+  "score": 0.916,
+  "tag": "test_Motorcycle_05",
+  "bbox": [
+   364,
+   1313,
+   100,
+   39
+  ]
+ },
+ {
+  "ann_id": 19692,
+  "file": "DJI_0103_frame_0063.png",
+  "cat": "Motorcycle",
+  "score": 0.9067,
+  "tag": "test_Motorcycle_06",
+  "bbox": [
+   2021,
+   1390,
+   75,
+   48
+  ]
+ },
+ {
+  "ann_id": 2321,
+  "file": "DJI_0102_frame_0013.png",
+  "cat": "Motorcycle",
+  "score": 0.9155,
+  "tag": "test_Motorcycle_07",
+  "bbox": [
+   347,
+   1298,
+   100,
+   39
+  ]
+ },
+ {
+  "ann_id": 16371,
+  "file": "DJI_0103_frame_0048.png",
+  "cat": "Motorcycle",
+  "score": 0.9111,
+  "tag": "test_Motorcycle_08",
+  "bbox": [
+   2031,
+   1347,
+   78,
+   48
+  ]
+ },
+ {
+  "ann_id": 217,
+  "file": "DJI_0102_frame_0002.png",
+  "cat": "Motorcycle",
+  "score": 0.9111,
+  "tag": "test_Motorcycle_09",
+  "bbox": [
+   2019,
+   1321,
+   77,
+   47
+  ]
+ },
+ {
+  "ann_id": 10201,
+  "file": "DJI_0103_frame_0015.png",
+  "cat": "Rickshaw",
+  "score": 0.9053,
+  "tag": "test_Rickshaw_00",
+  "bbox": [
+   3679,
+   1001,
+   113,
+   97
+  ]
+ },
+ {
+  "ann_id": 16373,
+  "file": "DJI_0103_frame_0048.png",
+  "cat": "Rickshaw",
+  "score": 0.9092,
+  "tag": "test_Rickshaw_01",
+  "bbox": [
+   3579,
+   1037,
+   127,
+   104
+  ]
+ },
+ {
+  "ann_id": 18148,
+  "file": "DJI_0103_frame_0056.png",
+  "cat": "Rickshaw",
+  "score": 0.915,
+  "tag": "test_Rickshaw_02",
+  "bbox": [
+   3717,
+   643,
+   95,
+   110
+  ]
+ },
+ {
+  "ann_id": 2739,
+  "file": "DJI_0102_frame_0016.png",
+  "cat": "Rickshaw",
+  "score": 0.9224,
+  "tag": "test_Rickshaw_03",
+  "bbox": [
+   2685,
+   190,
+   73,
+   159
+  ]
+ },
+ {
+  "ann_id": 11268,
+  "file": "DJI_0103_frame_0021.png",
+  "cat": "Rickshaw",
+  "score": 0.9048,
+  "tag": "test_Rickshaw_04",
+  "bbox": [
+   3596,
+   817,
+   116,
+   87
+  ]
+ },
+ {
+  "ann_id": 4175,
+  "file": "DJI_0102_frame_0026.png",
+  "cat": "Rickshaw",
+  "score": 0.9478,
+  "tag": "test_Rickshaw_05",
+  "bbox": [
+   2719,
+   241,
+   105,
+   140
+  ]
+ },
+ {
+  "ann_id": 220,
+  "file": "DJI_0102_frame_0002.png",
+  "cat": "Rickshaw",
+  "score": 0.9009,
+  "tag": "test_Rickshaw_06",
+  "bbox": [
+   3241,
+   1287,
+   128,
+   57
+  ]
+ },
+ {
+  "ann_id": 13555,
+  "file": "DJI_0103_frame_0033.png",
+  "cat": "Rickshaw",
+  "score": 0.9082,
+  "tag": "test_Rickshaw_07",
+  "bbox": [
+   3333,
+   1377,
+   106,
+   105
+  ]
+ },
+ {
+  "ann_id": 17665,
+  "file": "DJI_0103_frame_0054.png",
+  "cat": "Rickshaw",
+  "score": 0.9111,
+  "tag": "test_Rickshaw_08",
+  "bbox": [
+   2848,
+   1395,
+   125,
+   64
+  ]
+ },
+ {
+  "ann_id": 19029,
+  "file": "DJI_0103_frame_0060.png",
+  "cat": "Rickshaw",
+  "score": 0.9038,
+  "tag": "test_Rickshaw_09",
+  "bbox": [
+   2838,
+   1198,
+   84,
+   73
+  ]
+ }
+]
