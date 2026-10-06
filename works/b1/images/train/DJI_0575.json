@@ -1,0 +1,1212 @@
+{
+  "version": "4.1.0",
+  "flags": {},
+  "checked": false,
+  "shapes": [
+    {
+      "direction": 4.694044175346898,
+      "label": "MotorCycle",
+      "score": null,
+      "points": [
+        [
+          1917.928,
+          2176.2690000000002
+        ],
+        [
+          1916.972,
+          2124.162
+        ],
+        [
+          1940.408,
+          2123.7329999999997
+        ],
+        [
+          1941.36,
+          2175.84
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": []
+    },
+    {
+      "direction": 4.643305593814505,
+      "label": "MotorCycle",
+      "score": null,
+      "points": [
+        [
+          1912.28,
+          2097.705
+        ],
+        [
+          1907.6960000000001,
+          2031.456
+        ],
+        [
+          1937.72,
+          2029.3799999999999
+        ],
+        [
+          1942.304,
+          2095.626
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": []
+    },
+    {
+      "direction": 6.202768763650909,
+      "label": "Private-Passenger-Car",
+      "score": null,
+      "points": [
+        [
+          1678.976453185856,
+          677.2747484426025
+        ],
+        [
+          1725.9110759857272,
+          673.4922712542452
+        ],
+        [
+          1733.937951179007,
+          773.0932313387784
+        ],
+        [
+          1687.0033283791363,
+          776.8757085271354
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": []
+    },
+    {
+      "direction": 4.644397801535943,
+      "label": "Auto3WCargo",
+      "score": null,
+      "points": [
+        [
+          1812.176,
+          1898.8410000000001
+        ],
+        [
+          1807.66,
+          1832.523
+        ],
+        [
+          1839.9080000000001,
+          1830.327
+        ],
+        [
+          1844.424,
+          1896.645
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": []
+    },
+    {
+      "direction": 0.8797315841135349,
+      "label": "Non-Motorized-Van",
+      "score": null,
+      "points": [
+        [
+          1690.1992962382626,
+          2207.76494171397
+        ],
+        [
+          1717.359375,
+          2240.6015625
+        ],
+        [
+          1655.0070317868285,
+          2292.174912988278
+        ],
+        [
+          1627.8469530250914,
+          2259.338292202248
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": []
+    },
+    {
+      "label": "Private-Passenger-Car",
+      "score": null,
+      "points": [
+        [
+          1635.7904877350475,
+          59.43451768717754
+        ],
+        [
+          1671.9384448720193,
+          58.211970010963995
+        ],
+        [
+          1674.46875,
+          133.02734375
+        ],
+        [
+          1638.3207928630281,
+          134.2498914262135
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": [],
+      "direction": 6.249377535981729
+    },
+    {
+      "label": "Private-Passenger-Car",
+      "score": null,
+      "points": [
+        [
+          1706.26171875,
+          210.546875
+        ],
+        [
+          1745.001151616213,
+          206.5613695357493
+        ],
+        [
+          1753.8557079812615,
+          292.6283677975074
+        ],
+        [
+          1715.1162751150482,
+          296.6138732617581
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": [],
+      "direction": 6.18066617886555
+    },
+    {
+      "label": "Private-Passenger-Car",
+      "score": null,
+      "points": [
+        [
+          1691.6015625,
+          128.6328125
+        ],
+        [
+          1718.175836865545,
+          125.8988562219578
+        ],
+        [
+          1723.58984375,
+          178.5234375
+        ],
+        [
+          1697.0155693844542,
+          181.2573937780422
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": [],
+      "direction": 6.18066617886555
+    },
+    {
+      "label": "Private-Passenger-Car",
+      "score": null,
+      "points": [
+        [
+          1667.3175343984747,
+          1.8816509069121814
+        ],
+        [
+          1691.1249076463857,
+          -3.059590000205965
+        ],
+        [
+          1701.2578125,
+          45.76171875
+        ],
+        [
+          1677.4504392520887,
+          50.70295965711814
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": [],
+      "direction": 6.078539954919263
+    },
+    {
+      "label": "MotorCycle",
+      "score": null,
+      "points": [
+        [
+          1698.8787137321906,
+          52.01949819220499
+        ],
+        [
+          1714.133882114691,
+          50.56639189209392
+        ],
+        [
+          1717.9142550178094,
+          90.253939307795
+        ],
+        [
+          1702.659086635309,
+          91.70704560790608
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": [],
+      "direction": 6.188218456787402
+    },
+    {
+      "label": "Private-Passenger-Car",
+      "score": null,
+      "points": [
+        [
+          1715.62109375,
+          -8.27734375
+        ],
+        [
+          1751.0221019234953,
+          -19.84280076357271
+        ],
+        [
+          1771.90625,
+          44.08203125
+        ],
+        [
+          1736.5052418265047,
+          55.647488263572676
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": [],
+      "direction": 5.967417921754009
+    },
+    {
+      "label": "MotorCycle",
+      "score": null,
+      "points": [
+        [
+          1650.3501230423965,
+          211.5554229725843
+        ],
+        [
+          1651.8602593613928,
+          192.36611718025273
+        ],
+        [
+          1693.3968550689963,
+          195.63491295766843
+        ],
+        [
+          1691.88671875,
+          214.82421875
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": [],
+      "direction": 4.790923886900867
+    },
+    {
+      "label": "AutoRicksaw",
+      "score": null,
+      "points": [
+        [
+          1636.43359375,
+          151.3203125
+        ],
+        [
+          1660.2713031247663,
+          137.02999180489218
+        ],
+        [
+          1677.72265625,
+          166.140625
+        ],
+        [
+          1653.8849468752337,
+          180.4309456951077
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": [],
+      "direction": 5.743145449215705
+    },
+    {
+      "label": "AutoRicksaw",
+      "score": null,
+      "points": [
+        [
+          1684.5724017064065,
+          521.3941629297675
+        ],
+        [
+          1712.3905436262185,
+          517.7286938797356
+        ],
+        [
+          1718.9080670435935,
+          567.1917745702325
+        ],
+        [
+          1691.0899251237815,
+          570.8572436202644
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": [],
+      "direction": 6.152174620021306
+    },
+    {
+      "label": "AutoRicksaw",
+      "score": null,
+      "points": [
+        [
+          1674.317470962782,
+          473.8322911551146
+        ],
+        [
+          1697.1105675758406,
+          468.9015993288646
+        ],
+        [
+          1707.846591537218,
+          518.5309900948856
+        ],
+        [
+          1685.0534949241594,
+          523.4616819211353
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": [],
+      "direction": 6.070144073952645
+    },
+    {
+      "label": "Non-Motorized-Van",
+      "score": null,
+      "points": [
+        [
+          1696.5289240858513,
+          465.5006239717228
+        ],
+        [
+          1665.0235020932726,
+          467.6990513518258
+        ],
+        [
+          1660.8890446641487,
+          408.4485947782772
+        ],
+        [
+          1692.3944666567274,
+          406.2501673981742
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": [],
+      "direction": 3.0719262448283535
+    },
+    {
+      "label": "Non-Motorized-Van",
+      "score": null,
+      "points": [
+        [
+          1706.6385540051074,
+          1026.1630350408054
+        ],
+        [
+          1743.399361727215,
+          1025.1993332276534
+        ],
+        [
+          1745.4161334948926,
+          1102.1299337091946
+        ],
+        [
+          1708.655325772785,
+          1103.0936355223466
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": [],
+      "direction": 6.256975841295684
+    },
+    {
+      "label": "CNG",
+      "score": null,
+      "points": [
+        [
+          1732.7470149092658,
+          1317.284198123675
+        ],
+        [
+          1772.4177453863877,
+          1314.1675484240716
+        ],
+        [
+          1777.5615788407342,
+          1379.641583126325
+        ],
+        [
+          1737.8908483636123,
+          1382.7582328259284
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": [],
+      "direction": 6.204783392875781
+    },
+    {
+      "label": "MotorCycle",
+      "score": null,
+      "points": [
+        [
+          1822.8684386731618,
+          1272.696758384237
+        ],
+        [
+          1844.9248985489364,
+          1269.5674417968628
+        ],
+        [
+          1851.8776550768382,
+          1318.572772865763
+        ],
+        [
+          1829.8211952010636,
+          1321.7020894531372
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": [],
+      "direction": 6.1422483805770085
+    },
+    {
+      "label": "Private-Passenger-Car",
+      "score": null,
+      "points": [
+        [
+          1691.6015625,
+          128.6328125
+        ],
+        [
+          1718.175836865545,
+          125.8988562219578
+        ],
+        [
+          1723.58984375,
+          178.5234375
+        ],
+        [
+          1697.0155693844542,
+          181.2573937780422
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": [],
+      "direction": 6.18066617886555
+    },
+    {
+      "label": "Private-Passenger-Car",
+      "score": null,
+      "points": [
+        [
+          1691.6015625,
+          128.6328125
+        ],
+        [
+          1718.175836865545,
+          125.8988562219578
+        ],
+        [
+          1723.58984375,
+          178.5234375
+        ],
+        [
+          1697.0155693844542,
+          181.2573937780422
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": [],
+      "direction": 6.18066617886555
+    },
+    {
+      "label": "Private-Passenger-Car",
+      "score": null,
+      "points": [
+        [
+          1691.6015625,
+          128.6328125
+        ],
+        [
+          1718.175836865545,
+          125.8988562219578
+        ],
+        [
+          1723.58984375,
+          178.5234375
+        ],
+        [
+          1697.0155693844542,
+          181.2573937780422
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": [],
+      "direction": 6.18066617886555
+    },
+    {
+      "label": "Private-Passenger-Car",
+      "score": null,
+      "points": [
+        [
+          1691.6015625,
+          128.6328125
+        ],
+        [
+          1718.175836865545,
+          125.8988562219578
+        ],
+        [
+          1723.58984375,
+          178.5234375
+        ],
+        [
+          1697.0155693844542,
+          181.2573937780422
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": [],
+      "direction": 6.18066617886555
+    },
+    {
+      "label": "Private-Passenger-Car",
+      "score": null,
+      "points": [
+        [
+          1691.6015625,
+          128.6328125
+        ],
+        [
+          1718.175836865545,
+          125.8988562219578
+        ],
+        [
+          1723.58984375,
+          178.5234375
+        ],
+        [
+          1697.0155693844542,
+          181.2573937780422
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": [],
+      "direction": 6.18066617886555
+    },
+    {
+      "label": "Private-Passenger-Car",
+      "score": null,
+      "points": [
+        [
+          1691.6015625,
+          128.6328125
+        ],
+        [
+          1718.175836865545,
+          125.8988562219578
+        ],
+        [
+          1723.58984375,
+          178.5234375
+        ],
+        [
+          1697.0155693844542,
+          181.2573937780422
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": [],
+      "direction": 6.18066617886555
+    },
+    {
+      "label": "MotorCycle",
+      "score": null,
+      "points": [
+        [
+          1874.1472831817075,
+          1324.3007450624748
+        ],
+        [
+          1877.8935242822859,
+          1302.3406512063002
+        ],
+        [
+          1926.6847480682925,
+          1310.6640986875252
+        ],
+        [
+          1922.9385069677141,
+          1332.6241925436998
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": [],
+      "direction": 4.8813555489857485
+    },
+    {
+      "label": "Non-Motorized-Van",
+      "score": null,
+      "points": [
+        [
+          1708.5563451837081,
+          1390.8516879062804
+        ],
+        [
+          1747.3690421247284,
+          1385.1685759303552
+        ],
+        [
+          1756.8733423162919,
+          1450.0779995937196
+        ],
+        [
+          1718.0606453752716,
+          1455.7611115696448
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": [],
+      "direction": 6.1377944500996255
+    },
+    {
+      "label": "Non-Motorized-Van",
+      "score": null,
+      "points": [
+        [
+          1712.9302837029247,
+          1459.7328392848706
+        ],
+        [
+          1751.8231184711312,
+          1453.2010853134643
+        ],
+        [
+          1763.2103412970753,
+          1521.0054419651294
+        ],
+        [
+          1724.3175065288688,
+          1527.5371959365357
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": [],
+      "direction": 6.116795684152407
+    },
+    {
+      "label": "CNG",
+      "score": null,
+      "points": [
+        [
+          1809.0016909427725,
+          1487.8828621446871
+        ],
+        [
+          1852.9519920457221,
+          1496.506939620731
+        ],
+        [
+          1838.9533914641888,
+          1567.8470582928237
+        ],
+        [
+          1795.0030903612396,
+          1559.2229808167801
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": [],
+      "direction": 0.19376158962132228
+    },
+    {
+      "label": "Non-Motorized-Van",
+      "score": null,
+      "points": [
+        [
+          2119.9375,
+          1730.53125
+        ],
+        [
+          2095.407489972992,
+          1757.2817152532368
+        ],
+        [
+          2028.4946340795661,
+          1695.923043153026
+        ],
+        [
+          2053.0246441065733,
+          1669.1725778997888
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": [],
+      "direction": 2.312921313477193
+    },
+    {
+      "label": "Non-Motorized-Van",
+      "score": null,
+      "points": [
+        [
+          1834.2689112744927,
+          2139.6071405603248
+        ],
+        [
+          1872.6171875,
+          2135.54296875
+        ],
+        [
+          1880.4992049379373,
+          2209.9152630404155
+        ],
+        [
+          1842.1509287124304,
+          2213.9794348507403
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": [],
+      "direction": 6.177598880855269
+    },
+    {
+      "label": "AutoRicksaw",
+      "score": null,
+      "points": [
+        [
+          1912.1072491166494,
+          2275.406150930551
+        ],
+        [
+          1875.328125,
+          2270.234375
+        ],
+        [
+          1886.8433434042495,
+          2188.343811176773
+        ],
+        [
+          1923.6224675208985,
+          2193.515587107324
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": [],
+      "direction": 3.281293838569568
+    },
+    {
+      "label": "Truck",
+      "score": null,
+      "points": [
+        [
+          2087.953131691498,
+          2590.5522183680073
+        ],
+        [
+          2031.578125,
+          2610.6640625
+        ],
+        [
+          1974.936329375239,
+          2451.8928634787794
+        ],
+        [
+          2031.3113360667373,
+          2431.7810193467867
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": [],
+      "direction": 2.7989162208790717
+    },
+    {
+      "label": "AutoRicksaw",
+      "score": null,
+      "points": [
+        [
+          2013.05859375,
+          2692.08203125
+        ],
+        [
+          1978.3737583666032,
+          2701.2668775443376
+        ],
+        [
+          1954.4936429286677,
+          2611.088136783926
+        ],
+        [
+          1989.178478312065,
+          2601.9032904895885
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": [],
+      "direction": 2.8827256756109483
+    },
+    {
+      "label": "Pickup",
+      "score": null,
+      "points": [
+        [
+          1324.81077980042,
+          2674.558590833437
+        ],
+        [
+          1279.5078125,
+          2628.44921875
+        ],
+        [
+          1410.9392201995802,
+          2499.3164091665635
+        ],
+        [
+          1456.2421875,
+          2545.42578125
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": [],
+      "direction": 3.9358122066489916
+    },
+    {
+      "label": "AutoRicksaw",
+      "score": null,
+      "points": [
+        [
+          1392.0916874666066,
+          2469.4543363971006
+        ],
+        [
+          1414.77734375,
+          2499.00390625
+        ],
+        [
+          1343.6465937833937,
+          2553.6120698528994
+        ],
+        [
+          1320.9609375,
+          2524.0625
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": [],
+      "direction": 0.9160535086443663
+    },
+    {
+      "label": "Non-Motorized-Van",
+      "score": null,
+      "points": [
+        [
+          1309.734526026544,
+          2495.7863777753087
+        ],
+        [
+          1333.30078125,
+          2529.84375
+        ],
+        [
+          1247.992036473456,
+          2588.873778474691
+        ],
+        [
+          1224.42578125,
+          2554.81640625
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": [],
+      "direction": 0.9654884105002978
+    },
+    {
+      "label": "MotorCycle",
+      "score": null,
+      "points": [
+        [
+          1822.8684386731618,
+          1272.696758384237
+        ],
+        [
+          1844.9248985489364,
+          1269.5674417968628
+        ],
+        [
+          1851.8776550768382,
+          1318.572772865763
+        ],
+        [
+          1829.8211952010636,
+          1321.7020894531372
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": [],
+      "direction": 6.1422483805770085
+    },
+    {
+      "label": "Non-Motorized-Van",
+      "score": null,
+      "points": [
+        [
+          995.3103362117298,
+          2729.0329055530865
+        ],
+        [
+          1018.8765914351866,
+          2763.090277777778
+        ],
+        [
+          933.5678466586412,
+          2822.1203062524687
+        ],
+        [
+          910.0015914351852,
+          2788.062934027778
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": [],
+      "direction": 0.9654884105002978
+    },
+    {
+      "label": "Non-Motorized-Van",
+      "score": null,
+      "points": [
+        [
+          862.424425690702,
+          2815.597302864203
+        ],
+        [
+          890.402199074074,
+          2856.0300925925926
+        ],
+        [
+          823.4076055592977,
+          2902.3875061635745
+        ],
+        [
+          795.4298321759259,
+          2861.9547164351848
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": [],
+      "direction": 0.9654884105002978
+    }
+  ],
+  "imagePath": "DJI_0575.JPG",
+  "imageData": null,
+  "imageHeight": 3000,
+  "imageWidth": 4000,
+  "description": ""
+}

@@ -1,0 +1,291 @@
+{
+  "version": "4.1.0",
+  "flags": {},
+  "checked": false,
+  "shapes": [
+    {
+      "label": "SUV",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2274.432,
+          1859.55
+        ],
+        [
+          2272.32,
+          1720.5059999999999
+        ],
+        [
+          2330.7760000000003,
+          1719.6149999999998
+        ],
+        [
+          2332.888,
+          1858.662
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.697200711949379,
+      "attributes": {}
+    },
+    {
+      "label": "Auto3WCargo",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2317.808,
+          2713.305
+        ],
+        [
+          2318.1639999999998,
+          2611.548
+        ],
+        [
+          2360.3160000000003,
+          2611.695
+        ],
+        [
+          2359.9640000000004,
+          2713.4519999999998
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.71588749692472,
+      "attributes": {}
+    },
+    {
+      "label": "Auto3WCargo",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2207.872,
+          611.385
+        ],
+        [
+          2189.64,
+          555.186
+        ],
+        [
+          2225.464,
+          543.564
+        ],
+        [
+          2243.696,
+          599.7629999999999
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.39868304206596,
+      "attributes": {}
+    },
+    {
+      "label": "Auto3WCargo",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2211.7,
+          236.277
+        ],
+        [
+          2212.2920000000004,
+          167.595
+        ],
+        [
+          2246.632,
+          167.889
+        ],
+        [
+          2246.04,
+          236.571
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.72100820143013,
+      "attributes": {}
+    },
+    {
+      "label": "Auto3WCargo",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2366.0040000000004,
+          2396.466
+        ],
+        [
+          2361.404,
+          2320.236
+        ],
+        [
+          2396.496,
+          2318.118
+        ],
+        [
+          2401.096,
+          2394.3450000000003
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.65211836847609,
+      "attributes": {}
+    },
+    {
+      "label": "Auto3WCargo",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2261.1400000000003,
+          1557.441
+        ],
+        [
+          2254.0840000000003,
+          1488.531
+        ],
+        [
+          2296.148,
+          1484.223
+        ],
+        [
+          2303.208,
+          1553.1359999999997
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.610350173918984,
+      "attributes": {}
+    },
+    {
+      "label": "Auto3WCargo",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2204.268,
+          756.1709999999999
+        ],
+        [
+          2202.708,
+          693.7560000000001
+        ],
+        [
+          2241.564,
+          692.787
+        ],
+        [
+          2243.124,
+          755.202
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.687400191185023,
+      "attributes": {}
+    },
+    {
+      "label": "Container",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          3938.284,
+          1428.69
+        ],
+        [
+          3999.416,
+          1186.815
+        ],
+        [
+          4000.0,
+          1202.562
+        ],
+        [
+          4000.0,
+          1444.434
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.959946791464766,
+      "attributes": {}
+    },
+    {
+      "label": "MotorCycle",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2221.672,
+          978.159
+        ],
+        [
+          2219.236,
+          916.653
+        ],
+        [
+          2246.036,
+          915.591
+        ],
+        [
+          2248.476,
+          977.0970000000001
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.672803777760786,
+      "attributes": {}
+    },
+    {
+      "label": "MotorCycle",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2309.324,
+          556.1519999999999
+        ],
+        [
+          2299.468,
+          476.289
+        ],
+        [
+          2334.424,
+          471.97499999999997
+        ],
+        [
+          2344.2799999999997,
+          551.838
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.589598507651619,
+      "attributes": {}
+    }
+  ],
+  "imagePath": "DJI_0638.JPG",
+  "imageData": null,
+  "imageHeight": 3000,
+  "imageWidth": 4000
+}

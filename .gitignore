@@ -35,13 +35,27 @@ config.yaml
 *.png
 *.jpeg
 *.jpg
+# upper-case extensions (DJI frames are *.JPG and were not matched above)
+*.PNG
+*.JPEG
+*.JPG
+*.MP4
+*.MOV
+# archives / bundles
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.7z
 
 # --- ML artifacts / checkpoints ---
+# Ignored by default; weights worth keeping are re-included below and stored with git-lfs (see .gitattributes).
 *.pth
 *.pt
 *.onnx
 *.ckpt
 *.safetensors
+!works/**/models/**/*.pt
 
 # --- Stabilize pipeline outputs ---
 tools/stabilize/runs/
@@ -66,6 +80,18 @@ Thumbs.db
 
 # dataset
 dataset/
+# works/b1* (b1, b1.1, b1_small_annotated, b1_labelstudio, ...): the images are ignored by extension above and live in HF buckets /
+# Label Studio; the small label files, X-AnyLabeling json, classes/yaml and Label Studio configs in those folders ARE committed.
+# Bulk regenerable visualisation folders (also *.jpg, ignored above) are listed explicitly in case other extensions appear:
+works/*/viz_*/
 
 # KaggleManager runtime state (contains VM passwords)
 mcps/KaggleManager/state.json
+
+# --- Credentials that must never be committed ---
+ls_refresh.txt
+ls_tok*.txt
+*refresh_token*
+*.pem
+id_rsa*
+id_ed25519*

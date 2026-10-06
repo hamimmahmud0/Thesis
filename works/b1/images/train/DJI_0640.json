@@ -1,0 +1,95 @@
+{
+  "version": "4.1.0",
+  "flags": {},
+  "checked": false,
+  "shapes": [
+    {
+      "label": "MotorCycle",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2428.428,
+          490.626
+        ],
+        [
+          2402.32,
+          416.373
+        ],
+        [
+          2434.072,
+          405.207
+        ],
+        [
+          2460.18,
+          479.46
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.374281749769101,
+      "attributes": {}
+    },
+    {
+      "label": "Bus",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2291.096,
+          2998.413
+        ],
+        [
+          2313.612,
+          2858.283
+        ],
+        [
+          2401.612,
+          2872.422
+        ],
+        [
+          2379.096,
+          3000.0
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.871706583700191,
+      "attributes": {}
+    },
+    {
+      "label": "Container",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          1088.932,
+          2184.4049999999997
+        ],
+        [
+          1183.56,
+          1363.8
+        ],
+        [
+          1433.984,
+          1392.678
+        ],
+        [
+          1339.356,
+          2213.283
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.82719680566529,
+      "attributes": {}
+    }
+  ],
+  "imagePath": "DJI_0640.JPG",
+  "imageData": null,
+  "imageHeight": 3000,
+  "imageWidth": 4000
+}

@@ -225,15 +225,18 @@ python review.py --export-only                # rebuild the crops from saved dec
 | *class key* (`1`, `2`, ... `a`, `b`, ...) | **Change class** to that class (and confirm). Keys are shown in the footer |
 | `X` / `Delete` | **Reject**: leave the object out of the dataset |
 | `F` | **Flag** for later inspection (several objects in one box, inaccurate box, ...) |
+| `R` | **Re-annotate**: open the [box editor](#re-annotate-flagged-or-wrong-detections-box-editor) (fix box and class, one or several objects) |
+| `V` | Open the per-image [viewer](#image-viewer-find-missing-annotations) |
 | `S` | **Skip** for now; it comes back next session |
 | `U` / `Backspace` | **Undo** the last decision |
 | `Tab` / `Shift+Tab` | Jump to the **next / previous class** that still has objects to label |
 | `H` | Toggle **history mode** (see [History](#history-recheck-and-edit-earlier-decisions)) |
-| `Left` / `Right` | *(history mode)* go to the **older / newer** decision |
+| `Left` / `Right` | *(history mode)* go to the **older / newer** decision (`PgUp` / `PgDn` = 10 at a time) |
+| `Tab` / `Shift+Tab` | *(history mode)* cycle the **class filter** |
 | `N` | **New class**: type a name, `Enter` to create it and apply it to this object, `Esc` to cancel |
 | `Q` / `Esc` | Save and quit |
 
-Command keys `c x s u q n f h` are never used as class shortcuts. Class shortcuts are digits first, then letters,
+Command keys `c x s u q n f h r v` are never used as class shortcuts. Class shortcuts are digits first, then letters,
 then `Shift`+letters, so more than 10 classes is fine.
 
 ### History: recheck and edit earlier decisions
@@ -244,7 +247,10 @@ object you have already decided, **newest first when you enter**, and shows its 
 
 | Key | In history mode |
 |---|---|
-| `Left` / `Right` | Step to the older / newer decision (`Home` = oldest, `End` = newest) |
+| `Left` / `Right` | Step to the older / newer decision (`Home` = oldest, `End` = newest, `PgUp` / `PgDn` = 10) |
+| `Tab` / `Shift+Tab` | Next / previous **filter**: `all`, then each class that has decisions, then `[rejected]`, `[flagged]`, `[redrawn]` |
+| `R` | Re-annotate this object in the box editor |
+| `V` | Open the image viewer on this object's image |
 | `Space` / `Enter` / `C` | Set it back to the **predicted** class |
 | class key | **Change** it to that class |
 | `X` / `Delete` | **Reject** it |
@@ -255,13 +261,82 @@ object you have already decided, **newest first when you enter**, and shows its 
 
 - An edit **overwrites the saved decision in place** and you stay on the same object, so you can see the new
   status and keep stepping back. It is saved immediately, like every other decision.
-- `S`, `U` and `Tab` do nothing in history mode (there is nothing to skip, and an edit replaces a decision, so
+- `S`, `U` and `Backspace` do nothing in history mode (there is nothing to skip, and an edit replaces a decision, so
   there is no undo).
 - `--max-per-class` is respected: an object can keep its own class, but you cannot move it into a full class.
 - When the queue runs out (or is already empty) the tool opens history mode instead of closing, so you get a last
   look before quitting. Start in it directly with `python review.py --history`.
 - The crops are rebuilt from the saved decisions when you quit, so edits made here are reflected in
   `cls_dataset/` (an object you moved from `Car` to `Bus` is moved to the `Bus` folder).
+
+#### Check annotations by class
+
+The history filter matches the **decided** class (what ends up in the dataset folder), so it is the way to audit a class:
+
+```bash
+python review.py --recheck Car Bus    # only objects decided as Car or Bus, oldest first
+python review.py --recheck flagged    # also: rejected, redrawn
+```
+
+Inside history mode `Tab` / `Shift+Tab` cycles `all` -> one class at a time -> `[rejected]` / `[flagged]` / `[redrawn]`;
+the purple bar shows `HISTORY 3 / 40 [Car]`. If an edit moves an object out of the current filter (a `Car` you change to
+`Bus`), you jump to the next object that still matches.
+
+### Re-annotate flagged or wrong detections (box editor)
+
+Press **`R`** on any object (queue or history) to open the box editor: a large, zoomed view of the detection.
+The original box is dashed yellow, neighbouring detections thin grey, your boxes coloured by class. Use it when a box
+covers two objects, the box is off, or the class is wrong **and** the box is off. Typical use: `python review.py
+--only-flagged`, press `R` on each flagged object.
+
+| Input | Action |
+|---|---|
+| drag on empty space | draw a new box (new boxes get the last class you picked) |
+| click a box | select it; drag inside = **move**, drag a white handle = **resize** |
+| class key | set the selected box's class |
+| `Delete` / `Backspace` | remove the selected box |
+| `Tab` / `Shift+Tab` | select next / previous box |
+| arrow keys (`Shift` = 10 px) | nudge the selected box |
+| `R` | reset to the single original box |
+| `N` | create a new class |
+| mouse wheel / middle- or right-drag | zoom around the cursor / pan |
+| `Enter` | **save** (no boxes at all = the detection is rejected) |
+| `Esc` | cancel, keep the old decision |
+
+The result is stored as `{"action": "redraw", "boxes": [{"bbox": [x, y, w, h], "class": "Car"}, ...]}` (original image
+pixels). Every box becomes a crop `<image>_<id>_<k>.png` in its class folder and counts toward `--max-per-class`.
+
+### Image viewer: find missing annotations
+
+Press **`V`** (or start with `python review.py --view`) to see **all** boxes of one image at once, so you can spot
+objects that have no box. Boxes are outlined in their class colour once accepted; the legend (right) lets you
+show / hide each status and each class and shows per-image counts:
+
+| Status | Look |
+|---|---|
+| confirmed / class changed / re-annotated / added by you | solid, class colour, class label |
+| not reviewed yet | thin yellow |
+| flagged / rejected | dashed orange / red |
+| ignored (category or filtered by `--min-score` / `--min-size`, e.g. `Vehicle`) | dotted grey |
+| auto-removed pedestrian (`removed_pedestrians.json`) | dotted dark grey, hidden by default |
+
+The ignored and auto-removed boxes are drawn so that an object that is *deliberately* not annotated is not mistaken for
+a missing one.
+
+| Input | Action |
+|---|---|
+| `Left` / `Right` (or `PgUp` / `PgDn`, `Up` / `Down`), `Home` / `End` | previous / next image, first / last |
+| image list, **go to** box (number or part of the file name) | jump to an image; each row shows `accepted/total` and `?n` still to review |
+| mouse wheel / middle- or right-drag | zoom around the cursor / pan |
+| hover | class, score, size of the box under the cursor |
+| click a box | select it; then **class key** = change class, `C` / `Space` = confirm, `X` = reject, `F` = flag, `R` = re-annotate |
+| drag on empty space | draw a box for a **missing object**, then press its **class key** (`Esc` = discard) |
+| `Tab` | hide / show all boxes (look at the bare image) |
+| `V` / `Esc` | back to the review queue; `Q` quits |
+
+Selecting a box you added and pressing `X` deletes it. Added boxes are saved in `<out>/added.json`
+(`{"id": "n1", "image_id", "class", "bbox"}`) and exported as crops `<image>_n1.png` and into
+`corrected_instances.json`; they are an extension, never written into `instances.json`.
 
 **Reject vs `no_vehicle` vs flag**
 
@@ -308,6 +383,8 @@ moved to a free key (the script prints a note). Add a class permanently by putti
 cls_dataset/                       # --out
 ├── decisions.json                 # every decision {annotation_id: {action, class}}  (resume state)
 ├── classes.json                   # classes added at run time with N
+├── added.json                     # objects drawn in the viewer
+├── corrected_instances.json       # COCO file with the verified objects (see below)
 ├── Pedestrian/
 │   └── DJI_0266_merged_frame_0001_27771.png     # <image>_<annotation id>.png
 ├── Car/
@@ -321,6 +398,9 @@ cls_dataset_flagged/               # <out>_flagged, kept OUTSIDE the dataset on 
 
 - `cls_dataset/` can be loaded directly with e.g. `torchvision.datasets.ImageFolder`.
   Flagged crops live in a sibling folder so they are never mistaken for a class.
+- `corrected_instances.json` is rebuilt on every export. It holds the confirmed / re-classed originals (with their
+  segmentation), re-annotated boxes (`"source": "redraw"`, `parent_id` = original id) and added boxes
+  (`"source": "added"`); rejected, flagged and undecided detections are left out. `instances.json` is never modified.
 - Crops are cut from the full-resolution image with 8 px of padding (`--pad`).
 - The export is rebuilt from `decisions.json` every time. Do not hand-edit the class folders. To change a decision,
   re-run the reviewer or edit `decisions.json` and run `--export-only`.
@@ -331,7 +411,8 @@ cls_dataset_flagged/               # <out>_flagged, kept OUTSIDE the dataset on 
 {"27771": {"action": "confirm", "class": "Car"},
  "27772": {"action": "change",  "class": "Truck"},
  "27773": {"action": "reject"},
- "27774": {"action": "flag"}}
+ "27774": {"action": "flag"},
+ "27775": {"action": "redraw", "boxes": [{"bbox": [10, 20, 30, 40], "class": "Car"}]}}
 ```
 
 ---
@@ -350,6 +431,9 @@ cls_dataset_flagged/               # <out>_flagged, kept OUTSIDE the dataset on 
 | `--min-size PX` | `0` | Skip boxes whose shorter side is below `PX` |
 | `--pad PX` | `8` | Extra pixels around the box in exported crops |
 | `--history` | off | Start in history mode (recheck / edit earlier decisions) |
+| `--recheck CLASS...` | off | Start in history mode, filtered to these decided classes (also `rejected`, `flagged`, `redrawn`) |
+| `--view` | off | Start in the per-image viewer |
+| `--ui-scale X` | `1.6` | Size of text and widgets in the box editor and viewer (`1` = small, `2` = very large) |
 | `--only-flagged` | off | Re-review only the objects flagged earlier; a new decision replaces the flag |
 | `--export-only` | off | Rebuild the crops from `decisions.json` and exit (no window) |
 

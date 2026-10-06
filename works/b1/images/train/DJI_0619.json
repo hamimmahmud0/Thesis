@@ -1,0 +1,67 @@
+{
+  "version": "4.1.0",
+  "flags": {},
+  "checked": false,
+  "shapes": [
+    {
+      "label": "Auto3WCargo",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          3141.292,
+          1682.817
+        ],
+        [
+          3143.156,
+          1572.6779999999999
+        ],
+        [
+          3187.876,
+          1573.434
+        ],
+        [
+          3186.0119999999997,
+          1683.573
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.72931143351879,
+      "attributes": {}
+    },
+    {
+      "label": "Auto3WCargo",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2144.6519999999996,
+          933.279
+        ],
+        [
+          2154.732,
+          852.5909999999999
+        ],
+        [
+          2251.1800000000003,
+          864.639
+        ],
+        [
+          2241.104,
+          945.3269999999999
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.836670757769483,
+      "attributes": {}
+    }
+  ],
+  "imagePath": "DJI_0619.JPG",
+  "imageData": null,
+  "imageHeight": 3000,
+  "imageWidth": 4000
+}

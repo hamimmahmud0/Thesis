@@ -15,7 +15,7 @@ from kmgr import accounts, config, events, kaggle_cli, ssh_exec, vm
 
 cfg0 = config.load()
 HOST, PORT = cfg0["server"]["host"], cfg0["server"]["port"]
-ALLOWED = [f"{HOST}:{PORT}", f"127.0.0.1:{PORT}", f"localhost:{PORT}"]
+ALLOWED = [f"{HOST}:{PORT}", f"127.0.0.1:{PORT}", f"localhost:{PORT}", f"kagglemanager:{PORT}", "kagglemanager"]
 mcp = FastMCP(
     "kaggle-vm", host=HOST, port=PORT,
     instructions=("Start disposable Kaggle VMs (GPU T4 or CPU) over SSH to test code. Typical flow: "

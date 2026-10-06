@@ -1,0 +1,10 @@
+# git-lfs: large binary artifacts are stored as LFS pointers so pushes stay under GitHub's 100 MB per-file limit.
+# (Most of these paths are ignored in .gitignore; the ones deliberately re-included there, e.g. works/**/models/**/*.pt, go through LFS.)
+*.pt   filter=lfs diff=lfs merge=lfs -text
+*.pth  filter=lfs diff=lfs merge=lfs -text
+*.onnx filter=lfs diff=lfs merge=lfs -text
+*.ckpt filter=lfs diff=lfs merge=lfs -text
+*.safetensors filter=lfs diff=lfs merge=lfs -text
+*.npz  filter=lfs diff=lfs merge=lfs -text
+*.h5   filter=lfs diff=lfs merge=lfs -text
+*.parquet filter=lfs diff=lfs merge=lfs -text

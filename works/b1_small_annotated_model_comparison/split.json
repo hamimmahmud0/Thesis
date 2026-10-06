@@ -1,0 +1,67 @@
+{
+ "tiles": {
+  "train": 221,
+  "val": 52
+ },
+ "frames": {
+  "train": [
+   "DJI_0568",
+   "DJI_0584",
+   "DJI_0572",
+   "DJI_0575",
+   "DJI_0574",
+   "DJI_0567",
+   "DJI_0570",
+   "DJI_0580",
+   "DJI_0582",
+   "DJI_0577",
+   "DJI_0585",
+   "DJI_0583",
+   "DJI_0566",
+   "DJI_0571",
+   "DJI_0578",
+   "DJI_0581",
+   "DJI_0573",
+   "DJI_0569",
+   "DJI_0579",
+   "DJI_0576"
+  ],
+  "val": [
+   "DJI_0614",
+   "DJI_0615",
+   "DJI_0616"
+  ]
+ },
+ "tile_instances": {
+  "train": {
+   "Truck": 31,
+   "Other": 64,
+   "Rickshaw": 300,
+   "Pedestrian": 603,
+   "Non-Motorized-Van": 173,
+   "Private-Passenger-Car": 193,
+   "Motor-Cycle": 118,
+   "Microbus": 61,
+   "Bus": 14,
+   "Covered-Van": 1,
+   "C.N.G.": 10,
+   "Pick-Up": 13,
+   "Bicycle": 15
+  },
+  "val": {
+   "Microbus": 92,
+   "Private-Passenger-Car": 129,
+   "Pedestrian": 142,
+   "Motor-Cycle": 176,
+   "Rickshaw": 50,
+   "Truck": 4,
+   "Pick-Up": 3,
+   "Special-Purpose-Vehicles": 14,
+   "C.N.G.": 7,
+   "Bicycle": 5,
+   "Other": 19,
+   "Covered-Van": 1,
+   "Bus": 3
+  }
+ }
+}

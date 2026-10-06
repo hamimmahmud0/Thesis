@@ -1,0 +1,25 @@
+path: .
+train: images/train
+val: images/train   # no held-out split yet; all 13 images are train-only
+names:
+  0: Auto3WCargo
+  1: AutoRicksaw
+  2: Bus
+  3: Container
+  4: Mixer
+  5: MotorCycle
+  6: PickUp
+  7: SUV
+  8: Sedan
+  9: Tanker
+  10: Tipper
+  11: Trailer
+  12: Truck
+  13: Van
+  14: Non-Motorized-Van
+  15: Private-Passenger-Car
+  16: CNG
+  17: Minivan
+  18: Other
+  19: Bicycle
+  20: Pickup

@@ -1,0 +1,179 @@
+{
+  "version": "4.1.0",
+  "flags": {},
+  "checked": false,
+  "shapes": [
+    {
+      "label": "MotorCycle",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2713.216,
+          1234.758
+        ],
+        [
+          2669.056,
+          1161.339
+        ],
+        [
+          2697.2,
+          1144.4099999999999
+        ],
+        [
+          2741.3599999999997,
+          1217.829
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.170882556656837,
+      "attributes": {}
+    },
+    {
+      "label": "MotorCycle",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          3197.724,
+          1943.505
+        ],
+        [
+          3136.236,
+          1873.083
+        ],
+        [
+          3164.776,
+          1848.162
+        ],
+        [
+          3226.264,
+          1918.584
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 3.9946155394889225,
+      "attributes": {}
+    },
+    {
+      "label": "Auto3WCargo",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          3021.116,
+          1773.0780000000002
+        ],
+        [
+          2933.68,
+          1680.4950000000001
+        ],
+        [
+          2970.552,
+          1645.674
+        ],
+        [
+          3057.988,
+          1738.254
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 3.9555744563922106,
+      "attributes": {}
+    },
+    {
+      "label": "Auto3WCargo",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          3526.272,
+          2246.46
+        ],
+        [
+          3454.672,
+          2159.178
+        ],
+        [
+          3494.564,
+          2126.457
+        ],
+        [
+          3566.16,
+          2213.736
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.025374336231564,
+      "attributes": {}
+    },
+    {
+      "label": "Auto3WCargo",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          3301.3360000000002,
+          2124.618
+        ],
+        [
+          3223.528,
+          2032.002
+        ],
+        [
+          3261.1639999999998,
+          2000.382
+        ],
+        [
+          3338.972,
+          2092.998
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.013662309524903,
+      "attributes": {}
+    },
+    {
+      "label": "Auto3WCargo",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          3526.476,
+          2142.735
+        ],
+        [
+          3532.616,
+          2089.803
+        ],
+        [
+          3665.192,
+          2105.181
+        ],
+        [
+          3659.052,
+          2158.113
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.827870754615719,
+      "attributes": {}
+    }
+  ],
+  "imagePath": "DJI_0643.JPG",
+  "imageData": null,
+  "imageHeight": 3000,
+  "imageWidth": 4000
+}

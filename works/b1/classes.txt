@@ -1,0 +1,14 @@
+Auto3WCargo
+AutoRicksaw
+Bus
+Container
+Mixer
+MotorCycle
+PickUp
+SUV
+Sedan
+Tanker
+Tipper
+Trailer
+Truck
+Van

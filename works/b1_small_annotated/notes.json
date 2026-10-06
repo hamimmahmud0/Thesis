@@ -1,0 +1,65 @@
+{
+  "categories": [
+    {
+      "id": 0,
+      "name": "Bicycle"
+    },
+    {
+      "id": 1,
+      "name": "Bus"
+    },
+    {
+      "id": 2,
+      "name": "C.N.G."
+    },
+    {
+      "id": 3,
+      "name": "Covered-Van"
+    },
+    {
+      "id": 4,
+      "name": "Microbus"
+    },
+    {
+      "id": 5,
+      "name": "Motor-Cycle"
+    },
+    {
+      "id": 6,
+      "name": "Non-Motorized-Van"
+    },
+    {
+      "id": 7,
+      "name": "Other"
+    },
+    {
+      "id": 8,
+      "name": "Pedestrian"
+    },
+    {
+      "id": 9,
+      "name": "Pick-Up"
+    },
+    {
+      "id": 10,
+      "name": "Private-Passenger-Car"
+    },
+    {
+      "id": 11,
+      "name": "Rickshaw"
+    },
+    {
+      "id": 12,
+      "name": "Special-Purpose-Vehicles"
+    },
+    {
+      "id": 13,
+      "name": "Truck"
+    }
+  ],
+  "info": {
+    "year": 2026,
+    "version": "1.0",
+    "contributor": "Label Studio"
+  }
+}

@@ -1,0 +1,582 @@
+{
+  "version": "4.1.0",
+  "flags": {},
+  "checked": false,
+  "shapes": [
+    {
+      "direction": 1.6118929716282917,
+      "label": "AutoRicksaw",
+      "score": null,
+      "points": [
+        [
+          2328.280744489631,
+          1304.8831840010964
+        ],
+        [
+          2327.1646475651905,
+          1332.025752940959
+        ],
+        [
+          2265.496963843702,
+          1329.4918159989036
+        ],
+        [
+          2266.6130607681425,
+          1302.349247059041
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": []
+    },
+    {
+      "direction": 5.547361825093464,
+      "label": "Minivan",
+      "score": null,
+      "points": [
+        [
+          256.27317904888884,
+          35.9365986017319
+        ],
+        [
+          293.93216242313935,
+          1.8378967242442004
+        ],
+        [
+          382.45442708333337,
+          99.60286458333334
+        ],
+        [
+          344.7954437090828,
+          133.70156646082103
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": []
+    },
+    {
+      "direction": 3.22184919561015,
+      "label": "MotorCycle",
+      "score": null,
+      "points": [
+        [
+          3739.5123106060605,
+          2422.573390151515
+        ],
+        [
+          3706.65418083176,
+          2419.930633743434
+        ],
+        [
+          3711.184417870486,
+          2363.604929235964
+        ],
+        [
+          3744.0425476447867,
+          2366.247685644045
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": []
+    },
+    {
+      "direction": 5.371598202868423,
+      "label": "Private-Passenger-Car",
+      "score": null,
+      "points": [
+        [
+          1121.58,
+          1217.106
+        ],
+        [
+          1152.424,
+          1177.299
+        ],
+        [
+          1243.0,
+          1247.4779999999998
+        ],
+        [
+          1212.1599999999999,
+          1287.285
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": []
+    },
+    {
+      "label": "Truck",
+      "score": null,
+      "points": [
+        [
+          2057.6636869507947,
+          2790.5045023681814
+        ],
+        [
+          2010.3803500352126,
+          2808.67053278272
+        ],
+        [
+          1968.4895833333335,
+          2699.635416666667
+        ],
+        [
+          2015.7729202489154,
+          2681.469386252128
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": [],
+      "direction": 2.7747849207259283
+    },
+    {
+      "label": "Non-Motorized-Van",
+      "score": null,
+      "points": [
+        [
+          2125.9712136867806,
+          2954.561594089092
+        ],
+        [
+          2092.5352979518793,
+          2967.4075119493864
+        ],
+        [
+          2060.4898655150982,
+          2883.998261610294
+        ],
+        [
+          2093.92578125,
+          2871.15234375
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": [],
+      "direction": 2.7747849207259283
+    },
+    {
+      "label": "AutoRicksaw",
+      "score": null,
+      "points": [
+        [
+          808.9948271775605,
+          797.5058927998806
+        ],
+        [
+          838.4008749569531,
+          773.6923859230578
+        ],
+        [
+          876.0790786550934,
+          820.2192189477038
+        ],
+        [
+          846.6730308757009,
+          844.0327258245267
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": [],
+      "direction": 5.602487204739847
+    },
+    {
+      "label": "AutoRicksaw",
+      "score": null,
+      "points": [
+        [
+          1273.5911813442272,
+          1402.2194344665472
+        ],
+        [
+          1302.99722912362,
+          1378.4059275897246
+        ],
+        [
+          1340.67543282176,
+          1424.9327606143704
+        ],
+        [
+          1311.2693850423675,
+          1448.7462674911935
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": [],
+      "direction": 5.602487204739847
+    },
+    {
+      "label": "AutoRicksaw",
+      "score": null,
+      "points": [
+        [
+          1370.5208333333335,
+          1300.2604166666667
+        ],
+        [
+          1402.9052911184644,
+          1307.9794268526791
+        ],
+        [
+          1384.3192414423863,
+          1385.9556345040185
+        ],
+        [
+          1351.9347836572551,
+          1378.236624318006
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": [],
+      "direction": 0.2339893652175331
+    },
+    {
+      "label": "AutoRicksaw",
+      "score": null,
+      "points": [
+        [
+          1559.2480427722135,
+          1315.9325797840895
+        ],
+        [
+          1562.017616323934,
+          1291.6954560299669
+        ],
+        [
+          1620.926902868509,
+          1298.4270139334433
+        ],
+        [
+          1618.1573293167887,
+          1322.6641376875657
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": [],
+      "direction": 4.826165370754282
+    },
+    {
+      "label": "AutoRicksaw",
+      "score": null,
+      "points": [
+        [
+          1876.0565107705038,
+          1276.1482815709685
+        ],
+        [
+          1874.8622177205348,
+          1300.6286251439922
+        ],
+        [
+          1809.8445384948914,
+          1297.4566859024985
+        ],
+        [
+          1811.0388315448602,
+          1272.976342329477
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": [],
+      "direction": 1.6195434737957004
+    },
+    {
+      "direction": 4.762442610527909,
+      "label": "AutoRicksaw",
+      "score": null,
+      "points": [
+        [
+          2423.3760022502684,
+          1367.1596977402173
+        ],
+        [
+          2424.7754062757062,
+          1339.2249574795344
+        ],
+        [
+          2504.955808517874,
+          1343.241632652157
+        ],
+        [
+          2503.5564044924363,
+          1371.17637291284
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": []
+    },
+    {
+      "direction": 1.6980283069327926,
+      "label": "AutoRicksaw",
+      "score": null,
+      "points": [
+        [
+          3304.256385318688,
+          1348.822697397144
+        ],
+        [
+          3300.6255965121227,
+          1377.2053093660445
+        ],
+        [
+          3230.606898068231,
+          1368.2483075637106
+        ],
+        [
+          3234.2376868747965,
+          1339.8656955948097
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": []
+    },
+    {
+      "direction": 4.902729444368758,
+      "label": "AutoRicksaw",
+      "score": null,
+      "points": [
+        [
+          3168.6900465527906,
+          1402.2372901968708
+        ],
+        [
+          3174.1036025159488,
+          1374.1401604258638
+        ],
+        [
+          3243.418028500796,
+          1387.4951730973157
+        ],
+        [
+          3238.004472537638,
+          1415.5923028683235
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": []
+    },
+    {
+      "direction": 1.7989871105577615,
+      "label": "AutoRicksaw",
+      "score": null,
+      "points": [
+        [
+          3391.0998848073386,
+          1369.6252913749795
+        ],
+        [
+          3384.6269748060377,
+          1397.497441016694
+        ],
+        [
+          3315.8675652462475,
+          1381.5290469192087
+        ],
+        [
+          3322.3404752475485,
+          1353.6568972774937
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": []
+    },
+    {
+      "direction": 1.6438974813849996,
+      "label": "AutoRicksaw",
+      "score": null,
+      "points": [
+        [
+          3521.47232494925,
+          1390.727696619973
+        ],
+        [
+          3519.5182291666665,
+          1417.4114583333333
+        ],
+        [
+          3453.202300531785,
+          1412.5550337461418
+        ],
+        [
+          3455.1563963143685,
+          1385.8712720327815
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": []
+    },
+    {
+      "direction": 2.7125331912016115,
+      "label": "AutoRicksaw",
+      "score": null,
+      "points": [
+        [
+          3885.6302083333335,
+          1479.3828125
+        ],
+        [
+          3857.4396428808914,
+          1492.2795211844248
+        ],
+        [
+          3830.5416332445366,
+          1433.4838920244172
+        ],
+        [
+          3858.7321986969782,
+          1420.5871833399926
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": []
+    },
+    {
+      "label": "Non-Motorized-Van",
+      "score": null,
+      "points": [
+        [
+          2206.998976992436,
+          1244.8923482476694
+        ],
+        [
+          2205.9288194444443,
+          1277.560763888889
+        ],
+        [
+          2148.6650855075645,
+          1275.6849086967752
+        ],
+        [
+          2149.7352430555557,
+          1243.0164930555554
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": [],
+      "direction": 1.60354278782493
+    },
+    {
+      "label": "Non-Motorized-Van",
+      "score": null,
+      "points": [
+        [
+          1868.9919115211112,
+          1255.4798429675634
+        ],
+        [
+          1869.0827830187352,
+          1222.7940301421816
+        ],
+        [
+          1926.3770120899997,
+          1222.9533167546592
+        ],
+        [
+          1926.2861405923757,
+          1255.6391295800406
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "difficult": false,
+      "shape_type": "rotation",
+      "flags": {},
+      "attributes": {},
+      "kie_linking": [],
+      "direction": 4.715169124295695
+    }
+  ],
+  "imagePath": "DJI_0572.JPG",
+  "imageData": null,
+  "imageHeight": 3000,
+  "imageWidth": 4000,
+  "description": ""
+}

@@ -1,0 +1,19 @@
+<View>
+  <RectangleLabels name="label" toName="image" canRotate="true">
+    <Label value="Auto3WCargo" background="#e6194b"/>
+    <Label value="AutoRicksaw" background="#3cb44b"/>
+    <Label value="Bus" background="#4363d8"/>
+    <Label value="Container" background="#f58231"/>
+    <Label value="Mixer" background="#911eb4"/>
+    <Label value="MotorCycle" background="#46f0f0"/>
+    <Label value="PickUp" background="#f032e6"/>
+    <Label value="SUV" background="#bcf60c"/>
+    <Label value="Sedan" background="#fabebe"/>
+    <Label value="Tanker" background="#008080"/>
+    <Label value="Tipper" background="#e6beff"/>
+    <Label value="Trailer" background="#9a6324"/>
+    <Label value="Truck" background="#800000"/>
+    <Label value="Van" background="#aaffc3"/>
+  </RectangleLabels>
+  <Image name="image" value="$image" rotateControl="true"/>
+</View>

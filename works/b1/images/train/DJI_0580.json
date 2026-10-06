@@ -1,0 +1,123 @@
+{
+  "version": "4.1.0",
+  "flags": {},
+  "checked": false,
+  "shapes": [
+    {
+      "label": "SUV",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          1436.5520000000001,
+          1257.348
+        ],
+        [
+          1408.78,
+          1213.671
+        ],
+        [
+          1492.612,
+          1160.3609999999999
+        ],
+        [
+          1520.3880000000001,
+          1204.035
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.146025769563356,
+      "attributes": {}
+    },
+    {
+      "label": "PickUp",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          3514.148,
+          1093.9080000000001
+        ],
+        [
+          3427.564,
+          990.1289999999999
+        ],
+        [
+          3473.3520000000003,
+          951.924
+        ],
+        [
+          3559.936,
+          1055.706
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.017073777895838,
+      "attributes": {}
+    },
+    {
+      "label": "Auto3WCargo",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2486.868,
+          2585.778
+        ],
+        [
+          2495.792,
+          2521.155
+        ],
+        [
+          2596.464,
+          2535.057
+        ],
+        [
+          2587.54,
+          2599.6769999999997
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.849614336749108,
+      "attributes": {}
+    },
+    {
+      "label": "MotorCycle",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          1254.404,
+          1586.6550000000002
+        ],
+        [
+          1243.752,
+          1531.425
+        ],
+        [
+          1272.676,
+          1525.845
+        ],
+        [
+          1283.3319999999999,
+          1581.0749999999998
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.521862162798177,
+      "attributes": {}
+    }
+  ],
+  "imagePath": "DJI_0580.JPG",
+  "imageData": null,
+  "imageHeight": 3000,
+  "imageWidth": 4000
+}

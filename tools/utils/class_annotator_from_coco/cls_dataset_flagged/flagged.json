@@ -1,0 +1,4310 @@
+[
+ {
+  "annotation_id": 7434,
+  "image": "DJI_0625.JPG",
+  "bbox": [
+   2188,
+   1905,
+   16,
+   36
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.6172
+ },
+ {
+  "annotation_id": 7443,
+  "image": "DJI_0625.JPG",
+  "bbox": [
+   1514,
+   882,
+   10,
+   20
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.5566
+ },
+ {
+  "annotation_id": 7444,
+  "image": "DJI_0625.JPG",
+  "bbox": [
+   2179,
+   1896,
+   17,
+   24
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.5518
+ },
+ {
+  "annotation_id": 7447,
+  "image": "DJI_0625.JPG",
+  "bbox": [
+   1385,
+   1784,
+   22,
+   14
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.5298
+ },
+ {
+  "annotation_id": 7471,
+  "image": "DJI_0625.JPG",
+  "bbox": [
+   1402,
+   1798,
+   24,
+   15
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.3484
+ },
+ {
+  "annotation_id": 7478,
+  "image": "DJI_0625.JPG",
+  "bbox": [
+   1048,
+   1214,
+   19,
+   20
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.3101
+ },
+ {
+  "annotation_id": 7452,
+  "image": "DJI_0625.JPG",
+  "bbox": [
+   3487,
+   944,
+   68,
+   53
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.4998
+ },
+ {
+  "annotation_id": 7464,
+  "image": "DJI_0625.JPG",
+  "bbox": [
+   3387,
+   897,
+   35,
+   21
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.4175
+ },
+ {
+  "annotation_id": 3396,
+  "image": "DJI_0595.JPG",
+  "bbox": [
+   2492,
+   1029,
+   30,
+   47
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.5522
+ },
+ {
+  "annotation_id": 3409,
+  "image": "DJI_0595.JPG",
+  "bbox": [
+   3406,
+   1623,
+   95,
+   84
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.5005
+ },
+ {
+  "annotation_id": 3425,
+  "image": "DJI_0595.JPG",
+  "bbox": [
+   2705,
+   248,
+   30,
+   23
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.4612
+ },
+ {
+  "annotation_id": 10286,
+  "image": "DJI_0647.JPG",
+  "bbox": [
+   1945,
+   2752,
+   40,
+   65
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.2837
+ },
+ {
+  "annotation_id": 23375,
+  "image": "DJI_0718.JPG",
+  "bbox": [
+   2202,
+   824,
+   26,
+   28
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.2632
+ },
+ {
+  "annotation_id": 7884,
+  "image": "DJI_0627.JPG",
+  "bbox": [
+   2232,
+   1466,
+   56,
+   213
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.4258
+ },
+ {
+  "annotation_id": 7912,
+  "image": "DJI_0627.JPG",
+  "bbox": [
+   1503,
+   2153,
+   61,
+   48
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.3555
+ },
+ {
+  "annotation_id": 7913,
+  "image": "DJI_0627.JPG",
+  "bbox": [
+   2262,
+   1472,
+   26,
+   173
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.3545
+ },
+ {
+  "annotation_id": 7959,
+  "image": "DJI_0627.JPG",
+  "bbox": [
+   2303,
+   1399,
+   32,
+   45
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.262
+ },
+ {
+  "annotation_id": 7963,
+  "image": "DJI_0627.JPG",
+  "bbox": [
+   2234,
+   1502,
+   30,
+   181
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.2603
+ },
+ {
+  "annotation_id": 5933,
+  "image": "DJI_0614.JPG",
+  "bbox": [
+   1551,
+   1457,
+   45,
+   41
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.834
+ },
+ {
+  "annotation_id": 5992,
+  "image": "DJI_0614.JPG",
+  "bbox": [
+   882,
+   2455,
+   91,
+   35
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.6167
+ },
+ {
+  "annotation_id": 5995,
+  "image": "DJI_0614.JPG",
+  "bbox": [
+   2556,
+   972,
+   63,
+   87
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.604
+ },
+ {
+  "annotation_id": 6007,
+  "image": "DJI_0614.JPG",
+  "bbox": [
+   3742,
+   1962,
+   70,
+   93
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.5547
+ },
+ {
+  "annotation_id": 6023,
+  "image": "DJI_0614.JPG",
+  "bbox": [
+   2627,
+   902,
+   62,
+   74
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.4861
+ },
+ {
+  "annotation_id": 6033,
+  "image": "DJI_0614.JPG",
+  "bbox": [
+   198,
+   2745,
+   61,
+   95
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.4551
+ },
+ {
+  "annotation_id": 13286,
+  "image": "DJI_0665.JPG",
+  "bbox": [
+   2688,
+   1841,
+   42,
+   55
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.5459
+ },
+ {
+  "annotation_id": 17453,
+  "image": "DJI_0689.JPG",
+  "bbox": [
+   3158,
+   2164,
+   52,
+   83
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.8374
+ },
+ {
+  "annotation_id": 17533,
+  "image": "DJI_0689.JPG",
+  "bbox": [
+   1336,
+   223,
+   24,
+   36
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.666
+ },
+ {
+  "annotation_id": 17542,
+  "image": "DJI_0689.JPG",
+  "bbox": [
+   2444,
+   1651,
+   114,
+   126
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.6543
+ },
+ {
+  "annotation_id": 17552,
+  "image": "DJI_0689.JPG",
+  "bbox": [
+   2686,
+   1415,
+   48,
+   65
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.6255
+ },
+ {
+  "annotation_id": 17554,
+  "image": "DJI_0689.JPG",
+  "bbox": [
+   1454,
+   433,
+   24,
+   28
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.6177
+ },
+ {
+  "annotation_id": 17570,
+  "image": "DJI_0689.JPG",
+  "bbox": [
+   2108,
+   1385,
+   64,
+   28
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.5737
+ },
+ {
+  "annotation_id": 17628,
+  "image": "DJI_0689.JPG",
+  "bbox": [
+   2927,
+   1996,
+   45,
+   167
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.3994
+ },
+ {
+  "annotation_id": 17682,
+  "image": "DJI_0689.JPG",
+  "bbox": [
+   803,
+   847,
+   90,
+   63
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.3093
+ },
+ {
+  "annotation_id": 17683,
+  "image": "DJI_0689.JPG",
+  "bbox": [
+   2268,
+   1000,
+   22,
+   55
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.3093
+ },
+ {
+  "annotation_id": 17708,
+  "image": "DJI_0689.JPG",
+  "bbox": [
+   2057,
+   1277,
+   78,
+   90
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.2727
+ },
+ {
+  "annotation_id": 25375,
+  "image": "DJI_0730.JPG",
+  "bbox": [
+   1024,
+   639,
+   54,
+   42
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.6274
+ },
+ {
+  "annotation_id": 25411,
+  "image": "DJI_0730.JPG",
+  "bbox": [
+   3818,
+   325,
+   32,
+   31
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.5146
+ },
+ {
+  "annotation_id": 25492,
+  "image": "DJI_0730.JPG",
+  "bbox": [
+   2970,
+   2847,
+   37,
+   49
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.3572
+ },
+ {
+  "annotation_id": 9431,
+  "image": "DJI_0637.JPG",
+  "bbox": [
+   2228,
+   863,
+   14,
+   38
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.3408
+ },
+ {
+  "annotation_id": 14567,
+  "image": "DJI_0676.JPG",
+  "bbox": [
+   1740,
+   2281,
+   34,
+   45
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.8262
+ },
+ {
+  "annotation_id": 14647,
+  "image": "DJI_0676.JPG",
+  "bbox": [
+   1224,
+   665,
+   126,
+   115
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.4897
+ },
+ {
+  "annotation_id": 14651,
+  "image": "DJI_0676.JPG",
+  "bbox": [
+   2857,
+   290,
+   35,
+   38
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.4785
+ },
+ {
+  "annotation_id": 14673,
+  "image": "DJI_0676.JPG",
+  "bbox": [
+   823,
+   365,
+   108,
+   66
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.3882
+ },
+ {
+  "annotation_id": 14681,
+  "image": "DJI_0676.JPG",
+  "bbox": [
+   3643,
+   34,
+   120,
+   95
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.3601
+ },
+ {
+  "annotation_id": 14749,
+  "image": "DJI_0676.JPG",
+  "bbox": [
+   1740,
+   1416,
+   22,
+   50
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.252
+ },
+ {
+  "annotation_id": 6580,
+  "image": "DJI_0617.JPG",
+  "bbox": [
+   1725,
+   2660,
+   39,
+   50
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.7012
+ },
+ {
+  "annotation_id": 6613,
+  "image": "DJI_0617.JPG",
+  "bbox": [
+   1330,
+   1751,
+   43,
+   70
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.5352
+ },
+ {
+  "annotation_id": 6627,
+  "image": "DJI_0617.JPG",
+  "bbox": [
+   1981,
+   2249,
+   18,
+   32
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.4824
+ },
+ {
+  "annotation_id": 6635,
+  "image": "DJI_0617.JPG",
+  "bbox": [
+   3782,
+   2121,
+   33,
+   23
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.4541
+ },
+ {
+  "annotation_id": 6729,
+  "image": "DJI_0617.JPG",
+  "bbox": [
+   1881,
+   1771,
+   19,
+   17
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.3213
+ },
+ {
+  "annotation_id": 22655,
+  "image": "DJI_0712.JPG",
+  "bbox": [
+   3900,
+   1390,
+   78,
+   76
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.7739
+ },
+ {
+  "annotation_id": 22672,
+  "image": "DJI_0712.JPG",
+  "bbox": [
+   3143,
+   1558,
+   37,
+   50
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.667
+ },
+ {
+  "annotation_id": 22685,
+  "image": "DJI_0712.JPG",
+  "bbox": [
+   3961,
+   1409,
+   35,
+   37
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.5293
+ },
+ {
+  "annotation_id": 22690,
+  "image": "DJI_0712.JPG",
+  "bbox": [
+   3204,
+   1462,
+   38,
+   46
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.4995
+ },
+ {
+  "annotation_id": 8929,
+  "image": "DJI_0634.JPG",
+  "bbox": [
+   1239,
+   1891,
+   81,
+   52
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.5933
+ },
+ {
+  "annotation_id": 8953,
+  "image": "DJI_0634.JPG",
+  "bbox": [
+   836,
+   1556,
+   48,
+   27
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.3958
+ },
+ {
+  "annotation_id": 8963,
+  "image": "DJI_0634.JPG",
+  "bbox": [
+   15,
+   847,
+   33,
+   29
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.3601
+ },
+ {
+  "annotation_id": 5223,
+  "image": "DJI_0609.JPG",
+  "bbox": [
+   838,
+   2461,
+   50,
+   61
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.7388
+ },
+ {
+  "annotation_id": 5232,
+  "image": "DJI_0609.JPG",
+  "bbox": [
+   735,
+   2466,
+   40,
+   57
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.7012
+ },
+ {
+  "annotation_id": 5241,
+  "image": "DJI_0609.JPG",
+  "bbox": [
+   2322,
+   2146,
+   48,
+   23
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.6284
+ },
+ {
+  "annotation_id": 5242,
+  "image": "DJI_0609.JPG",
+  "bbox": [
+   2280,
+   2780,
+   41,
+   59
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.6216
+ },
+ {
+  "annotation_id": 5246,
+  "image": "DJI_0609.JPG",
+  "bbox": [
+   701,
+   2497,
+   46,
+   38
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.6011
+ },
+ {
+  "annotation_id": 5249,
+  "image": "DJI_0609.JPG",
+  "bbox": [
+   725,
+   2468,
+   50,
+   77
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.5571
+ },
+ {
+  "annotation_id": 5264,
+  "image": "DJI_0609.JPG",
+  "bbox": [
+   1076,
+   2471,
+   66,
+   37
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.3999
+ },
+ {
+  "annotation_id": 324,
+  "image": "DJI_0571.JPG",
+  "bbox": [
+   1640,
+   851,
+   28,
+   33
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.6211
+ },
+ {
+  "annotation_id": 354,
+  "image": "DJI_0571.JPG",
+  "bbox": [
+   1512,
+   798,
+   21,
+   43
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.3032
+ },
+ {
+  "annotation_id": 356,
+  "image": "DJI_0571.JPG",
+  "bbox": [
+   2059,
+   2763,
+   32,
+   76
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.2737
+ },
+ {
+  "annotation_id": 5021,
+  "image": "DJI_0607.JPG",
+  "bbox": [
+   466,
+   770,
+   41,
+   53
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.7563
+ },
+ {
+  "annotation_id": 5053,
+  "image": "DJI_0607.JPG",
+  "bbox": [
+   2304,
+   488,
+   15,
+   29
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.426
+ },
+ {
+  "annotation_id": 5057,
+  "image": "DJI_0607.JPG",
+  "bbox": [
+   2304,
+   465,
+   38,
+   51
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.3948
+ },
+ {
+  "annotation_id": 5085,
+  "image": "DJI_0607.JPG",
+  "bbox": [
+   1703,
+   756,
+   37,
+   33
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.2524
+ },
+ {
+  "annotation_id": 20277,
+  "image": "DJI_0698.JPG",
+  "bbox": [
+   1718,
+   948,
+   51,
+   28
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.7939
+ },
+ {
+  "annotation_id": 20279,
+  "image": "DJI_0698.JPG",
+  "bbox": [
+   2106,
+   1257,
+   26,
+   47
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.792
+ },
+ {
+  "annotation_id": 20350,
+  "image": "DJI_0698.JPG",
+  "bbox": [
+   47,
+   250,
+   57,
+   51
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.6504
+ },
+ {
+  "annotation_id": 20396,
+  "image": "DJI_0698.JPG",
+  "bbox": [
+   1617,
+   355,
+   63,
+   43
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.5229
+ },
+ {
+  "annotation_id": 20440,
+  "image": "DJI_0698.JPG",
+  "bbox": [
+   1938,
+   981,
+   27,
+   16
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.4038
+ },
+ {
+  "annotation_id": 20470,
+  "image": "DJI_0698.JPG",
+  "bbox": [
+   3567,
+   42,
+   29,
+   24
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.3601
+ },
+ {
+  "annotation_id": 25029,
+  "image": "DJI_0729.JPG",
+  "bbox": [
+   2736,
+   452,
+   21,
+   54
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.7373
+ },
+ {
+  "annotation_id": 25082,
+  "image": "DJI_0729.JPG",
+  "bbox": [
+   2750,
+   1161,
+   25,
+   46
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.6089
+ },
+ {
+  "annotation_id": 25106,
+  "image": "DJI_0729.JPG",
+  "bbox": [
+   2804,
+   1108,
+   45,
+   36
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.5244
+ },
+ {
+  "annotation_id": 25141,
+  "image": "DJI_0729.JPG",
+  "bbox": [
+   2873,
+   1403,
+   35,
+   30
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.4333
+ },
+ {
+  "annotation_id": 25173,
+  "image": "DJI_0729.JPG",
+  "bbox": [
+   3736,
+   1121,
+   76,
+   29
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.3721
+ },
+ {
+  "annotation_id": 25241,
+  "image": "DJI_0729.JPG",
+  "bbox": [
+   2727,
+   1070,
+   30,
+   27
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.2854
+ },
+ {
+  "annotation_id": 25274,
+  "image": "DJI_0729.JPG",
+  "bbox": [
+   31,
+   1177,
+   37,
+   28
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.2505
+ },
+ {
+  "annotation_id": 7323,
+  "image": "DJI_0624.JPG",
+  "bbox": [
+   3448,
+   1864,
+   49,
+   24
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.6167
+ },
+ {
+  "annotation_id": 7328,
+  "image": "DJI_0624.JPG",
+  "bbox": [
+   2435,
+   1896,
+   43,
+   22
+  ],
+  "predicted": "Motorcycle",
+  "score": 0.5879
+ },
+ {
+  "annotation_id": 3474,
+  "image": "DJI_0595.JPG",
+  "bbox": [
+   2089,
+   151,
+   30,
+   40
+  ],
+  "predicted": "Bicycle",
+  "score": 0.3374
+ },
+ {
+  "annotation_id": 3525,
+  "image": "DJI_0595.JPG",
+  "bbox": [
+   1832,
+   530,
+   33,
+   57
+  ],
+  "predicted": "Bicycle",
+  "score": 0.2603
+ },
+ {
+  "annotation_id": 23359,
+  "image": "DJI_0718.JPG",
+  "bbox": [
+   2944,
+   955,
+   17,
+   43
+  ],
+  "predicted": "Bicycle",
+  "score": 0.2969
+ },
+ {
+  "annotation_id": 7442,
+  "image": "DJI_0625.JPG",
+  "bbox": [
+   941,
+   1837,
+   50,
+   26
+  ],
+  "predicted": "Car",
+  "score": 0.561
+ },
+ {
+  "annotation_id": 3364,
+  "image": "DJI_0595.JPG",
+  "bbox": [
+   386,
+   756,
+   79,
+   69
+  ],
+  "predicted": "Car",
+  "score": 0.6924
+ },
+ {
+  "annotation_id": 3395,
+  "image": "DJI_0595.JPG",
+  "bbox": [
+   2213,
+   2541,
+   48,
+   108
+  ],
+  "predicted": "Car",
+  "score": 0.5552
+ },
+ {
+  "annotation_id": 10274,
+  "image": "DJI_0647.JPG",
+  "bbox": [
+   1853,
+   2474,
+   54,
+   46
+  ],
+  "predicted": "Car",
+  "score": 0.3494
+ },
+ {
+  "annotation_id": 23240,
+  "image": "DJI_0718.JPG",
+  "bbox": [
+   1877,
+   1046,
+   116,
+   50
+  ],
+  "predicted": "Car",
+  "score": 0.9272
+ },
+ {
+  "annotation_id": 23241,
+  "image": "DJI_0718.JPG",
+  "bbox": [
+   2547,
+   2172,
+   51,
+   124
+  ],
+  "predicted": "Car",
+  "score": 0.9272
+ },
+ {
+  "annotation_id": 23242,
+  "image": "DJI_0718.JPG",
+  "bbox": [
+   660,
+   777,
+   84,
+   94
+  ],
+  "predicted": "Car",
+  "score": 0.9258
+ },
+ {
+  "annotation_id": 23243,
+  "image": "DJI_0718.JPG",
+  "bbox": [
+   60,
+   1353,
+   121,
+   49
+  ],
+  "predicted": "Car",
+  "score": 0.918
+ },
+ {
+  "annotation_id": 23245,
+  "image": "DJI_0718.JPG",
+  "bbox": [
+   290,
+   1369,
+   115,
+   42
+  ],
+  "predicted": "Car",
+  "score": 0.9131
+ },
+ {
+  "annotation_id": 23249,
+  "image": "DJI_0718.JPG",
+  "bbox": [
+   116,
+   856,
+   60,
+   74
+  ],
+  "predicted": "Car",
+  "score": 0.8833
+ },
+ {
+  "annotation_id": 7733,
+  "image": "DJI_0627.JPG",
+  "bbox": [
+   1715,
+   59,
+   74,
+   83
+  ],
+  "predicted": "Car",
+  "score": 0.9575
+ },
+ {
+  "annotation_id": 7740,
+  "image": "DJI_0627.JPG",
+  "bbox": [
+   1761,
+   411,
+   41,
+   157
+  ],
+  "predicted": "Car",
+  "score": 0.9473
+ },
+ {
+  "annotation_id": 7748,
+  "image": "DJI_0627.JPG",
+  "bbox": [
+   1245,
+   1534,
+   97,
+   55
+  ],
+  "predicted": "Car",
+  "score": 0.9341
+ },
+ {
+  "annotation_id": 7771,
+  "image": "DJI_0627.JPG",
+  "bbox": [
+   1191,
+   2088,
+   114,
+   46
+  ],
+  "predicted": "Car",
+  "score": 0.8164
+ },
+ {
+  "annotation_id": 7850,
+  "image": "DJI_0627.JPG",
+  "bbox": [
+   2249,
+   1768,
+   26,
+   43
+  ],
+  "predicted": "Car",
+  "score": 0.5391
+ },
+ {
+  "annotation_id": 5894,
+  "image": "DJI_0614.JPG",
+  "bbox": [
+   1768,
+   44,
+   133,
+   100
+  ],
+  "predicted": "Car",
+  "score": 0.9604
+ },
+ {
+  "annotation_id": 5900,
+  "image": "DJI_0614.JPG",
+  "bbox": [
+   1713,
+   106,
+   146,
+   107
+  ],
+  "predicted": "Car",
+  "score": 0.939
+ },
+ {
+  "annotation_id": 5901,
+  "image": "DJI_0614.JPG",
+  "bbox": [
+   605,
+   1463,
+   145,
+   100
+  ],
+  "predicted": "Car",
+  "score": 0.938
+ },
+ {
+  "annotation_id": 5902,
+  "image": "DJI_0614.JPG",
+  "bbox": [
+   1309,
+   85,
+   149,
+   104
+  ],
+  "predicted": "Car",
+  "score": 0.9375
+ },
+ {
+  "annotation_id": 5904,
+  "image": "DJI_0614.JPG",
+  "bbox": [
+   562,
+   1531,
+   142,
+   99
+  ],
+  "predicted": "Car",
+  "score": 0.9292
+ },
+ {
+  "annotation_id": 5914,
+  "image": "DJI_0614.JPG",
+  "bbox": [
+   2397,
+   1582,
+   57,
+   82
+  ],
+  "predicted": "Car",
+  "score": 0.8926
+ },
+ {
+  "annotation_id": 5919,
+  "image": "DJI_0614.JPG",
+  "bbox": [
+   463,
+   1744,
+   144,
+   99
+  ],
+  "predicted": "Car",
+  "score": 0.8745
+ },
+ {
+  "annotation_id": 6015,
+  "image": "DJI_0614.JPG",
+  "bbox": [
+   2048,
+   865,
+   53,
+   143
+  ],
+  "predicted": "Car",
+  "score": 0.5151
+ },
+ {
+  "annotation_id": 17687,
+  "image": "DJI_0689.JPG",
+  "bbox": [
+   2328,
+   1512,
+   44,
+   37
+  ],
+  "predicted": "Car",
+  "score": 0.3
+ },
+ {
+  "annotation_id": 10831,
+  "image": "DJI_0653.JPG",
+  "bbox": [
+   2268,
+   1498,
+   247,
+   254
+  ],
+  "predicted": "Bus",
+  "score": 0.8755
+ },
+ {
+  "annotation_id": 10905,
+  "image": "DJI_0653.JPG",
+  "bbox": [
+   2024,
+   1512,
+   70,
+   109
+  ],
+  "predicted": "Bus",
+  "score": 0.2598
+ },
+ {
+  "annotation_id": 25156,
+  "image": "DJI_0729.JPG",
+  "bbox": [
+   2992,
+   1373,
+   93,
+   51
+  ],
+  "predicted": "Bus",
+  "score": 0.4026
+ },
+ {
+  "annotation_id": 12697,
+  "image": "DJI_0662.JPG",
+  "bbox": [
+   2268,
+   1882,
+   101,
+   230
+  ],
+  "predicted": "Bus",
+  "score": 0.4456
+ },
+ {
+  "annotation_id": 10766,
+  "image": "DJI_0652.JPG",
+  "bbox": [
+   1779,
+   1541,
+   218,
+   223
+  ],
+  "predicted": "Bus",
+  "score": 0.6177
+ },
+ {
+  "annotation_id": 10781,
+  "image": "DJI_0652.JPG",
+  "bbox": [
+   3224,
+   1702,
+   52,
+   62
+  ],
+  "predicted": "Bus",
+  "score": 0.4082
+ },
+ {
+  "annotation_id": 1775,
+  "image": "DJI_0583.JPG",
+  "bbox": [
+   1708,
+   1633,
+   56,
+   131
+  ],
+  "predicted": "Bus",
+  "score": 0.353
+ },
+ {
+  "annotation_id": 5666,
+  "image": "DJI_0612.JPG",
+  "bbox": [
+   1370,
+   1992,
+   53,
+   101
+  ],
+  "predicted": "Bus",
+  "score": 0.252
+ },
+ {
+  "annotation_id": 12205,
+  "image": "DJI_0660.JPG",
+  "bbox": [
+   887,
+   2013,
+   121,
+   198
+  ],
+  "predicted": "Bus",
+  "score": 0.519
+ },
+ {
+  "annotation_id": 5434,
+  "image": "DJI_0611.JPG",
+  "bbox": [
+   2992,
+   805,
+   109,
+   72
+  ],
+  "predicted": "Bus",
+  "score": 0.5444
+ },
+ {
+  "annotation_id": 21336,
+  "image": "DJI_0703.JPG",
+  "bbox": [
+   322,
+   756,
+   102,
+   48
+  ],
+  "predicted": "Bus",
+  "score": 0.3508
+ },
+ {
+  "annotation_id": 18718,
+  "image": "DJI_0693.JPG",
+  "bbox": [
+   2398,
+   756,
+   33,
+   11
+  ],
+  "predicted": "Bus",
+  "score": 0.3394
+ },
+ {
+  "annotation_id": 16317,
+  "image": "DJI_0684.JPG",
+  "bbox": [
+   2268,
+   1034,
+   80,
+   162
+  ],
+  "predicted": "Bus",
+  "score": 0.6782
+ },
+ {
+  "annotation_id": 16326,
+  "image": "DJI_0684.JPG",
+  "bbox": [
+   1718,
+   0,
+   46,
+   81
+  ],
+  "predicted": "Bus",
+  "score": 0.6338
+ },
+ {
+  "annotation_id": 16890,
+  "image": "DJI_0687.JPG",
+  "bbox": [
+   885,
+   533,
+   123,
+   100
+  ],
+  "predicted": "Bus",
+  "score": 0.5229
+ },
+ {
+  "annotation_id": 24580,
+  "image": "DJI_0725.JPG",
+  "bbox": [
+   1910,
+   1512,
+   92,
+   104
+  ],
+  "predicted": "Bus",
+  "score": 0.7402
+ },
+ {
+  "annotation_id": 24362,
+  "image": "DJI_0723.JPG",
+  "bbox": [
+   1512,
+   1295,
+   46,
+   83
+  ],
+  "predicted": "Bus",
+  "score": 0.2764
+ },
+ {
+  "annotation_id": 10559,
+  "image": "DJI_0651.JPG",
+  "bbox": [
+   1512,
+   2385,
+   116,
+   160
+  ],
+  "predicted": "Bus",
+  "score": 0.6094
+ },
+ {
+  "annotation_id": 10570,
+  "image": "DJI_0651.JPG",
+  "bbox": [
+   852,
+   2829,
+   156,
+   161
+  ],
+  "predicted": "Bus",
+  "score": 0.5654
+ },
+ {
+  "annotation_id": 15219,
+  "image": "DJI_0679.JPG",
+  "bbox": [
+   2992,
+   736,
+   80,
+   104
+  ],
+  "predicted": "Bus",
+  "score": 0.8853
+ },
+ {
+  "annotation_id": 23194,
+  "image": "DJI_0717.JPG",
+  "bbox": [
+   2696,
+   1512,
+   56,
+   63
+  ],
+  "predicted": "Bus",
+  "score": 0.4592
+ },
+ {
+  "annotation_id": 24719,
+  "image": "DJI_0726.JPG",
+  "bbox": [
+   889,
+   535,
+   119,
+   167
+  ],
+  "predicted": "Bus",
+  "score": 0.4226
+ },
+ {
+  "annotation_id": 11568,
+  "image": "DJI_0657.JPG",
+  "bbox": [
+   1873,
+   2369,
+   87,
+   151
+  ],
+  "predicted": "Bus",
+  "score": 0.4163
+ },
+ {
+  "annotation_id": 17261,
+  "image": "DJI_0688.JPG",
+  "bbox": [
+   520,
+   2484,
+   84,
+   36
+  ],
+  "predicted": "Bus",
+  "score": 0.4233
+ },
+ {
+  "annotation_id": 17307,
+  "image": "DJI_0688.JPG",
+  "bbox": [
+   1600,
+   1663,
+   149,
+   101
+  ],
+  "predicted": "Bus",
+  "score": 0.3403
+ },
+ {
+  "annotation_id": 8614,
+  "image": "DJI_0632.JPG",
+  "bbox": [
+   2495,
+   2237,
+   25,
+   63
+  ],
+  "predicted": "Bus",
+  "score": 0.4458
+ },
+ {
+  "annotation_id": 13203,
+  "image": "DJI_0664.JPG",
+  "bbox": [
+   2594,
+   1992,
+   62,
+   16
+  ],
+  "predicted": "Bus",
+  "score": 0.3359
+ },
+ {
+  "annotation_id": 13218,
+  "image": "DJI_0664.JPG",
+  "bbox": [
+   2500,
+   1597,
+   20,
+   136
+  ],
+  "predicted": "Bus",
+  "score": 0.2986
+ },
+ {
+  "annotation_id": 7469,
+  "image": "DJI_0625.JPG",
+  "bbox": [
+   1512,
+   1607,
+   152,
+   102
+  ],
+  "predicted": "Truck",
+  "score": 0.3635
+ },
+ {
+  "annotation_id": 7495,
+  "image": "DJI_0625.JPG",
+  "bbox": [
+   1737,
+   1580,
+   27,
+   74
+  ],
+  "predicted": "Truck",
+  "score": 0.2671
+ },
+ {
+  "annotation_id": 3420,
+  "image": "DJI_0595.JPG",
+  "bbox": [
+   2172,
+   1522,
+   28,
+   69
+  ],
+  "predicted": "Truck",
+  "score": 0.4739
+ },
+ {
+  "annotation_id": 6077,
+  "image": "DJI_0614.JPG",
+  "bbox": [
+   2715,
+   1850,
+   59,
+   87
+  ],
+  "predicted": "Truck",
+  "score": 0.2812
+ },
+ {
+  "annotation_id": 6090,
+  "image": "DJI_0614.JPG",
+  "bbox": [
+   3087,
+   2411,
+   70,
+   71
+  ],
+  "predicted": "Truck",
+  "score": 0.2703
+ },
+ {
+  "annotation_id": 5356,
+  "image": "DJI_0610.JPG",
+  "bbox": [
+   2992,
+   371,
+   96,
+   73
+  ],
+  "predicted": "Truck",
+  "score": 0.2969
+ },
+ {
+  "annotation_id": 5363,
+  "image": "DJI_0610.JPG",
+  "bbox": [
+   2992,
+   286,
+   17,
+   68
+  ],
+  "predicted": "Truck",
+  "score": 0.2661
+ },
+ {
+  "annotation_id": 5368,
+  "image": "DJI_0610.JPG",
+  "bbox": [
+   2992,
+   524,
+   6,
+   45
+  ],
+  "predicted": "Truck",
+  "score": 0.2515
+ },
+ {
+  "annotation_id": 13335,
+  "image": "DJI_0665.JPG",
+  "bbox": [
+   2560,
+   2871,
+   54,
+   70
+  ],
+  "predicted": "Truck",
+  "score": 0.3228
+ },
+ {
+  "annotation_id": 17593,
+  "image": "DJI_0689.JPG",
+  "bbox": [
+   3756,
+   2498,
+   150,
+   116
+  ],
+  "predicted": "Truck",
+  "score": 0.4985
+ },
+ {
+  "annotation_id": 17602,
+  "image": "DJI_0689.JPG",
+  "bbox": [
+   1279,
+   0,
+   39,
+   14
+  ],
+  "predicted": "Truck",
+  "score": 0.4685
+ },
+ {
+  "annotation_id": 17679,
+  "image": "DJI_0689.JPG",
+  "bbox": [
+   2371,
+   1512,
+   57,
+   50
+  ],
+  "predicted": "Truck",
+  "score": 0.3132
+ },
+ {
+  "annotation_id": 17722,
+  "image": "DJI_0689.JPG",
+  "bbox": [
+   2058,
+   756,
+   60,
+   55
+  ],
+  "predicted": "Truck",
+  "score": 0.2571
+ },
+ {
+  "annotation_id": 17725,
+  "image": "DJI_0689.JPG",
+  "bbox": [
+   1727,
+   470,
+   37,
+   59
+  ],
+  "predicted": "Truck",
+  "score": 0.2556
+ },
+ {
+  "annotation_id": 6623,
+  "image": "DJI_0617.JPG",
+  "bbox": [
+   904,
+   1982,
+   121,
+   29
+  ],
+  "predicted": "Truck",
+  "score": 0.4951
+ },
+ {
+  "annotation_id": 22679,
+  "image": "DJI_0712.JPG",
+  "bbox": [
+   2923,
+   1512,
+   70,
+   32
+  ],
+  "predicted": "Truck",
+  "score": 0.5645
+ },
+ {
+  "annotation_id": 22704,
+  "image": "DJI_0712.JPG",
+  "bbox": [
+   3094,
+   1512,
+   44,
+   39
+  ],
+  "predicted": "Truck",
+  "score": 0.3147
+ },
+ {
+  "annotation_id": 20462,
+  "image": "DJI_0698.JPG",
+  "bbox": [
+   756,
+   905,
+   39,
+   46
+  ],
+  "predicted": "Truck",
+  "score": 0.3667
+ },
+ {
+  "annotation_id": 25077,
+  "image": "DJI_0729.JPG",
+  "bbox": [
+   529,
+   756,
+   58,
+   53
+  ],
+  "predicted": "Truck",
+  "score": 0.6265
+ },
+ {
+  "annotation_id": 25133,
+  "image": "DJI_0729.JPG",
+  "bbox": [
+   2745,
+   1512,
+   144,
+   27
+  ],
+  "predicted": "Truck",
+  "score": 0.4553
+ },
+ {
+  "annotation_id": 25183,
+  "image": "DJI_0729.JPG",
+  "bbox": [
+   2992,
+   1592,
+   92,
+   54
+  ],
+  "predicted": "Truck",
+  "score": 0.3591
+ },
+ {
+  "annotation_id": 25185,
+  "image": "DJI_0729.JPG",
+  "bbox": [
+   2268,
+   2878,
+   109,
+   61
+  ],
+  "predicted": "Truck",
+  "score": 0.3582
+ },
+ {
+  "annotation_id": 25203,
+  "image": "DJI_0729.JPG",
+  "bbox": [
+   2268,
+   827,
+   82,
+   125
+  ],
+  "predicted": "Truck",
+  "score": 0.3328
+ },
+ {
+  "annotation_id": 25210,
+  "image": "DJI_0729.JPG",
+  "bbox": [
+   2992,
+   1487,
+   44,
+   48
+  ],
+  "predicted": "Truck",
+  "score": 0.325
+ },
+ {
+  "annotation_id": 25213,
+  "image": "DJI_0729.JPG",
+  "bbox": [
+   2268,
+   2814,
+   107,
+   63
+  ],
+  "predicted": "Truck",
+  "score": 0.3237
+ },
+ {
+  "annotation_id": 26488,
+  "image": "DJI_0733.JPG",
+  "bbox": [
+   1094,
+   2001,
+   54,
+   53
+  ],
+  "predicted": "Truck",
+  "score": 0.2903
+ },
+ {
+  "annotation_id": 14541,
+  "image": "DJI_0675.JPG",
+  "bbox": [
+   2479,
+   1749,
+   51,
+   15
+  ],
+  "predicted": "Truck",
+  "score": 0.2529
+ },
+ {
+  "annotation_id": 19016,
+  "image": "DJI_0694.JPG",
+  "bbox": [
+   2268,
+   2046,
+   62,
+   248
+  ],
+  "predicted": "Truck",
+  "score": 0.5874
+ },
+ {
+  "annotation_id": 19161,
+  "image": "DJI_0694.JPG",
+  "bbox": [
+   2369,
+   2490,
+   174,
+   224
+  ],
+  "predicted": "Truck",
+  "score": 0.3264
+ },
+ {
+  "annotation_id": 24930,
+  "image": "DJI_0728.JPG",
+  "bbox": [
+   2344,
+   991,
+   114,
+   17
+  ],
+  "predicted": "Truck",
+  "score": 0.301
+ },
+ {
+  "annotation_id": 12044,
+  "image": "DJI_0659.JPG",
+  "bbox": [
+   3563,
+   2813,
+   150,
+   170
+  ],
+  "predicted": "Truck",
+  "score": 0.3289
+ },
+ {
+  "annotation_id": 13413,
+  "image": "DJI_0666.JPG",
+  "bbox": [
+   2373,
+   992,
+   36,
+   16
+  ],
+  "predicted": "Truck",
+  "score": 0.4465
+ },
+ {
+  "annotation_id": 4602,
+  "image": "DJI_0600.JPG",
+  "bbox": [
+   756,
+   2878,
+   123,
+   122
+  ],
+  "predicted": "Truck",
+  "score": 0.2585
+ },
+ {
+  "annotation_id": 12858,
+  "image": "DJI_0663.JPG",
+  "bbox": [
+   3796,
+   1564,
+   204,
+   61
+  ],
+  "predicted": "Truck",
+  "score": 0.7729
+ },
+ {
+  "annotation_id": 12955,
+  "image": "DJI_0663.JPG",
+  "bbox": [
+   3300,
+   756,
+   111,
+   67
+  ],
+  "predicted": "Truck",
+  "score": 0.3833
+ },
+ {
+  "annotation_id": 5877,
+  "image": "DJI_0613.JPG",
+  "bbox": [
+   1512,
+   186,
+   51,
+   76
+  ],
+  "predicted": "Truck",
+  "score": 0.2678
+ },
+ {
+  "annotation_id": 733,
+  "image": "DJI_0575.JPG",
+  "bbox": [
+   1840,
+   2160,
+   37,
+   56
+  ],
+  "predicted": "Truck",
+  "score": 0.3442
+ },
+ {
+  "annotation_id": 378,
+  "image": "DJI_0572.JPG",
+  "bbox": [
+   2061,
+   2878,
+   94,
+   122
+  ],
+  "predicted": "Truck",
+  "score": 0.5518
+ },
+ {
+  "annotation_id": 21068,
+  "image": "DJI_0701.JPG",
+  "bbox": [
+   2992,
+   2040,
+   34,
+   61
+  ],
+  "predicted": "Truck",
+  "score": 0.2983
+ },
+ {
+  "annotation_id": 12624,
+  "image": "DJI_0662.JPG",
+  "bbox": [
+   2621,
+   2195,
+   245,
+   352
+  ],
+  "predicted": "Truck",
+  "score": 0.7041
+ },
+ {
+  "annotation_id": 12626,
+  "image": "DJI_0662.JPG",
+  "bbox": [
+   2621,
+   2195,
+   153,
+   196
+  ],
+  "predicted": "Truck",
+  "score": 0.686
+ },
+ {
+  "annotation_id": 12772,
+  "image": "DJI_0662.JPG",
+  "bbox": [
+   2277,
+   1992,
+   92,
+   121
+  ],
+  "predicted": "Truck",
+  "score": 0.3005
+ },
+ {
+  "annotation_id": 21567,
+  "image": "DJI_0705.JPG",
+  "bbox": [
+   785,
+   2715,
+   250,
+   279
+  ],
+  "predicted": "Truck",
+  "score": 0.7275
+ },
+ {
+  "annotation_id": 10330,
+  "image": "DJI_0648.JPG",
+  "bbox": [
+   1718,
+   1579,
+   46,
+   69
+  ],
+  "predicted": "Truck",
+  "score": 0.5469
+ },
+ {
+  "annotation_id": 1141,
+  "image": "DJI_0578.JPG",
+  "bbox": [
+   2992,
+   2802,
+   46,
+   50
+  ],
+  "predicted": "Truck",
+  "score": 0.2996
+ },
+ {
+  "annotation_id": 11849,
+  "image": "DJI_0658.JPG",
+  "bbox": [
+   2515,
+   1128,
+   63,
+   73
+  ],
+  "predicted": "Truck",
+  "score": 0.2876
+ },
+ {
+  "annotation_id": 11210,
+  "image": "DJI_0655.JPG",
+  "bbox": [
+   3727,
+   2472,
+   103,
+   48
+  ],
+  "predicted": "Truck",
+  "score": 0.426
+ },
+ {
+  "annotation_id": 477,
+  "image": "DJI_0573.JPG",
+  "bbox": [
+   2469,
+   1292,
+   51,
+   34
+  ],
+  "predicted": "Truck",
+  "score": 0.3447
+ },
+ {
+  "annotation_id": 4890,
+  "image": "DJI_0605.JPG",
+  "bbox": [
+   1749,
+   1915,
+   15,
+   58
+  ],
+  "predicted": "Truck",
+  "score": 0.325
+ },
+ {
+  "annotation_id": 2124,
+  "image": "DJI_0586.JPG",
+  "bbox": [
+   3047,
+   988,
+   132,
+   20
+  ],
+  "predicted": "Truck",
+  "score": 0.2891
+ },
+ {
+  "annotation_id": 14109,
+  "image": "DJI_0672.JPG",
+  "bbox": [
+   2375,
+   1512,
+   37,
+   51
+  ],
+  "predicted": "Truck",
+  "score": 0.3215
+ },
+ {
+  "annotation_id": 24475,
+  "image": "DJI_0724.JPG",
+  "bbox": [
+   775,
+   1512,
+   72,
+   33
+  ],
+  "predicted": "Truck",
+  "score": 0.5903
+ },
+ {
+  "annotation_id": 16409,
+  "image": "DJI_0685.JPG",
+  "bbox": [
+   306,
+   1355,
+   128,
+   124
+  ],
+  "predicted": "Truck",
+  "score": 0.8564
+ },
+ {
+  "annotation_id": 16411,
+  "image": "DJI_0685.JPG",
+  "bbox": [
+   371,
+   1382,
+   123,
+   124
+  ],
+  "predicted": "Truck",
+  "score": 0.855
+ },
+ {
+  "annotation_id": 16435,
+  "image": "DJI_0685.JPG",
+  "bbox": [
+   198,
+   1491,
+   197,
+   125
+  ],
+  "predicted": "Truck",
+  "score": 0.8032
+ },
+ {
+  "annotation_id": 1988,
+  "image": "DJI_0585.JPG",
+  "bbox": [
+   1745,
+   2015,
+   19,
+   148
+  ],
+  "predicted": "Truck",
+  "score": 0.4407
+ },
+ {
+  "annotation_id": 2003,
+  "image": "DJI_0585.JPG",
+  "bbox": [
+   1722,
+   2735,
+   42,
+   135
+  ],
+  "predicted": "Truck",
+  "score": 0.3259
+ },
+ {
+  "annotation_id": 18492,
+  "image": "DJI_0693.JPG",
+  "bbox": [
+   2186,
+   52,
+   26,
+   34
+  ],
+  "predicted": "Truck",
+  "score": 0.6826
+ },
+ {
+  "annotation_id": 12423,
+  "image": "DJI_0661.JPG",
+  "bbox": [
+   2422,
+   953,
+   58,
+   55
+  ],
+  "predicted": "Truck",
+  "score": 0.5117
+ },
+ {
+  "annotation_id": 12469,
+  "image": "DJI_0661.JPG",
+  "bbox": [
+   2013,
+   869,
+   118,
+   139
+  ],
+  "predicted": "Truck",
+  "score": 0.3665
+ },
+ {
+  "annotation_id": 12478,
+  "image": "DJI_0661.JPG",
+  "bbox": [
+   3185,
+   756,
+   68,
+   24
+  ],
+  "predicted": "Truck",
+  "score": 0.3486
+ },
+ {
+  "annotation_id": 12533,
+  "image": "DJI_0661.JPG",
+  "bbox": [
+   1752,
+   1008,
+   12,
+   42
+  ],
+  "predicted": "Truck",
+  "score": 0.2739
+ },
+ {
+  "annotation_id": 4429,
+  "image": "DJI_0599.JPG",
+  "bbox": [
+   2463,
+   1992,
+   57,
+   71
+  ],
+  "predicted": "Truck",
+  "score": 0.3494
+ },
+ {
+  "annotation_id": 297,
+  "image": "DJI_0570.JPG",
+  "bbox": [
+   2268,
+   1757,
+   9,
+   53
+  ],
+  "predicted": "Truck",
+  "score": 0.3833
+ },
+ {
+  "annotation_id": 11005,
+  "image": "DJI_0654.JPG",
+  "bbox": [
+   2084,
+   1992,
+   76,
+   34
+  ],
+  "predicted": "Truck",
+  "score": 0.5542
+ },
+ {
+  "annotation_id": 19901,
+  "image": "DJI_0697.JPG",
+  "bbox": [
+   210,
+   2257,
+   214,
+   123
+  ],
+  "predicted": "Truck",
+  "score": 0.8159
+ },
+ {
+  "annotation_id": 20032,
+  "image": "DJI_0697.JPG",
+  "bbox": [
+   59,
+   2504,
+   75,
+   71
+  ],
+  "predicted": "Truck",
+  "score": 0.5088
+ },
+ {
+  "annotation_id": 27807,
+  "image": "DJI_0738.JPG",
+  "bbox": [
+   2992,
+   1847,
+   12,
+   26
+  ],
+  "predicted": "Truck",
+  "score": 0.2502
+ },
+ {
+  "annotation_id": 21767,
+  "image": "DJI_0706.JPG",
+  "bbox": [
+   2992,
+   2274,
+   52,
+   70
+  ],
+  "predicted": "Truck",
+  "score": 0.2778
+ },
+ {
+  "annotation_id": 6218,
+  "image": "DJI_0615.JPG",
+  "bbox": [
+   3024,
+   1078,
+   73,
+   29
+  ],
+  "predicted": "Truck",
+  "score": 0.4873
+ },
+ {
+  "annotation_id": 9788,
+  "image": "DJI_0642.JPG",
+  "bbox": [
+   1611,
+   1992,
+   95,
+   61
+  ],
+  "predicted": "Truck",
+  "score": 0.2515
+ },
+ {
+  "annotation_id": 16053,
+  "image": "DJI_0682.JPG",
+  "bbox": [
+   2496,
+   280,
+   24,
+   45
+  ],
+  "predicted": "Truck",
+  "score": 0.292
+ },
+ {
+  "annotation_id": 9668,
+  "image": "DJI_0641.JPG",
+  "bbox": [
+   2268,
+   1687,
+   42,
+   77
+  ],
+  "predicted": "Truck",
+  "score": 0.272
+ },
+ {
+  "annotation_id": 3411,
+  "image": "DJI_0595.JPG",
+  "bbox": [
+   902,
+   987,
+   29,
+   20
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.4946
+ },
+ {
+  "annotation_id": 3415,
+  "image": "DJI_0595.JPG",
+  "bbox": [
+   2623,
+   22,
+   18,
+   21
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.4844
+ },
+ {
+  "annotation_id": 3432,
+  "image": "DJI_0595.JPG",
+  "bbox": [
+   3086,
+   756,
+   12,
+   5
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.4329
+ },
+ {
+  "annotation_id": 3438,
+  "image": "DJI_0595.JPG",
+  "bbox": [
+   3113,
+   756,
+   14,
+   20
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.4263
+ },
+ {
+  "annotation_id": 3442,
+  "image": "DJI_0595.JPG",
+  "bbox": [
+   2854,
+   372,
+   26,
+   36
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.4165
+ },
+ {
+  "annotation_id": 3464,
+  "image": "DJI_0595.JPG",
+  "bbox": [
+   2888,
+   320,
+   27,
+   20
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.3511
+ },
+ {
+  "annotation_id": 3477,
+  "image": "DJI_0595.JPG",
+  "bbox": [
+   2472,
+   895,
+   97,
+   108
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.3306
+ },
+ {
+  "annotation_id": 3480,
+  "image": "DJI_0595.JPG",
+  "bbox": [
+   3126,
+   734,
+   19,
+   19
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.3235
+ },
+ {
+  "annotation_id": 3483,
+  "image": "DJI_0595.JPG",
+  "bbox": [
+   3289,
+   1523,
+   30,
+   16
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.3193
+ },
+ {
+  "annotation_id": 3491,
+  "image": "DJI_0595.JPG",
+  "bbox": [
+   2559,
+   2656,
+   12,
+   25
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.3091
+ },
+ {
+  "annotation_id": 3498,
+  "image": "DJI_0595.JPG",
+  "bbox": [
+   2525,
+   1792,
+   29,
+   18
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.3
+ },
+ {
+  "annotation_id": 3499,
+  "image": "DJI_0595.JPG",
+  "bbox": [
+   2757,
+   379,
+   15,
+   28
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.2986
+ },
+ {
+  "annotation_id": 3502,
+  "image": "DJI_0595.JPG",
+  "bbox": [
+   2940,
+   362,
+   23,
+   42
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.2886
+ },
+ {
+  "annotation_id": 3503,
+  "image": "DJI_0595.JPG",
+  "bbox": [
+   3297,
+   1500,
+   13,
+   15
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.2874
+ },
+ {
+  "annotation_id": 3509,
+  "image": "DJI_0595.JPG",
+  "bbox": [
+   2556,
+   1619,
+   20,
+   19
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.2795
+ },
+ {
+  "annotation_id": 3510,
+  "image": "DJI_0595.JPG",
+  "bbox": [
+   2485,
+   0,
+   32,
+   28
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.2776
+ },
+ {
+  "annotation_id": 3512,
+  "image": "DJI_0595.JPG",
+  "bbox": [
+   3327,
+   862,
+   13,
+   14
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.2751
+ },
+ {
+  "annotation_id": 3520,
+  "image": "DJI_0595.JPG",
+  "bbox": [
+   3172,
+   734,
+   13,
+   13
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.2651
+ },
+ {
+  "annotation_id": 3534,
+  "image": "DJI_0595.JPG",
+  "bbox": [
+   2577,
+   2261,
+   16,
+   25
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.2542
+ },
+ {
+  "annotation_id": 3535,
+  "image": "DJI_0595.JPG",
+  "bbox": [
+   2599,
+   1671,
+   22,
+   23
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.2524
+ },
+ {
+  "annotation_id": 3536,
+  "image": "DJI_0595.JPG",
+  "bbox": [
+   2689,
+   2152,
+   8,
+   10
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.2502
+ },
+ {
+  "annotation_id": 10221,
+  "image": "DJI_0647.JPG",
+  "bbox": [
+   311,
+   5,
+   51,
+   54
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.918
+ },
+ {
+  "annotation_id": 10228,
+  "image": "DJI_0647.JPG",
+  "bbox": [
+   1074,
+   399,
+   39,
+   46
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.8628
+ },
+ {
+  "annotation_id": 10238,
+  "image": "DJI_0647.JPG",
+  "bbox": [
+   291,
+   18,
+   45,
+   52
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.7964
+ },
+ {
+  "annotation_id": 10240,
+  "image": "DJI_0647.JPG",
+  "bbox": [
+   2835,
+   1635,
+   27,
+   25
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.7832
+ },
+ {
+  "annotation_id": 10251,
+  "image": "DJI_0647.JPG",
+  "bbox": [
+   2856,
+   183,
+   22,
+   39
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.6426
+ },
+ {
+  "annotation_id": 10262,
+  "image": "DJI_0647.JPG",
+  "bbox": [
+   1126,
+   1445,
+   44,
+   49
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.4739
+ },
+ {
+  "annotation_id": 10264,
+  "image": "DJI_0647.JPG",
+  "bbox": [
+   1141,
+   1473,
+   29,
+   21
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.4548
+ },
+ {
+  "annotation_id": 10277,
+  "image": "DJI_0647.JPG",
+  "bbox": [
+   1285,
+   1724,
+   30,
+   35
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.3284
+ },
+ {
+  "annotation_id": 10280,
+  "image": "DJI_0647.JPG",
+  "bbox": [
+   2031,
+   2417,
+   10,
+   15
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.3237
+ },
+ {
+  "annotation_id": 10281,
+  "image": "DJI_0647.JPG",
+  "bbox": [
+   1585,
+   1802,
+   26,
+   28
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.3137
+ },
+ {
+  "annotation_id": 10284,
+  "image": "DJI_0647.JPG",
+  "bbox": [
+   2936,
+   1598,
+   19,
+   17
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.2983
+ },
+ {
+  "annotation_id": 10292,
+  "image": "DJI_0647.JPG",
+  "bbox": [
+   2946,
+   161,
+   11,
+   17
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.2661
+ },
+ {
+  "annotation_id": 22836,
+  "image": "DJI_0714.JPG",
+  "bbox": [
+   3484,
+   2837,
+   38,
+   30
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.7114
+ },
+ {
+  "annotation_id": 22844,
+  "image": "DJI_0714.JPG",
+  "bbox": [
+   3859,
+   2552,
+   42,
+   55
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.5825
+ },
+ {
+  "annotation_id": 22846,
+  "image": "DJI_0714.JPG",
+  "bbox": [
+   3154,
+   2805,
+   12,
+   25
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.5444
+ },
+ {
+  "annotation_id": 22852,
+  "image": "DJI_0714.JPG",
+  "bbox": [
+   3209,
+   2743,
+   33,
+   20
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.489
+ },
+ {
+  "annotation_id": 22861,
+  "image": "DJI_0714.JPG",
+  "bbox": [
+   2782,
+   337,
+   18,
+   27
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.3716
+ },
+ {
+  "annotation_id": 22869,
+  "image": "DJI_0714.JPG",
+  "bbox": [
+   3528,
+   2681,
+   90,
+   16
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.3005
+ },
+ {
+  "annotation_id": 23266,
+  "image": "DJI_0718.JPG",
+  "bbox": [
+   2227,
+   1306,
+   20,
+   17
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.8184
+ },
+ {
+  "annotation_id": 23282,
+  "image": "DJI_0718.JPG",
+  "bbox": [
+   1970,
+   1187,
+   10,
+   21
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.7324
+ },
+ {
+  "annotation_id": 23304,
+  "image": "DJI_0718.JPG",
+  "bbox": [
+   2227,
+   888,
+   19,
+   44
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.5854
+ },
+ {
+  "annotation_id": 23308,
+  "image": "DJI_0718.JPG",
+  "bbox": [
+   456,
+   1256,
+   18,
+   23
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.5752
+ },
+ {
+  "annotation_id": 23315,
+  "image": "DJI_0718.JPG",
+  "bbox": [
+   435,
+   1253,
+   22,
+   10
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.5503
+ },
+ {
+  "annotation_id": 23319,
+  "image": "DJI_0718.JPG",
+  "bbox": [
+   2053,
+   712,
+   11,
+   24
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.5142
+ },
+ {
+  "annotation_id": 23323,
+  "image": "DJI_0718.JPG",
+  "bbox": [
+   340,
+   1288,
+   26,
+   22
+  ],
+  "predicted": "Pedestrian",
+  "score": 0.488
+ },
+ {
+  "annotation_id": 13901,
+  "image": "DJI_0670.JPG",
+  "bbox": [
+   3238,
+   1287,
+   38,
+   103
+  ],
+  "predicted": "Truck",
+  "score": 0.3196
+ },
+ {
+  "annotation_id": 25957,
+  "image": "DJI_0732.JPG",
+  "bbox": [
+   2465,
+   2091,
+   66,
+   120
+  ],
+  "predicted": "Truck",
+  "score": 0.4485
+ },
+ {
+  "annotation_id": 2881,
+  "image": "DJI_0592.JPG",
+  "bbox": [
+   1512,
+   399,
+   48,
+   251
+  ],
+  "predicted": "Truck",
+  "score": 0.2578
+ },
+ {
+  "annotation_id": 5103,
+  "image": "DJI_0608.JPG",
+  "bbox": [
+   1721,
+   756,
+   39,
+   76
+  ],
+  "predicted": "Truck",
+  "score": 0.855
+ },
+ {
+  "annotation_id": 6103,
+  "image": "DJI_0614.JPG",
+  "bbox": [
+   211,
+   2746,
+   48,
+   40
+  ],
+  "predicted": "Bicycle",
+  "score": 0.2527
+ },
+ {
+  "annotation_id": 13302,
+  "image": "DJI_0665.JPG",
+  "bbox": [
+   2555,
+   2941,
+   34,
+   22
+  ],
+  "predicted": "Bicycle",
+  "score": 0.4487
+ },
+ {
+  "annotation_id": 13304,
+  "image": "DJI_0665.JPG",
+  "bbox": [
+   3745,
+   2779,
+   31,
+   53
+  ],
+  "predicted": "Bicycle",
+  "score": 0.4397
+ },
+ {
+  "annotation_id": 17622,
+  "image": "DJI_0689.JPG",
+  "bbox": [
+   1763,
+   518,
+   22,
+   46
+  ],
+  "predicted": "Bicycle",
+  "score": 0.408
+ },
+ {
+  "annotation_id": 17667,
+  "image": "DJI_0689.JPG",
+  "bbox": [
+   2576,
+   1737,
+   40,
+   27
+  ],
+  "predicted": "Bicycle",
+  "score": 0.3298
+ },
+ {
+  "annotation_id": 17717,
+  "image": "DJI_0689.JPG",
+  "bbox": [
+   2751,
+   1648,
+   30,
+   31
+  ],
+  "predicted": "Bicycle",
+  "score": 0.2625
+ },
+ {
+  "annotation_id": 17720,
+  "image": "DJI_0689.JPG",
+  "bbox": [
+   2268,
+   1444,
+   14,
+   29
+  ],
+  "predicted": "Bicycle",
+  "score": 0.2588
+ },
+ {
+  "annotation_id": 22404,
+  "image": "DJI_0710.JPG",
+  "bbox": [
+   407,
+   344,
+   30,
+   23
+  ],
+  "predicted": "Bicycle",
+  "score": 0.4441
+ },
+ {
+  "annotation_id": 22461,
+  "image": "DJI_0710.JPG",
+  "bbox": [
+   2036,
+   1235,
+   13,
+   18
+  ],
+  "predicted": "Bicycle",
+  "score": 0.2886
+ },
+ {
+  "annotation_id": 22467,
+  "image": "DJI_0710.JPG",
+  "bbox": [
+   2780,
+   2926,
+   15,
+   36
+  ],
+  "predicted": "Bicycle",
+  "score": 0.2747
+ },
+ {
+  "annotation_id": 10897,
+  "image": "DJI_0653.JPG",
+  "bbox": [
+   3591,
+   2329,
+   30,
+   41
+  ],
+  "predicted": "Bicycle",
+  "score": 0.2974
+ },
+ {
+  "annotation_id": 6780,
+  "image": "DJI_0617.JPG",
+  "bbox": [
+   2117,
+   1980,
+   24,
+   13
+  ],
+  "predicted": "Bicycle",
+  "score": 0.2717
+ },
+ {
+  "annotation_id": 5277,
+  "image": "DJI_0609.JPG",
+  "bbox": [
+   1075,
+   2471,
+   32,
+   21
+  ],
+  "predicted": "Bicycle",
+  "score": 0.2852
+ },
+ {
+  "annotation_id": 20296,
+  "image": "DJI_0698.JPG",
+  "bbox": [
+   2466,
+   216,
+   29,
+   28
+  ],
+  "predicted": "Bicycle",
+  "score": 0.7686
+ },
+ {
+  "annotation_id": 20411,
+  "image": "DJI_0698.JPG",
+  "bbox": [
+   1282,
+   327,
+   39,
+   28
+  ],
+  "predicted": "Bicycle",
+  "score": 0.4829
+ },
+ {
+  "annotation_id": 20475,
+  "image": "DJI_0698.JPG",
+  "bbox": [
+   3568,
+   43,
+   23,
+   22
+  ],
+  "predicted": "Bicycle",
+  "score": 0.3516
+ },
+ {
+  "annotation_id": 20483,
+  "image": "DJI_0698.JPG",
+  "bbox": [
+   1523,
+   847,
+   25,
+   19
+  ],
+  "predicted": "Bicycle",
+  "score": 0.3386
+ },
+ {
+  "annotation_id": 20516,
+  "image": "DJI_0698.JPG",
+  "bbox": [
+   2009,
+   911,
+   36,
+   17
+  ],
+  "predicted": "Bicycle",
+  "score": 0.2744
+ },
+ {
+  "annotation_id": 20529,
+  "image": "DJI_0698.JPG",
+  "bbox": [
+   2650,
+   190,
+   28,
+   39
+  ],
+  "predicted": "Bicycle",
+  "score": 0.2637
+ },
+ {
+  "annotation_id": 26297,
+  "image": "DJI_0733.JPG",
+  "bbox": [
+   3786,
+   210,
+   116,
+   167
+  ],
+  "predicted": "Bicycle",
+  "score": 0.4656
+ },
+ {
+  "annotation_id": 26339,
+  "image": "DJI_0733.JPG",
+  "bbox": [
+   3544,
+   0,
+   56,
+   28
+  ],
+  "predicted": "Bicycle",
+  "score": 0.4119
+ },
+ {
+  "annotation_id": 26501,
+  "image": "DJI_0733.JPG",
+  "bbox": [
+   2268,
+   1246,
+   40,
+   38
+  ],
+  "predicted": "Bicycle",
+  "score": 0.2839
+ },
+ {
+  "annotation_id": 26516,
+  "image": "DJI_0733.JPG",
+  "bbox": [
+   3647,
+   51,
+   35,
+   37
+  ],
+  "predicted": "Bicycle",
+  "score": 0.2781
+ },
+ {
+  "annotation_id": 13486,
+  "image": "DJI_0667.JPG",
+  "bbox": [
+   1097,
+   58,
+   32,
+   39
+  ],
+  "predicted": "Bicycle",
+  "score": 0.54
+ },
+ {
+  "annotation_id": 13558,
+  "image": "DJI_0667.JPG",
+  "bbox": [
+   1145,
+   567,
+   22,
+   20
+  ],
+  "predicted": "Bicycle",
+  "score": 0.2825
+ },
+ {
+  "annotation_id": 13565,
+  "image": "DJI_0667.JPG",
+  "bbox": [
+   939,
+   508,
+   26,
+   20
+  ],
+  "predicted": "Bicycle",
+  "score": 0.2744
+ },
+ {
+  "annotation_id": 19021,
+  "image": "DJI_0694.JPG",
+  "bbox": [
+   2147,
+   1445,
+   20,
+   17
+  ],
+  "predicted": "Bicycle",
+  "score": 0.583
+ },
+ {
+  "annotation_id": 19023,
+  "image": "DJI_0694.JPG",
+  "bbox": [
+   2533,
+   1500,
+   28,
+   19
+  ],
+  "predicted": "Bicycle",
+  "score": 0.582
+ },
+ {
+  "annotation_id": 19081,
+  "image": "DJI_0694.JPG",
+  "bbox": [
+   2741,
+   1328,
+   43,
+   56
+  ],
+  "predicted": "Bicycle",
+  "score": 0.4504
+ },
+ {
+  "annotation_id": 19162,
+  "image": "DJI_0694.JPG",
+  "bbox": [
+   2497,
+   1613,
+   16,
+   14
+  ],
+  "predicted": "Bicycle",
+  "score": 0.325
+ },
+ {
+  "annotation_id": 19203,
+  "image": "DJI_0694.JPG",
+  "bbox": [
+   2268,
+   846,
+   6,
+   24
+  ],
+  "predicted": "Bicycle",
+  "score": 0.282
+ },
+ {
+  "annotation_id": 19218,
+  "image": "DJI_0694.JPG",
+  "bbox": [
+   2711,
+   1398,
+   31,
+   26
+  ],
+  "predicted": "Bicycle",
+  "score": 0.2686
+ },
+ {
+  "annotation_id": 11937,
+  "image": "DJI_0659.JPG",
+  "bbox": [
+   2468,
+   1262,
+   42,
+   42
+  ],
+  "predicted": "Bicycle",
+  "score": 0.7236
+ },
+ {
+  "annotation_id": 11950,
+  "image": "DJI_0659.JPG",
+  "bbox": [
+   2412,
+   1298,
+   30,
+   45
+  ],
+  "predicted": "Bicycle",
+  "score": 0.6748
+ },
+ {
+  "annotation_id": 11957,
+  "image": "DJI_0659.JPG",
+  "bbox": [
+   2411,
+   1382,
+   25,
+   31
+  ],
+  "predicted": "Bicycle",
+  "score": 0.6348
+ },
+ {
+  "annotation_id": 11960,
+  "image": "DJI_0659.JPG",
+  "bbox": [
+   2830,
+   1981,
+   33,
+   42
+  ],
+  "predicted": "Bicycle",
+  "score": 0.6221
+ },
+ {
+  "annotation_id": 11995,
+  "image": "DJI_0659.JPG",
+  "bbox": [
+   2594,
+   1390,
+   38,
+   28
+  ],
+  "predicted": "Bicycle",
+  "score": 0.446
+ },
+ {
+  "annotation_id": 12014,
+  "image": "DJI_0659.JPG",
+  "bbox": [
+   2590,
+   1603,
+   42,
+   28
+  ],
+  "predicted": "Bicycle",
+  "score": 0.3936
+ },
+ {
+  "annotation_id": 12036,
+  "image": "DJI_0659.JPG",
+  "bbox": [
+   2915,
+   2061,
+   58,
+   60
+  ],
+  "predicted": "Bicycle",
+  "score": 0.343
+ },
+ {
+  "annotation_id": 12041,
+  "image": "DJI_0659.JPG",
+  "bbox": [
+   2692,
+   1315,
+   24,
+   47
+  ],
+  "predicted": "Bicycle",
+  "score": 0.3354
+ },
+ {
+  "annotation_id": 12054,
+  "image": "DJI_0659.JPG",
+  "bbox": [
+   1421,
+   270,
+   47,
+   60
+  ],
+  "predicted": "Bicycle",
+  "score": 0.3066
+ },
+ {
+  "annotation_id": 12100,
+  "image": "DJI_0659.JPG",
+  "bbox": [
+   1573,
+   0,
+   16,
+   13
+  ],
+  "predicted": "Bicycle",
+  "score": 0.2585
+ },
+ {
+  "annotation_id": 12103,
+  "image": "DJI_0659.JPG",
+  "bbox": [
+   2056,
+   1296,
+   26,
+   40
+  ],
+  "predicted": "Bicycle",
+  "score": 0.2551
+ },
+ {
+  "annotation_id": 22113,
+  "image": "DJI_0708.JPG",
+  "bbox": [
+   3058,
+   1625,
+   37,
+   37
+  ],
+  "predicted": "Bicycle",
+  "score": 0.4048
+ },
+ {
+  "annotation_id": 22125,
+  "image": "DJI_0708.JPG",
+  "bbox": [
+   2751,
+   2428,
+   37,
+   33
+  ],
+  "predicted": "Bicycle",
+  "score": 0.3823
+ },
+ {
+  "annotation_id": 22160,
+  "image": "DJI_0708.JPG",
+  "bbox": [
+   294,
+   51,
+   43,
+   44
+  ],
+  "predicted": "Bicycle",
+  "score": 0.2881
+ },
+ {
+  "annotation_id": 22179,
+  "image": "DJI_0708.JPG",
+  "bbox": [
+   2311,
+   1969,
+   31,
+   25
+  ],
+  "predicted": "Bicycle",
+  "score": 0.262
+ },
+ {
+  "annotation_id": 4534,
+  "image": "DJI_0600.JPG",
+  "bbox": [
+   1515,
+   2770,
+   60,
+   59
+  ],
+  "predicted": "Bicycle",
+  "score": 0.5107
+ },
+ {
+  "annotation_id": 4544,
+  "image": "DJI_0600.JPG",
+  "bbox": [
+   625,
+   2809,
+   66,
+   65
+  ],
+  "predicted": "Bicycle",
+  "score": 0.4326
+ },
+ {
+  "annotation_id": 4548,
+  "image": "DJI_0600.JPG",
+  "bbox": [
+   661,
+   2829,
+   31,
+   45
+  ],
+  "predicted": "Bicycle",
+  "score": 0.4175
+ },
+ {
+  "annotation_id": 4573,
+  "image": "DJI_0600.JPG",
+  "bbox": [
+   887,
+   2296,
+   39,
+   48
+  ],
+  "predicted": "Bicycle",
+  "score": 0.3279
+ },
+ {
+  "annotation_id": 4588,
+  "image": "DJI_0600.JPG",
+  "bbox": [
+   564,
+   2174,
+   66,
+   16
+  ],
+  "predicted": "Bicycle",
+  "score": 0.2852
+ },
+ {
+  "annotation_id": 5837,
+  "image": "DJI_0613.JPG",
+  "bbox": [
+   1962,
+   756,
+   17,
+   16
+  ],
+  "predicted": "Bicycle",
+  "score": 0.323
+ },
+ {
+  "annotation_id": 5863,
+  "image": "DJI_0613.JPG",
+  "bbox": [
+   1785,
+   1798,
+   34,
+   25
+  ],
+  "predicted": "Bicycle",
+  "score": 0.292
+ },
+ {
+  "annotation_id": 5868,
+  "image": "DJI_0613.JPG",
+  "bbox": [
+   1391,
+   1917,
+   23,
+   23
+  ],
+  "predicted": "Bicycle",
+  "score": 0.2861
+ },
+ {
+  "annotation_id": 775,
+  "image": "DJI_0575.JPG",
+  "bbox": [
+   2084,
+   1716,
+   23,
+   26
+  ],
+  "predicted": "Bicycle",
+  "score": 0.2666
+ },
+ {
+  "annotation_id": 21013,
+  "image": "DJI_0701.JPG",
+  "bbox": [
+   3389,
+   1715,
+   38,
+   35
+  ],
+  "predicted": "Bicycle",
+  "score": 0.6128
+ },
+ {
+  "annotation_id": 21056,
+  "image": "DJI_0701.JPG",
+  "bbox": [
+   3583,
+   1476,
+   36,
+   24
+  ],
+  "predicted": "Bicycle",
+  "score": 0.343
+ },
+ {
+  "annotation_id": 21063,
+  "image": "DJI_0701.JPG",
+  "bbox": [
+   3149,
+   1411,
+   29,
+   22
+  ],
+  "predicted": "Bicycle",
+  "score": 0.314
+ },
+ {
+  "annotation_id": 21071,
+  "image": "DJI_0701.JPG",
+  "bbox": [
+   3663,
+   1457,
+   43,
+   25
+  ],
+  "predicted": "Bicycle",
+  "score": 0.2959
+ },
+ {
+  "annotation_id": 21077,
+  "image": "DJI_0701.JPG",
+  "bbox": [
+   2957,
+   2455,
+   38,
+   36
+  ],
+  "predicted": "Bicycle",
+  "score": 0.2788
+ },
+ {
+  "annotation_id": 12637,
+  "image": "DJI_0662.JPG",
+  "bbox": [
+   3413,
+   1512,
+   50,
+   22
+  ],
+  "predicted": "Bicycle",
+  "score": 0.645
+ },
+ {
+  "annotation_id": 12692,
+  "image": "DJI_0662.JPG",
+  "bbox": [
+   3331,
+   1523,
+   86,
+   49
+  ],
+  "predicted": "Bicycle",
+  "score": 0.4592
+ },
+ {
+  "annotation_id": 12720,
+  "image": "DJI_0662.JPG",
+  "bbox": [
+   3342,
+   1415,
+   48,
+   20
+  ],
+  "predicted": "Bicycle",
+  "score": 0.387
+ },
+ {
+  "annotation_id": 12758,
+  "image": "DJI_0662.JPG",
+  "bbox": [
+   3319,
+   1006,
+   39,
+   21
+  ],
+  "predicted": "Bicycle",
+  "score": 0.3174
+ },
+ {
+  "annotation_id": 12762,
+  "image": "DJI_0662.JPG",
+  "bbox": [
+   2597,
+   1723,
+   25,
+   46
+  ],
+  "predicted": "Bicycle",
+  "score": 0.314
+ },
+ {
+  "annotation_id": 12781,
+  "image": "DJI_0662.JPG",
+  "bbox": [
+   2446,
+   1512,
+   49,
+   44
+  ],
+  "predicted": "Bicycle",
+  "score": 0.2891
+ },
+ {
+  "annotation_id": 21660,
+  "image": "DJI_0705.JPG",
+  "bbox": [
+   1512,
+   2175,
+   11,
+   35
+  ],
+  "predicted": "Bicycle",
+  "score": 0.2617
+ },
+ {
+  "annotation_id": 21663,
+  "image": "DJI_0705.JPG",
+  "bbox": [
+   863,
+   216,
+   30,
+   22
+  ],
+  "predicted": "Bicycle",
+  "score": 0.2583
+ },
+ {
+  "annotation_id": 1323,
+  "image": "DJI_0580.JPG",
+  "bbox": [
+   1375,
+   1339,
+   32,
+   36
+  ],
+  "predicted": "Bicycle",
+  "score": 0.3298
+ },
+ {
+  "annotation_id": 23984,
+  "image": "DJI_0722.JPG",
+  "bbox": [
+   1692,
+   166,
+   27,
+   29
+  ],
+  "predicted": "Bicycle",
+  "score": 0.5425
+ },
+ {
+  "annotation_id": 23987,
+  "image": "DJI_0722.JPG",
+  "bbox": [
+   3002,
+   2823,
+   36,
+   51
+  ],
+  "predicted": "Bicycle",
+  "score": 0.4871
+ },
+ {
+  "annotation_id": 24021,
+  "image": "DJI_0722.JPG",
+  "bbox": [
+   1167,
+   301,
+   53,
+   21
+  ],
+  "predicted": "Bicycle",
+  "score": 0.3345
+ },
+ {
+  "annotation_id": 5582,
+  "image": "DJI_0612.JPG",
+  "bbox": [
+   238,
+   1017,
+   46,
+   20
+  ],
+  "predicted": "Bicycle",
+  "score": 0.582
+ },
+ {
+  "annotation_id": 5592,
+  "image": "DJI_0612.JPG",
+  "bbox": [
+   697,
+   977,
+   87,
+   39
+  ],
+  "predicted": "Bicycle",
+  "score": 0.502
+ },
+ {
+  "annotation_id": 5662,
+  "image": "DJI_0612.JPG",
+  "bbox": [
+   636,
+   977,
+   147,
+   48
+  ],
+  "predicted": "Bicycle",
+  "score": 0.2642
+ },
+ {
+  "annotation_id": 5668,
+  "image": "DJI_0612.JPG",
+  "bbox": [
+   929,
+   1685,
+   22,
+   22
+  ],
+  "predicted": "Bicycle",
+  "score": 0.2505
+ },
+ {
+  "annotation_id": 2168,
+  "image": "DJI_0587.JPG",
+  "bbox": [
+   1744,
+   292,
+   35,
+   96
+  ],
+  "predicted": "Bicycle",
+  "score": 0.6685
+ },
+ {
+  "annotation_id": 2170,
+  "image": "DJI_0587.JPG",
+  "bbox": [
+   1730,
+   110,
+   17,
+   34
+  ],
+  "predicted": "Bicycle",
+  "score": 0.6611
+ },
+ {
+  "annotation_id": 2174,
+  "image": "DJI_0587.JPG",
+  "bbox": [
+   1684,
+   67,
+   33,
+   81
+  ],
+  "predicted": "Bicycle",
+  "score": 0.6528
+ },
+ {
+  "annotation_id": 2184,
+  "image": "DJI_0587.JPG",
+  "bbox": [
+   1634,
+   121,
+   19,
+   57
+  ],
+  "predicted": "Bicycle",
+  "score": 0.5781
+ },
+ {
+  "annotation_id": 2187,
+  "image": "DJI_0587.JPG",
+  "bbox": [
+   1796,
+   140,
+   31,
+   87
+  ],
+  "predicted": "Bicycle",
+  "score": 0.5654
+ },
+ {
+  "annotation_id": 2193,
+  "image": "DJI_0587.JPG",
+  "bbox": [
+   2391,
+   854,
+   13,
+   43
+  ],
+  "predicted": "Bicycle",
+  "score": 0.5352
+ },
+ {
+  "annotation_id": 2202,
+  "image": "DJI_0587.JPG",
+  "bbox": [
+   1688,
+   347,
+   19,
+   35
+  ],
+  "predicted": "Bicycle",
+  "score": 0.4509
+ },
+ {
+  "annotation_id": 2231,
+  "image": "DJI_0587.JPG",
+  "bbox": [
+   2288,
+   538,
+   9,
+   26
+  ],
+  "predicted": "Bicycle",
+  "score": 0.3191
+ },
+ {
+  "annotation_id": 11697,
+  "image": "DJI_0658.JPG",
+  "bbox": [
+   2232,
+   274,
+   48,
+   34
+  ],
+  "predicted": "Bicycle",
+  "score": 0.7891
+ },
+ {
+  "annotation_id": 11709,
+  "image": "DJI_0658.JPG",
+  "bbox": [
+   2315,
+   877,
+   24,
+   48
+  ],
+  "predicted": "Bicycle",
+  "score": 0.7261
+ },
+ {
+  "annotation_id": 11730,
+  "image": "DJI_0658.JPG",
+  "bbox": [
+   2051,
+   195,
+   40,
+   76
+  ],
+  "predicted": "Bicycle",
+  "score": 0.6177
+ },
+ {
+  "annotation_id": 11736,
+  "image": "DJI_0658.JPG",
+  "bbox": [
+   2153,
+   116,
+   34,
+   68
+  ],
+  "predicted": "Bicycle",
+  "score": 0.585
+ },
+ {
+  "annotation_id": 11738,
+  "image": "DJI_0658.JPG",
+  "bbox": [
+   3291,
+   2419,
+   41,
+   73
+  ],
+  "predicted": "Bicycle",
+  "score": 0.5791
+ },
+ {
+  "annotation_id": 11750,
+  "image": "DJI_0658.JPG",
+  "bbox": [
+   2090,
+   150,
+   23,
+   56
+  ],
+  "predicted": "Bicycle",
+  "score": 0.5439
+ },
+ {
+  "annotation_id": 11763,
+  "image": "DJI_0658.JPG",
+  "bbox": [
+   2281,
+   724,
+   25,
+   37
+  ],
+  "predicted": "Bicycle",
+  "score": 0.4888
+ },
+ {
+  "annotation_id": 11783,
+  "image": "DJI_0658.JPG",
+  "bbox": [
+   2778,
+   1268,
+   37,
+   41
+  ],
+  "predicted": "Bicycle",
+  "score": 0.4087
+ },
+ {
+  "annotation_id": 11789,
+  "image": "DJI_0658.JPG",
+  "bbox": [
+   2555,
+   1194,
+   51,
+   57
+  ],
+  "predicted": "Bicycle",
+  "score": 0.395
+ },
+ {
+  "annotation_id": 11805,
+  "image": "DJI_0658.JPG",
+  "bbox": [
+   1695,
+   278,
+   23,
+   33
+  ],
+  "predicted": "Bicycle",
+  "score": 0.3516
+ }
+]

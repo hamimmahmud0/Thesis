@@ -1,0 +1,24 @@
+{
+ "images": {
+  "train": 148,
+  "val": 26
+ },
+ "instances": {
+  "Auto3WCargo": 937,
+  "AutoRicksaw": 214,
+  "Bus": 182,
+  "Container": 119,
+  "Mixer": 12,
+  "MotorCycle": 1641,
+  "PickUp": 308,
+  "SUV": 782,
+  "Sedan": 413,
+  "Tanker": 10,
+  "Tipper": 37,
+  "Trailer": 81,
+  "Truck": 451,
+  "Van": 165
+ },
+ "conf": 0.5,
+ "weights": "/kaggle/working/runs/l1280/weights/best.pt"
+}

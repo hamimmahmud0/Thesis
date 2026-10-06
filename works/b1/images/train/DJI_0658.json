@@ -1,0 +1,1019 @@
+{
+  "version": "4.1.0",
+  "flags": {},
+  "checked": false,
+  "shapes": [
+    {
+      "label": "Truck",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          1395.084,
+          237.537
+        ],
+        [
+          1307.712,
+          54.018
+        ],
+        [
+          1373.668,
+          22.62
+        ],
+        [
+          1461.036,
+          206.136
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.2680497261651285,
+      "attributes": {}
+    },
+    {
+      "label": "Truck",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          1241.9560000000001,
+          353.54699999999997
+        ],
+        [
+          1160.532,
+          163.626
+        ],
+        [
+          1230.96,
+          133.431
+        ],
+        [
+          1312.384,
+          323.35200000000003
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.307366929421578,
+      "attributes": {}
+    },
+    {
+      "label": "Truck",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2328.9559999999997,
+          1834.23
+        ],
+        [
+          2241.772,
+          1641.8670000000002
+        ],
+        [
+          2308.544,
+          1611.603
+        ],
+        [
+          2395.728,
+          1803.9660000000001
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.286855176144221,
+      "attributes": {}
+    },
+    {
+      "label": "Sedan",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2516.7000000000003,
+          2291.934
+        ],
+        [
+          2441.528,
+          2103.93
+        ],
+        [
+          2514.552,
+          2074.734
+        ],
+        [
+          2589.7239999999997,
+          2262.735
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.3320183377601555,
+      "attributes": {}
+    },
+    {
+      "label": "Truck",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          1369.9479999999999,
+          611.103
+        ],
+        [
+          1295.816,
+          434.637
+        ],
+        [
+          1361.3,
+          407.127
+        ],
+        [
+          1435.432,
+          583.5930000000001
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.314682569368136,
+      "attributes": {}
+    },
+    {
+      "label": "Auto3WCargo",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          1543.0520000000001,
+          562.596
+        ],
+        [
+          1505.924,
+          479.214
+        ],
+        [
+          1546.008,
+          461.36400000000003
+        ],
+        [
+          1583.14,
+          544.746
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.293470507749919,
+      "attributes": {}
+    },
+    {
+      "label": "Auto3WCargo",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2298.724,
+          536.4540000000001
+        ],
+        [
+          2283.668,
+          458.202
+        ],
+        [
+          2326.276,
+          450.003
+        ],
+        [
+          2341.332,
+          528.2579999999999
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.52230779407433,
+      "attributes": {}
+    },
+    {
+      "label": "SUV",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          3233.932,
+          2780.4210000000003
+        ],
+        [
+          3154.7360000000003,
+          2589.42
+        ],
+        [
+          3232.736,
+          2557.0769999999998
+        ],
+        [
+          3311.9320000000002,
+          2748.081
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.319328890893533,
+      "attributes": {}
+    },
+    {
+      "label": "Auto3WCargo",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2216.868,
+          560.2199999999999
+        ],
+        [
+          2179.064,
+          481.308
+        ],
+        [
+          2220.632,
+          461.39399999999995
+        ],
+        [
+          2258.436,
+          540.306
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.265628963670893,
+      "attributes": {}
+    },
+    {
+      "label": "Auto3WCargo",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          3343.78,
+          3000.0
+        ],
+        [
+          3288.116,
+          2880.4049999999997
+        ],
+        [
+          3339.556,
+          2856.771
+        ],
+        [
+          3395.216,
+          2977.929
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.276771633043872,
+      "attributes": {}
+    },
+    {
+      "label": "Auto3WCargo",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2615.6440000000002,
+          2088.018
+        ],
+        [
+          2578.812,
+          1991.136
+        ],
+        [
+          2628.108,
+          1972.398
+        ],
+        [
+          2664.936,
+          2069.28
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.349090092017453,
+      "attributes": {}
+    },
+    {
+      "label": "Auto3WCargo",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2786.7999999999997,
+          1729.65
+        ],
+        [
+          2740.456,
+          1631.0069999999998
+        ],
+        [
+          2798.616,
+          1603.6829999999998
+        ],
+        [
+          2844.96,
+          1702.326
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.273179307949594,
+      "attributes": {}
+    },
+    {
+      "label": "MotorCycle",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2962.056,
+          2540.3250000000003
+        ],
+        [
+          2927.52,
+          2461.845
+        ],
+        [
+          2960.8599999999997,
+          2447.175
+        ],
+        [
+          2995.3959999999997,
+          2525.655
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.297830865266638,
+      "attributes": {}
+    },
+    {
+      "label": "AutoRicksaw",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2484.5280000000002,
+          1234.077
+        ],
+        [
+          2444.596,
+          1148.97
+        ],
+        [
+          2488.388,
+          1128.423
+        ],
+        [
+          2528.3199999999997,
+          1213.53
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.273685517541631,
+      "attributes": {}
+    },
+    {
+      "label": "PickUp",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2353.016,
+          862.9229999999999
+        ],
+        [
+          2320.564,
+          796.32
+        ],
+        [
+          2467.82,
+          724.5749999999999
+        ],
+        [
+          2500.268,
+          791.1809999999999
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.2589970815389835,
+      "attributes": {}
+    },
+    {
+      "label": "MotorCycle",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          1840.32,
+          582.2520000000001
+        ],
+        [
+          1807.512,
+          521.985
+        ],
+        [
+          1831.556,
+          508.89300000000003
+        ],
+        [
+          1864.3639999999998,
+          569.163
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.213872698681842,
+      "attributes": {}
+    },
+    {
+      "label": "Truck",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          1188.9279999999999,
+          1128.981
+        ],
+        [
+          1058.1000000000001,
+          814.764
+        ],
+        [
+          1150.656,
+          776.2260000000001
+        ],
+        [
+          1281.4840000000002,
+          1090.443
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.3178575367191065,
+      "attributes": {}
+    },
+    {
+      "label": "Auto3WCargo",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2540.34,
+          1422.492
+        ],
+        [
+          2492.7039999999997,
+          1335.8999999999999
+        ],
+        [
+          2532.576,
+          1313.967
+        ],
+        [
+          2580.212,
+          1400.556
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.20945356417266,
+      "attributes": {}
+    },
+    {
+      "label": "Auto3WCargo",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2537.524,
+          1211.1779999999999
+        ],
+        [
+          2509.68,
+          1143.0839999999998
+        ],
+        [
+          2558.308,
+          1123.197
+        ],
+        [
+          2586.156,
+          1191.291
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.324229240722479,
+      "attributes": {}
+    },
+    {
+      "label": "Truck",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2279.948,
+          760.7459999999999
+        ],
+        [
+          2229.016,
+          658.6890000000001
+        ],
+        [
+          2274.2200000000003,
+          636.129
+        ],
+        [
+          2325.152,
+          738.186
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.249498097477061,
+      "attributes": {}
+    },
+    {
+      "label": "MotorCycle",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2632.936,
+          1412.1480000000001
+        ],
+        [
+          2627.676,
+          1382.964
+        ],
+        [
+          2704.564,
+          1369.104
+        ],
+        [
+          2709.8239999999996,
+          1398.288
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.534067704376844,
+      "attributes": {}
+    },
+    {
+      "label": "Auto3WCargo",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2697.408,
+          1611.5580000000002
+        ],
+        [
+          2677.9320000000002,
+          1569.495
+        ],
+        [
+          2763.0080000000003,
+          1530.1080000000002
+        ],
+        [
+          2782.4840000000004,
+          1572.171
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.27876072853011,
+      "attributes": {}
+    },
+    {
+      "label": "MotorCycle",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2435.044,
+          1416.159
+        ],
+        [
+          2404.204,
+          1328.385
+        ],
+        [
+          2442.04,
+          1315.0919999999999
+        ],
+        [
+          2472.88,
+          1402.863
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.374505858688512,
+      "attributes": {}
+    },
+    {
+      "label": "Auto3WCargo",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2200.768,
+          450.612
+        ],
+        [
+          2178.596,
+          403.66200000000003
+        ],
+        [
+          2236.732,
+          376.212
+        ],
+        [
+          2258.904,
+          423.16200000000003
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.271189181885261,
+      "attributes": {}
+    },
+    {
+      "label": "MotorCycle",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2331.328,
+          661.758
+        ],
+        [
+          2324.076,
+          638.751
+        ],
+        [
+          2388.464,
+          618.45
+        ],
+        [
+          2395.7160000000003,
+          641.457
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.40703856548382,
+      "attributes": {}
+    },
+    {
+      "label": "Bus",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2445.0080000000003,
+          2085.447
+        ],
+        [
+          2348.776,
+          1882.932
+        ],
+        [
+          2404.992,
+          1856.217
+        ],
+        [
+          2501.224,
+          2058.735
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.268790075047219,
+      "attributes": {}
+    },
+    {
+      "label": "Auto3WCargo",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2478.88,
+          1078.152
+        ],
+        [
+          2420.66,
+          998.6940000000001
+        ],
+        [
+          2454.456,
+          973.932
+        ],
+        [
+          2512.6719999999996,
+          1053.39
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.080042920030673,
+      "attributes": {}
+    },
+    {
+      "label": "Auto3WCargo",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2047.812,
+          238.422
+        ],
+        [
+          2017.6599999999999,
+          152.13
+        ],
+        [
+          2058.436,
+          137.88
+        ],
+        [
+          2088.5919999999996,
+          224.172
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.376232513951995,
+      "attributes": {}
+    },
+    {
+      "label": "Auto3WCargo",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          3117.596,
+          2358.804
+        ],
+        [
+          3055.48,
+          2243.7749999999996
+        ],
+        [
+          3121.988,
+          2207.862
+        ],
+        [
+          3184.1040000000003,
+          2322.891
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.217253428458005,
+      "attributes": {}
+    },
+    {
+      "label": "Auto3WCargo",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2684.1719999999996,
+          2686.968
+        ],
+        [
+          2619.9159999999997,
+          2523.492
+        ],
+        [
+          2678.328,
+          2500.533
+        ],
+        [
+          2742.584,
+          2664.009
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.337878987656423,
+      "attributes": {}
+    },
+    {
+      "label": "Auto3WCargo",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          3102.212,
+          2935.191
+        ],
+        [
+          3067.404,
+          2839.5
+        ],
+        [
+          3112.3720000000003,
+          2823.144
+        ],
+        [
+          3147.1800000000003,
+          2918.832
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.363513935379246,
+      "attributes": {}
+    },
+    {
+      "label": "Auto3WCargo",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2955.4680000000003,
+          2116.974
+        ],
+        [
+          2889.228,
+          1988.661
+        ],
+        [
+          2944.532,
+          1960.1100000000001
+        ],
+        [
+          3010.772,
+          2088.4230000000002
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.2358358048193825,
+      "attributes": {}
+    },
+    {
+      "label": "MotorCycle",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          3255.096,
+          2458.338
+        ],
+        [
+          3264.636,
+          2383.884
+        ],
+        [
+          3292.824,
+          2387.493
+        ],
+        [
+          3283.28,
+          2461.95
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.839827386071388,
+      "attributes": {}
+    },
+    {
+      "label": "Truck",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2386.244,
+          1042.926
+        ],
+        [
+          2338.0359999999996,
+          965.8800000000001
+        ],
+        [
+          2372.088,
+          944.5740000000001
+        ],
+        [
+          2420.296,
+          1021.62
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.153283488328361,
+      "attributes": {}
+    },
+    {
+      "label": "Auto3WCargo",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2299.288,
+          890.187
+        ],
+        [
+          2277.4719999999998,
+          826.158
+        ],
+        [
+          2313.212,
+          813.981
+        ],
+        [
+          2335.028,
+          878.01
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.384004675246848,
+      "attributes": {}
+    },
+    {
+      "label": "AutoRicksaw",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          3205.488,
+          2322.36
+        ],
+        [
+          3138.308,
+          2218.185
+        ],
+        [
+          3188.264,
+          2185.971
+        ],
+        [
+          3255.44,
+          2290.149
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.139624017237533,
+      "attributes": {}
+    }
+  ],
+  "imagePath": "DJI_0658.JPG",
+  "imageData": null,
+  "imageHeight": 3000,
+  "imageWidth": 4000
+}

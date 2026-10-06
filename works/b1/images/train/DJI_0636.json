@@ -1,0 +1,319 @@
+{
+  "version": "4.1.0",
+  "flags": {},
+  "checked": false,
+  "shapes": [
+    {
+      "label": "Container",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          1754.968,
+          1891.5900000000001
+        ],
+        [
+          1907.7079999999999,
+          1044.84
+        ],
+        [
+          2063.784,
+          1072.992
+        ],
+        [
+          1911.04,
+          1919.7450000000001
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.8908536687021655,
+      "attributes": {}
+    },
+    {
+      "label": "Van",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          90.024,
+          1938.3629999999998
+        ],
+        [
+          89.412,
+          1890.255
+        ],
+        [
+          210.23600000000002,
+          1888.719
+        ],
+        [
+          210.848,
+          1936.827
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.699668289664112,
+      "attributes": {}
+    },
+    {
+      "label": "MotorCycle",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2113.5480000000002,
+          1568.715
+        ],
+        [
+          2124.204,
+          1513.782
+        ],
+        [
+          2149.9959999999996,
+          1518.786
+        ],
+        [
+          2139.3360000000002,
+          1573.7189999999998
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.9039911303333845,
+      "attributes": {}
+    },
+    {
+      "label": "MotorCycle",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2050.568,
+          1712.943
+        ],
+        [
+          2062.48,
+          1650.726
+        ],
+        [
+          2089.016,
+          1655.808
+        ],
+        [
+          2077.104,
+          1718.025
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.901558643180551,
+      "attributes": {}
+    },
+    {
+      "label": "MotorCycle",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2190.912,
+          1085.145
+        ],
+        [
+          2195.932,
+          1035.594
+        ],
+        [
+          2217.42,
+          1037.772
+        ],
+        [
+          2212.4,
+          1087.323
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.813354257726096,
+      "attributes": {}
+    },
+    {
+      "label": "Truck",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          1021.0239999999999,
+          1735.143
+        ],
+        [
+          1037.9199999999998,
+          1318.818
+        ],
+        [
+          1145.644,
+          1323.1889999999999
+        ],
+        [
+          1128.748,
+          1739.514
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.752950400081118,
+      "attributes": {}
+    },
+    {
+      "label": "MotorCycle",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2113.524,
+          1365.114
+        ],
+        [
+          2124.5440000000003,
+          1311.1470000000002
+        ],
+        [
+          2148.976,
+          1316.136
+        ],
+        [
+          2137.956,
+          1370.103
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.9138186284790315,
+      "attributes": {}
+    },
+    {
+      "label": "MotorCycle",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          272.66,
+          1861.047
+        ],
+        [
+          271.61600000000004,
+          1839.7169999999999
+        ],
+        [
+          329.94800000000004,
+          1836.87
+        ],
+        [
+          330.988,
+          1858.1999999999998
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.663482861402061,
+      "attributes": {}
+    },
+    {
+      "label": "Truck",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          844.844,
+          1057.0829999999999
+        ],
+        [
+          854.4359999999999,
+          970.6350000000001
+        ],
+        [
+          970.78,
+          983.541
+        ],
+        [
+          961.188,
+          1069.989
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.822893844597558,
+      "attributes": {}
+    },
+    {
+      "label": "Container",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          1120.6480000000001,
+          1837.2540000000001
+        ],
+        [
+          1146.436,
+          1388.5140000000001
+        ],
+        [
+          1241.8519999999999,
+          1393.998
+        ],
+        [
+          1216.064,
+          1842.7350000000001
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.769793418674796,
+      "attributes": {}
+    },
+    {
+      "label": "Truck",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2186.2200000000003,
+          1577.475
+        ],
+        [
+          2204.268,
+          1460.763
+        ],
+        [
+          2455.448,
+          1499.61
+        ],
+        [
+          2437.3999999999996,
+          1616.322
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.865810831531579,
+      "attributes": {}
+    }
+  ],
+  "imagePath": "DJI_0636.JPG",
+  "imageData": null,
+  "imageHeight": 3000,
+  "imageWidth": 4000
+}

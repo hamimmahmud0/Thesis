@@ -1,0 +1,14 @@
+Bicycle
+Bus
+C.N.G.
+Covered-Van
+Microbus
+Motor-Cycle
+Non-Motorized-Van
+Other
+Pedestrian
+Pick-Up
+Private-Passenger-Car
+Rickshaw
+Special-Purpose-Vehicles
+Truck

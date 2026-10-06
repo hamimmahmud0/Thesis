@@ -1,0 +1,151 @@
+{
+  "version": "4.1.0",
+  "flags": {},
+  "checked": false,
+  "shapes": [
+    {
+      "label": "MotorCycle",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2294.016,
+          971.553
+        ],
+        [
+          2292.3680000000004,
+          906.2429999999999
+        ],
+        [
+          2320.568,
+          905.5289999999999
+        ],
+        [
+          2322.216,
+          970.842
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.687160832217989,
+      "attributes": {}
+    },
+    {
+      "label": "Van",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2259.032,
+          1820.406
+        ],
+        [
+          2258.58,
+          1713.114
+        ],
+        [
+          2303.468,
+          1712.928
+        ],
+        [
+          2303.92,
+          1820.217
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.708176202861285,
+      "attributes": {}
+    },
+    {
+      "label": "MotorCycle",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2286.2360000000003,
+          773.6370000000001
+        ],
+        [
+          2286.52,
+          709.575
+        ],
+        [
+          2313.764,
+          709.6949999999999
+        ],
+        [
+          2313.48,
+          773.7570000000001
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.716822156674975,
+      "attributes": {}
+    },
+    {
+      "label": "MotorCycle",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2259.768,
+          990.921
+        ],
+        [
+          2256.68,
+          932.508
+        ],
+        [
+          2286.068,
+          930.954
+        ],
+        [
+          2289.152,
+          989.367
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.659573200784531,
+      "attributes": {}
+    },
+    {
+      "label": "MotorCycle",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2301.788,
+          1146.627
+        ],
+        [
+          2301.876,
+          1084.584
+        ],
+        [
+          2329.4640000000004,
+          1084.623
+        ],
+        [
+          2329.3759999999997,
+          1146.666
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.713807350563246,
+      "attributes": {}
+    }
+  ],
+  "imagePath": "DJI_0637.JPG",
+  "imageData": null,
+  "imageHeight": 3000,
+  "imageWidth": 4000
+}

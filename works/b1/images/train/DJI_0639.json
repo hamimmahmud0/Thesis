@@ -1,0 +1,123 @@
+{
+  "version": "4.1.0",
+  "flags": {},
+  "checked": false,
+  "shapes": [
+    {
+      "label": "Auto3WCargo",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2231.0919999999996,
+          406.10999999999996
+        ],
+        [
+          2205.392,
+          323.90099999999995
+        ],
+        [
+          2256.408,
+          307.95300000000003
+        ],
+        [
+          2282.108,
+          390.16200000000003
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.409396759692292,
+      "attributes": {}
+    },
+    {
+      "label": "Container",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          1859.396,
+          1114.554
+        ],
+        [
+          1852.4640000000002,
+          290.625
+        ],
+        [
+          2096.8559999999998,
+          288.57
+        ],
+        [
+          2103.788,
+          1112.499
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.703975832591856,
+      "attributes": {}
+    },
+    {
+      "label": "Bus",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2323.828,
+          2230.905
+        ],
+        [
+          2321.1,
+          2028.5790000000002
+        ],
+        [
+          2406.38,
+          2027.43
+        ],
+        [
+          2409.1079999999997,
+          2229.753
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.698906606866309,
+      "attributes": {}
+    },
+    {
+      "label": "MotorCycle",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2248.888,
+          947.097
+        ],
+        [
+          2244.5119999999997,
+          850.452
+        ],
+        [
+          2282.364,
+          848.736
+        ],
+        [
+          2286.74,
+          945.381
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.66714077181104,
+      "attributes": {}
+    }
+  ],
+  "imagePath": "DJI_0639.JPG",
+  "imageData": null,
+  "imageHeight": 3000,
+  "imageWidth": 4000
+}

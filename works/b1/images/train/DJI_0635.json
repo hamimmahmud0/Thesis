@@ -1,0 +1,235 @@
+{
+  "version": "4.1.0",
+  "flags": {},
+  "checked": false,
+  "shapes": [
+    {
+      "label": "Auto3WCargo",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2132.808,
+          1740.048
+        ],
+        [
+          2114.224,
+          1618.017
+        ],
+        [
+          2167.192,
+          1609.9499999999998
+        ],
+        [
+          2185.7760000000003,
+          1731.981
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.561260988656824,
+      "attributes": {}
+    },
+    {
+      "label": "MotorCycle",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2334.548,
+          2118.021
+        ],
+        [
+          2327.6240000000003,
+          2064.135
+        ],
+        [
+          2350.8680000000004,
+          2061.147
+        ],
+        [
+          2357.792,
+          2115.0330000000004
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.584595737421053,
+      "attributes": {}
+    },
+    {
+      "label": "MotorCycle",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2412.532,
+          2548.854
+        ],
+        [
+          2399.0480000000002,
+          2482.2360000000003
+        ],
+        [
+          2429.136,
+          2476.1459999999997
+        ],
+        [
+          2442.62,
+          2542.764
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.5126793445555275,
+      "attributes": {}
+    },
+    {
+      "label": "Truck",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          3337.908,
+          2193.885
+        ],
+        [
+          3386.8559999999998,
+          1984.8239999999998
+        ],
+        [
+          3460.0080000000003,
+          2001.9510000000002
+        ],
+        [
+          3411.06,
+          2211.009
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.942378797826512,
+      "attributes": {}
+    },
+    {
+      "label": "Tipper",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          939.704,
+          2426.166
+        ],
+        [
+          914.292,
+          2320.587
+        ],
+        [
+          1099.876,
+          2275.917
+        ],
+        [
+          1125.292,
+          2381.496
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.476189975880552,
+      "attributes": {}
+    },
+    {
+      "label": "Auto3WCargo",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          350.412,
+          607.62
+        ],
+        [
+          387.036,
+          474.546
+        ],
+        [
+          432.92,
+          487.173
+        ],
+        [
+          396.3,
+          620.247
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.980955337153392,
+      "attributes": {}
+    },
+    {
+      "label": "MotorCycle",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2100.932,
+          772.056
+        ],
+        [
+          2094.784,
+          719.5500000000001
+        ],
+        [
+          2120.94,
+          716.4870000000001
+        ],
+        [
+          2127.088,
+          768.9929999999999
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.59582836383925,
+      "attributes": {}
+    },
+    {
+      "label": "MotorCycle",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2131.3520000000003,
+          1180.845
+        ],
+        [
+          2121.684,
+          1125.828
+        ],
+        [
+          2147.8160000000003,
+          1121.238
+        ],
+        [
+          2157.4840000000004,
+          1176.255
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.538437516546836,
+      "attributes": {}
+    }
+  ],
+  "imagePath": "DJI_0635.JPG",
+  "imageData": null,
+  "imageHeight": 3000,
+  "imageWidth": 4000
+}

@@ -1,0 +1,22 @@
+{
+ "images": 174,
+ "class_counts": {
+  "MotorCycle": 1911,
+  "Container": 182,
+  "PickUp": 370,
+  "Auto3WCargo": 1212,
+  "Tanker": 15,
+  "Truck": 625,
+  "SUV": 864,
+  "Bus": 273,
+  "AutoRicksaw": 251,
+  "Van": 185,
+  "Tipper": 64,
+  "Trailer": 132,
+  "Mixer": 16,
+  "Sedan": 431
+ },
+ "weights": "/kaggle/working/runs/l1280/weights/best.pt",
+ "imgsz": 1280,
+ "max_side": 1920
+}

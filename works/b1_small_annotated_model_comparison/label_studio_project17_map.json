@@ -1,0 +1,878 @@
+{
+ "stats": {
+  "max_roundtrip_err_px": 0.0015841911163220958,
+  "dropped_degenerate": 1
+ },
+ "tasks": {
+  "DJI_0566": {
+   "task_id": 349,
+   "kind": "annotation",
+   "regions": 44
+  },
+  "DJI_0570": {
+   "task_id": 350,
+   "kind": "annotation",
+   "regions": 31
+  },
+  "DJI_0569": {
+   "task_id": 351,
+   "kind": "annotation",
+   "regions": 17
+  },
+  "DJI_0568": {
+   "task_id": 352,
+   "kind": "annotation",
+   "regions": 28
+  },
+  "DJI_0571": {
+   "task_id": 353,
+   "kind": "annotation",
+   "regions": 21
+  },
+  "DJI_0572": {
+   "task_id": 354,
+   "kind": "annotation",
+   "regions": 27
+  },
+  "DJI_0573": {
+   "task_id": 355,
+   "kind": "annotation",
+   "regions": 32
+  },
+  "DJI_0567": {
+   "task_id": 356,
+   "kind": "annotation",
+   "regions": 27
+  },
+  "DJI_0574": {
+   "task_id": 357,
+   "kind": "annotation",
+   "regions": 56
+  },
+  "DJI_0576": {
+   "task_id": 358,
+   "kind": "annotation",
+   "regions": 51
+  },
+  "DJI_0575": {
+   "task_id": 359,
+   "kind": "annotation",
+   "regions": 66
+  },
+  "DJI_0578": {
+   "task_id": 360,
+   "kind": "annotation",
+   "regions": 25
+  },
+  "DJI_0579": {
+   "task_id": 361,
+   "kind": "annotation",
+   "regions": 34
+  },
+  "DJI_0577": {
+   "task_id": 362,
+   "kind": "annotation",
+   "regions": 45
+  },
+  "DJI_0580": {
+   "task_id": 363,
+   "kind": "annotation",
+   "regions": 75
+  },
+  "DJI_0582": {
+   "task_id": 364,
+   "kind": "annotation",
+   "regions": 79
+  },
+  "DJI_0583": {
+   "task_id": 365,
+   "kind": "annotation",
+   "regions": 71
+  },
+  "DJI_0584": {
+   "task_id": 366,
+   "kind": "annotation",
+   "regions": 59
+  },
+  "DJI_0587": {
+   "task_id": 367,
+   "kind": "prediction",
+   "regions": 55
+  },
+  "DJI_0581": {
+   "task_id": 369,
+   "kind": "annotation",
+   "regions": 59
+  },
+  "DJI_0588": {
+   "task_id": 368,
+   "kind": "prediction",
+   "regions": 39
+  },
+  "DJI_0586": {
+   "task_id": 370,
+   "kind": "prediction",
+   "regions": 66
+  },
+  "DJI_0585": {
+   "task_id": 371,
+   "kind": "annotation",
+   "regions": 66
+  },
+  "DJI_0590": {
+   "task_id": 372,
+   "kind": "prediction",
+   "regions": 73
+  },
+  "DJI_0591": {
+   "task_id": 373,
+   "kind": "prediction",
+   "regions": 62
+  },
+  "DJI_0589": {
+   "task_id": 374,
+   "kind": "prediction",
+   "regions": 52
+  },
+  "DJI_0592": {
+   "task_id": 375,
+   "kind": "prediction",
+   "regions": 67
+  },
+  "DJI_0593": {
+   "task_id": 376,
+   "kind": "prediction",
+   "regions": 63
+  },
+  "DJI_0595": {
+   "task_id": 377,
+   "kind": "prediction",
+   "regions": 108
+  },
+  "DJI_0596": {
+   "task_id": 379,
+   "kind": "prediction",
+   "regions": 133
+  },
+  "DJI_0594": {
+   "task_id": 378,
+   "kind": "prediction",
+   "regions": 96
+  },
+  "DJI_0597": {
+   "task_id": 380,
+   "kind": "prediction",
+   "regions": 107
+  },
+  "DJI_0598": {
+   "task_id": 381,
+   "kind": "prediction",
+   "regions": 99
+  },
+  "DJI_0600": {
+   "task_id": 382,
+   "kind": "prediction",
+   "regions": 37
+  },
+  "DJI_0599": {
+   "task_id": 383,
+   "kind": "prediction",
+   "regions": 103
+  },
+  "DJI_0601": {
+   "task_id": 384,
+   "kind": "prediction",
+   "regions": 25
+  },
+  "DJI_0602": {
+   "task_id": 385,
+   "kind": "prediction",
+   "regions": 25
+  },
+  "DJI_0603": {
+   "task_id": 386,
+   "kind": "prediction",
+   "regions": 41
+  },
+  "DJI_0604": {
+   "task_id": 387,
+   "kind": "prediction",
+   "regions": 49
+  },
+  "DJI_0605": {
+   "task_id": 388,
+   "kind": "prediction",
+   "regions": 38
+  },
+  "DJI_0606": {
+   "task_id": 389,
+   "kind": "prediction",
+   "regions": 50
+  },
+  "DJI_0609": {
+   "task_id": 390,
+   "kind": "prediction",
+   "regions": 63
+  },
+  "DJI_0607": {
+   "task_id": 391,
+   "kind": "prediction",
+   "regions": 68
+  },
+  "DJI_0608": {
+   "task_id": 392,
+   "kind": "prediction",
+   "regions": 63
+  },
+  "DJI_0610": {
+   "task_id": 393,
+   "kind": "prediction",
+   "regions": 63
+  },
+  "DJI_0612": {
+   "task_id": 394,
+   "kind": "prediction",
+   "regions": 114
+  },
+  "DJI_0613": {
+   "task_id": 395,
+   "kind": "prediction",
+   "regions": 111
+  },
+  "DJI_0614": {
+   "task_id": 396,
+   "kind": "annotation",
+   "regions": 121
+  },
+  "DJI_0611": {
+   "task_id": 398,
+   "kind": "prediction",
+   "regions": 81
+  },
+  "DJI_0615": {
+   "task_id": 397,
+   "kind": "annotation",
+   "regions": 128
+  },
+  "DJI_0616": {
+   "task_id": 399,
+   "kind": "annotation",
+   "regions": 84
+  },
+  "DJI_0617": {
+   "task_id": 400,
+   "kind": "prediction",
+   "regions": 113
+  },
+  "DJI_0620": {
+   "task_id": 401,
+   "kind": "prediction",
+   "regions": 23
+  },
+  "DJI_0618": {
+   "task_id": 402,
+   "kind": "prediction",
+   "regions": 67
+  },
+  "DJI_0619": {
+   "task_id": 403,
+   "kind": "prediction",
+   "regions": 15
+  },
+  "DJI_0621": {
+   "task_id": 404,
+   "kind": "prediction",
+   "regions": 18
+  },
+  "DJI_0624": {
+   "task_id": 405,
+   "kind": "prediction",
+   "regions": 43
+  },
+  "DJI_0622": {
+   "task_id": 406,
+   "kind": "prediction",
+   "regions": 33
+  },
+  "DJI_0623": {
+   "task_id": 407,
+   "kind": "prediction",
+   "regions": 21
+  },
+  "DJI_0627": {
+   "task_id": 408,
+   "kind": "prediction",
+   "regions": 121
+  },
+  "DJI_0625": {
+   "task_id": 409,
+   "kind": "prediction",
+   "regions": 38
+  },
+  "DJI_0626": {
+   "task_id": 410,
+   "kind": "prediction",
+   "regions": 89
+  },
+  "DJI_0629": {
+   "task_id": 411,
+   "kind": "prediction",
+   "regions": 63
+  },
+  "DJI_0630": {
+   "task_id": 412,
+   "kind": "prediction",
+   "regions": 62
+  },
+  "DJI_0631": {
+   "task_id": 413,
+   "kind": "prediction",
+   "regions": 72
+  },
+  "DJI_0628": {
+   "task_id": 414,
+   "kind": "prediction",
+   "regions": 82
+  },
+  "DJI_0633": {
+   "task_id": 415,
+   "kind": "prediction",
+   "regions": 93
+  },
+  "DJI_0634": {
+   "task_id": 416,
+   "kind": "prediction",
+   "regions": 59
+  },
+  "DJI_0632": {
+   "task_id": 417,
+   "kind": "prediction",
+   "regions": 76
+  },
+  "DJI_0635": {
+   "task_id": 418,
+   "kind": "prediction",
+   "regions": 49
+  },
+  "DJI_0636": {
+   "task_id": 419,
+   "kind": "prediction",
+   "regions": 70
+  },
+  "DJI_0637": {
+   "task_id": 420,
+   "kind": "prediction",
+   "regions": 56
+  },
+  "DJI_0638": {
+   "task_id": 421,
+   "kind": "prediction",
+   "regions": 45
+  },
+  "DJI_0639": {
+   "task_id": 422,
+   "kind": "prediction",
+   "regions": 18
+  },
+  "DJI_0640": {
+   "task_id": 423,
+   "kind": "prediction",
+   "regions": 24
+  },
+  "DJI_0641": {
+   "task_id": 424,
+   "kind": "prediction",
+   "regions": 24
+  },
+  "DJI_0642": {
+   "task_id": 425,
+   "kind": "prediction",
+   "regions": 44
+  },
+  "DJI_0643": {
+   "task_id": 426,
+   "kind": "prediction",
+   "regions": 19
+  },
+  "DJI_0644": {
+   "task_id": 427,
+   "kind": "prediction",
+   "regions": 50
+  },
+  "DJI_0645": {
+   "task_id": 428,
+   "kind": "prediction",
+   "regions": 65
+  },
+  "DJI_0646": {
+   "task_id": 429,
+   "kind": "prediction",
+   "regions": 51
+  },
+  "DJI_0647": {
+   "task_id": 430,
+   "kind": "prediction",
+   "regions": 30
+  },
+  "DJI_0648": {
+   "task_id": 431,
+   "kind": "prediction",
+   "regions": 33
+  },
+  "DJI_0650": {
+   "task_id": 432,
+   "kind": "prediction",
+   "regions": 24
+  },
+  "DJI_0649": {
+   "task_id": 433,
+   "kind": "prediction",
+   "regions": 22
+  },
+  "DJI_0651": {
+   "task_id": 434,
+   "kind": "prediction",
+   "regions": 105
+  },
+  "DJI_0652": {
+   "task_id": 435,
+   "kind": "prediction",
+   "regions": 51
+  },
+  "DJI_0654": {
+   "task_id": 436,
+   "kind": "prediction",
+   "regions": 85
+  },
+  "DJI_0655": {
+   "task_id": 437,
+   "kind": "prediction",
+   "regions": 77
+  },
+  "DJI_0656": {
+   "task_id": 438,
+   "kind": "prediction",
+   "regions": 83
+  },
+  "DJI_0653": {
+   "task_id": 439,
+   "kind": "prediction",
+   "regions": 49
+  },
+  "DJI_0657": {
+   "task_id": 440,
+   "kind": "prediction",
+   "regions": 71
+  },
+  "DJI_0658": {
+   "task_id": 441,
+   "kind": "prediction",
+   "regions": 78
+  },
+  "DJI_0659": {
+   "task_id": 442,
+   "kind": "prediction",
+   "regions": 76
+  },
+  "DJI_0660": {
+   "task_id": 443,
+   "kind": "prediction",
+   "regions": 79
+  },
+  "DJI_0661": {
+   "task_id": 444,
+   "kind": "prediction",
+   "regions": 89
+  },
+  "DJI_0662": {
+   "task_id": 445,
+   "kind": "prediction",
+   "regions": 97
+  },
+  "DJI_0663": {
+   "task_id": 446,
+   "kind": "prediction",
+   "regions": 97
+  },
+  "DJI_0664": {
+   "task_id": 447,
+   "kind": "prediction",
+   "regions": 76
+  },
+  "DJI_0666": {
+   "task_id": 448,
+   "kind": "prediction",
+   "regions": 42
+  },
+  "DJI_0665": {
+   "task_id": 449,
+   "kind": "prediction",
+   "regions": 43
+  },
+  "DJI_0667": {
+   "task_id": 450,
+   "kind": "prediction",
+   "regions": 48
+  },
+  "DJI_0668": {
+   "task_id": 451,
+   "kind": "prediction",
+   "regions": 49
+  },
+  "DJI_0669": {
+   "task_id": 452,
+   "kind": "prediction",
+   "regions": 44
+  },
+  "DJI_0670": {
+   "task_id": 453,
+   "kind": "prediction",
+   "regions": 51
+  },
+  "DJI_0672": {
+   "task_id": 454,
+   "kind": "prediction",
+   "regions": 67
+  },
+  "DJI_0671": {
+   "task_id": 455,
+   "kind": "prediction",
+   "regions": 48
+  },
+  "DJI_0673": {
+   "task_id": 456,
+   "kind": "prediction",
+   "regions": 68
+  },
+  "DJI_0674": {
+   "task_id": 457,
+   "kind": "prediction",
+   "regions": 77
+  },
+  "DJI_0675": {
+   "task_id": 458,
+   "kind": "prediction",
+   "regions": 71
+  },
+  "DJI_0676": {
+   "task_id": 459,
+   "kind": "prediction",
+   "regions": 83
+  },
+  "DJI_0677": {
+   "task_id": 460,
+   "kind": "prediction",
+   "regions": 131
+  },
+  "DJI_0678": {
+   "task_id": 461,
+   "kind": "prediction",
+   "regions": 119
+  },
+  "DJI_0679": {
+   "task_id": 462,
+   "kind": "prediction",
+   "regions": 87
+  },
+  "DJI_0680": {
+   "task_id": 463,
+   "kind": "prediction",
+   "regions": 74
+  },
+  "DJI_0681": {
+   "task_id": 464,
+   "kind": "prediction",
+   "regions": 109
+  },
+  "DJI_0682": {
+   "task_id": 465,
+   "kind": "prediction",
+   "regions": 114
+  },
+  "DJI_0683": {
+   "task_id": 466,
+   "kind": "prediction",
+   "regions": 74
+  },
+  "DJI_0684": {
+   "task_id": 467,
+   "kind": "prediction",
+   "regions": 52
+  },
+  "DJI_0685": {
+   "task_id": 468,
+   "kind": "prediction",
+   "regions": 119
+  },
+  "DJI_0686": {
+   "task_id": 469,
+   "kind": "prediction",
+   "regions": 19
+  },
+  "DJI_0687": {
+   "task_id": 470,
+   "kind": "prediction",
+   "regions": 134
+  },
+  "DJI_0688": {
+   "task_id": 471,
+   "kind": "prediction",
+   "regions": 182
+  },
+  "DJI_0689": {
+   "task_id": 472,
+   "kind": "prediction",
+   "regions": 159
+  },
+  "DJI_0690": {
+   "task_id": 473,
+   "kind": "prediction",
+   "regions": 48
+  },
+  "DJI_0691": {
+   "task_id": 474,
+   "kind": "prediction",
+   "regions": 48
+  },
+  "DJI_0693": {
+   "task_id": 475,
+   "kind": "prediction",
+   "regions": 112
+  },
+  "DJI_0694": {
+   "task_id": 476,
+   "kind": "prediction",
+   "regions": 120
+  },
+  "DJI_0695": {
+   "task_id": 477,
+   "kind": "prediction",
+   "regions": 100
+  },
+  "DJI_0696": {
+   "task_id": 478,
+   "kind": "prediction",
+   "regions": 71
+  },
+  "DJI_0699": {
+   "task_id": 479,
+   "kind": "prediction",
+   "regions": 137
+  },
+  "DJI_0697": {
+   "task_id": 480,
+   "kind": "prediction",
+   "regions": 97
+  },
+  "DJI_0698": {
+   "task_id": 481,
+   "kind": "prediction",
+   "regions": 174
+  },
+  "DJI_0692": {
+   "task_id": 482,
+   "kind": "prediction",
+   "regions": 87
+  },
+  "DJI_0700": {
+   "task_id": 483,
+   "kind": "prediction",
+   "regions": 90
+  },
+  "DJI_0701": {
+   "task_id": 484,
+   "kind": "prediction",
+   "regions": 91
+  },
+  "DJI_0702": {
+   "task_id": 485,
+   "kind": "prediction",
+   "regions": 95
+  },
+  "DJI_0703": {
+   "task_id": 486,
+   "kind": "prediction",
+   "regions": 90
+  },
+  "DJI_0704": {
+   "task_id": 487,
+   "kind": "prediction",
+   "regions": 97
+  },
+  "DJI_0705": {
+   "task_id": 488,
+   "kind": "prediction",
+   "regions": 95
+  },
+  "DJI_0706": {
+   "task_id": 489,
+   "kind": "prediction",
+   "regions": 66
+  },
+  "DJI_0707": {
+   "task_id": 490,
+   "kind": "prediction",
+   "regions": 89
+  },
+  "DJI_0708": {
+   "task_id": 491,
+   "kind": "prediction",
+   "regions": 142
+  },
+  "DJI_0711": {
+   "task_id": 492,
+   "kind": "prediction",
+   "regions": 55
+  },
+  "DJI_0712": {
+   "task_id": 493,
+   "kind": "prediction",
+   "regions": 81
+  },
+  "DJI_0713": {
+   "task_id": 494,
+   "kind": "prediction",
+   "regions": 67
+  },
+  "DJI_0709": {
+   "task_id": 496,
+   "kind": "prediction",
+   "regions": 67
+  },
+  "DJI_0710": {
+   "task_id": 495,
+   "kind": "prediction",
+   "regions": 71
+  },
+  "DJI_0714": {
+   "task_id": 497,
+   "kind": "prediction",
+   "regions": 62
+  },
+  "DJI_0715": {
+   "task_id": 498,
+   "kind": "prediction",
+   "regions": 73
+  },
+  "DJI_0717": {
+   "task_id": 499,
+   "kind": "prediction",
+   "regions": 76
+  },
+  "DJI_0718": {
+   "task_id": 500,
+   "kind": "prediction",
+   "regions": 98
+  },
+  "DJI_0716": {
+   "task_id": 501,
+   "kind": "prediction",
+   "regions": 66
+  },
+  "DJI_0719": {
+   "task_id": 502,
+   "kind": "prediction",
+   "regions": 102
+  },
+  "DJI_0720": {
+   "task_id": 503,
+   "kind": "prediction",
+   "regions": 79
+  },
+  "DJI_0721": {
+   "task_id": 504,
+   "kind": "prediction",
+   "regions": 81
+  },
+  "DJI_0722": {
+   "task_id": 505,
+   "kind": "prediction",
+   "regions": 166
+  },
+  "DJI_0723": {
+   "task_id": 506,
+   "kind": "prediction",
+   "regions": 155
+  },
+  "DJI_0724": {
+   "task_id": 507,
+   "kind": "prediction",
+   "regions": 102
+  },
+  "DJI_0725": {
+   "task_id": 508,
+   "kind": "prediction",
+   "regions": 65
+  },
+  "DJI_0726": {
+   "task_id": 509,
+   "kind": "prediction",
+   "regions": 27
+  },
+  "DJI_0729": {
+   "task_id": 510,
+   "kind": "prediction",
+   "regions": 191
+  },
+  "DJI_0728": {
+   "task_id": 511,
+   "kind": "prediction",
+   "regions": 41
+  },
+  "DJI_0727": {
+   "task_id": 512,
+   "kind": "prediction",
+   "regions": 94
+  },
+  "DJI_0730": {
+   "task_id": 513,
+   "kind": "prediction",
+   "regions": 157
+  },
+  "DJI_0732": {
+   "task_id": 514,
+   "kind": "prediction",
+   "regions": 100
+  },
+  "DJI_0731": {
+   "task_id": 515,
+   "kind": "prediction",
+   "regions": 74
+  },
+  "DJI_0733": {
+   "task_id": 516,
+   "kind": "prediction",
+   "regions": 149
+  },
+  "DJI_0734": {
+   "task_id": 517,
+   "kind": "prediction",
+   "regions": 100
+  },
+  "DJI_0735": {
+   "task_id": 518,
+   "kind": "prediction",
+   "regions": 63
+  },
+  "DJI_0736": {
+   "task_id": 519,
+   "kind": "prediction",
+   "regions": 75
+  },
+  "DJI_0737": {
+   "task_id": 520,
+   "kind": "prediction",
+   "regions": 123
+  },
+  "DJI_0738": {
+   "task_id": 521,
+   "kind": "prediction",
+   "regions": 119
+  },
+  "DJI_0739": {
+   "task_id": 522,
+   "kind": "prediction",
+   "regions": 109
+  }
+ }
+}

@@ -1,0 +1,19 @@
+{
+ "real_tiles": 221,
+ "synthetic_tiles": 221,
+ "pasted": {
+  "Bicycle": 150,
+  "Covered-Van": 25,
+  "C.N.G.": 150,
+  "Other": 72,
+  "Private-Passenger-Car": 14,
+  "Truck": 49,
+  "Non-Motorized-Van": 41,
+  "Rickshaw": 19,
+  "Pick-Up": 83,
+  "Pedestrian": 23,
+  "Bus": 47,
+  "Motor-Cycle": 49,
+  "Microbus": 37
+ }
+}

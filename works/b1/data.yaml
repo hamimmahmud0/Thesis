@@ -1,0 +1,18 @@
+path: .
+train: images/train
+val: images/val
+names:
+  0: Auto3WCargo
+  1: AutoRicksaw
+  2: Bus
+  3: Container
+  4: Mixer
+  5: MotorCycle
+  6: PickUp
+  7: SUV
+  8: Sedan
+  9: Tanker
+  10: Tipper
+  11: Trailer
+  12: Truck
+  13: Van

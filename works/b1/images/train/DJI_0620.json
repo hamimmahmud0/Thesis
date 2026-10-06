@@ -1,0 +1,39 @@
+{
+  "version": "4.1.0",
+  "flags": {},
+  "checked": false,
+  "shapes": [
+    {
+      "label": "Truck",
+      "shape_type": "rotation",
+      "flags": {},
+      "points": [
+        [
+          2773.22,
+          408.504
+        ],
+        [
+          2623.664,
+          108.276
+        ],
+        [
+          2839.28,
+          0.87
+        ],
+        [
+          2988.8360000000002,
+          301.098
+        ]
+      ],
+      "group_id": null,
+      "description": null,
+      "difficult": false,
+      "direction": 4.250229346478104,
+      "attributes": {}
+    }
+  ],
+  "imagePath": "DJI_0620.JPG",
+  "imageData": null,
+  "imageHeight": 3000,
+  "imageWidth": 4000
+}

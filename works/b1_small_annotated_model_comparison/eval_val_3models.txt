@@ -1,0 +1,7 @@
+GT objects in 3 frames: 333
+NEW(real-only) IoU>=0.5: dets=286   TP=228  precision=0.797 recall=0.685 F1=0.737
+NEW(real-only) IoU>=0.3: dets=286   TP=238  precision=0.832 recall=0.715 F1=0.769
+VEDAI          IoU>=0.5: dets=29    TP=10   precision=0.345 recall=0.030 F1=0.055
+VEDAI          IoU>=0.3: dets=29    TP=12   precision=0.414 recall=0.036 F1=0.066
+DIOR-R         IoU>=0.5: dets=150   TP=109  precision=0.727 recall=0.327 F1=0.451
+DIOR-R         IoU>=0.3: dets=150   TP=113  precision=0.753 recall=0.339 F1=0.468

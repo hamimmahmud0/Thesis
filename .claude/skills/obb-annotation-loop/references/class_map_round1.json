@@ -1,0 +1,7 @@
+{
+  "_note": "Round-1 merge decisions made by the user for the 23 hand-annotated b1 frames. Pass as --merge-map; also drop Tipper and Trailer (--drop Tipper,Trailer) and let ls_export remove classes with 0 instances (round 1 removed Ambulance, Container, Human-Hauler, Mixer, Tanker). Confirm with the user before reusing.",
+  "SUV": "Private-Passenger-Car",
+  "Sedan": "Private-Passenger-Car",
+  "Auto3WCargo": "Rickshaw",
+  "Van": "Microbus"
+}
